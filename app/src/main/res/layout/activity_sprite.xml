@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pure_black" >
+
+	<fi.finwe.orion360.v3.OrionView
+	    android:id="@+id/orion_view"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent" >
+	</fi.finwe.orion360.v3.OrionView>
+	
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:layout_alignParentTop="true" >
+	    
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignTopLeftClicked"
+	        android:text="TL"
+	        android:textSize="10sp" />
+
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignTopCenterClicked"
+	        android:text="TC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:minHeight="1px"
+	        android:onClick="onAlignTopRightClicked"
+	        android:text="TR"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterLeftClicked"
+	        android:text="CL"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterClicked"
+	        android:text="CC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterRightClicked"
+	        android:text="CR"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignBottomLeftClicked"
+	        android:text="BL"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignBottomCenterClicked"
+	        android:text="BC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:includeFontPadding="false"
+	        android:onClick="onAlignBottomRightClicked"
+	        android:text="BR"
+	        android:textSize="10sp" />
+
+	</LinearLayout>
+	
+	<LinearLayout
+	    android:id="@+id/button_row_1"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:layout_alignParentTop="true" >
+	    
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignTopLeftClicked"
+	        android:text="TL"
+	        android:textSize="10sp" />
+
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignTopCenterClicked"
+	        android:text="TC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignTopRightClicked"
+	        android:text="TR"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterLeftClicked"
+	        android:text="CL"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterClicked"
+	        android:text="CC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignCenterRightClicked"
+	        android:text="CR"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignBottomLeftClicked"
+	        android:text="BL"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onAlignBottomCenterClicked"
+	        android:text="BC"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:includeFontPadding="false"
+	        android:onClick="onAlignBottomRightClicked"
+	        android:text="BR"
+	        android:textSize="10sp" />
+
+	</LinearLayout>
+	
+	<LinearLayout
+	    android:id="@+id/button_row_2"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:layout_below="@id/button_row_1" >
+	    
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginRight="10dp"
+	        android:minHeight="1px"
+	        android:onClick="onToggleTextureClicked"
+	        android:text="Switch texture"
+	        android:textSize="10sp" />
+	    
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onFitLongClicked"
+	        android:text="Long"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onFitShortClicked"
+	        android:text="Short"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onFitWidthClicked"
+	        android:text="Width"
+	        android:textSize="10sp" />
+	    <Button
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="onFitHeightClicked"
+	        android:text="Height"
+	        android:textSize="10sp" />
+
+	    <ToggleButton
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:layout_marginLeft="10dp"
+	        android:onClick="onToggleCropClicked"
+	        android:textOff="Crop"
+	        android:textOn="Crop"
+	        android:textSize="10sp" />
+
+	</LinearLayout>
+
+	
+</RelativeLayout>

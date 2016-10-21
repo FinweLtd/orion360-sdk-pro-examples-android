@@ -1,0 +1,27 @@
+# This file contains the list of applications
+# for which this Orion360 license is valid
+# Please do not modify this file in any way
+
+packagename = fi.finwe.orion360.v3.Hello
+logo = finwe
+
+platform = android
+version = 3.0    
+
+enableFeatureExplicit = video360 \
+	image360 \
+	sprite \
+	screenshot \
+	barrel_distortion \
+	heatmap
+	
+issueDate = 2016-04-18 17:00:00 +0300
+expirationDate =
+
+=========================== BEGIN-SIGNATURE-V3.37 ===========================
+NFVTcH8PCnmoFBYhCEy8bNd8NC5pzUEcBOPlJqd+rodPyPx+wf2ulPiySy51BydMgypRtDfJTXr6
+YyeuBa9K0Xx9X6DzDuA2u4Ri0FeRvKMPk5IFAsF+a7pRv8dzUxPJ1q4wIAbyoA6HuM0HHeyxyivC
+ncOsdWViWcl8+LfIZvGqSMgzwm9UbkAhDYdz3Me3fAPrl9u8HZ+e363x6ziDeD/FtMcM30hpDQzg
+vIiDGfrGxaUUCjyhz8HPsfifgPIMcOio+rvE/XS/o7pB8+foc0yGOGOIXHhiynCrgr6V4xOJw8KO
+SpYKtIA0oJkDAfcL1PWdxg+QETZkCTdsyjfQ/Q==
+============================= END-SIGNATURE-V3.37 ===========================
