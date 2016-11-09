@@ -1,6 +1,37 @@
 <resources>
-    <string name="app_name">HelloOrion360 v3</string>
+    <!-- Application -->
+    <string name="app_name">Orion Examples</string>
 
-    <string name="mainmenu_empty_list">No data</string>
-    
+    <!-- Main menu -->
+    <string name="main_menu_empty_list">No examples found</string>
+    <string name="main_menu_permission_request_title">Permission Required</string>
+    <string name="main_menu_permission_request_write">Permission to write to external storage is required for copying test content in place.</string>
+    <string name="main_menu_permission_grant_button_label">OK</string>
+    <string name="main_menu_permission_warning">Some examples may fail to work due to denied permissions.</string>
+    <string name="main_menu_init_title">Initializing&#8230;</string>
+    <string name="main_menu_init_message">Copying test content in place</string>
+    <string name="main_menu_init_files_copied">%d file(s) were copied</string>
+
+    <!-- Video Player -->
+    <string name="player_read_permission_denied">Cannot play content (read permission not granted)</string>
+    <string name="player_media_not_mounted">Cannot play content (media not mounted)</string>
+    <string name="player_file_download_title">Please wait&#8230;</string>
+    <string name="player_file_download_message">Downloading file %s</string>
+    <string name="player_file_download_completed">%d file(s) were downloaded</string>
+    <string name="player_long_tap_hint_enter_vr_mode">"Long tap to enter VR mode"</string>
+    <string name="player_long_tap_hint_exit_vr_mode">"Long tap to exit VR mode"</string>
+    <string name="player_controls_play_overlay_desc">Play</string>
+    <string name="player_controls_pause_overlay_desc">Pause</string>
+
+    <!-- Custom Controls -->
+    <string name="controller_playbutton_desc">Play/pause</string>
+    <string name="controller_audiobutton_desc">Toggle mute on/off</string>
+    <string name="controller_position">-:--</string>
+    <string name="controller_duration">-:--</string>
+
+    <!-- Tag/Hotspot image files -->
+    <string name="asset_nadir_patch">Orion360_nadir_patch_1024x1024.png</string>
+    <string name="asset_hotspot_reticle">Orion360_hotspot_reticle_256x256.png</string>
+    <string name="asset_hotspot_start">Orion360_hotspot_start_256x256.png</string>
+
 </resources>

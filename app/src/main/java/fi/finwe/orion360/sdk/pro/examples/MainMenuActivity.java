@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import fi.finwe.log.Logger;
-import fi.finwe.orion360.v3.Hello.R;
 
 public class MainMenuActivity extends ListActivity {
 	// Logging tag, ready to be copy-pasted into any other class.
@@ -35,7 +34,7 @@ public class MainMenuActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_mainmenu);
+		setContentView(R.layout.activity_main_menu);
 		
 		PackageInfo packageInfo = getPackageManager().getPackageArchiveInfo(getPackageCodePath(), PackageManager.GET_ACTIVITIES);
 		for (ActivityInfo activityInfo : packageInfo.activities) {
@@ -65,7 +64,7 @@ public class MainMenuActivity extends ListActivity {
 			R.id.textview_activity_name
 		};
 		
-		mAdapter = new SimpleAdapter(this, mActivityDataList, R.layout.layout_mainmenu_row, rowNames, cellResIds);
+		mAdapter = new SimpleAdapter(this, mActivityDataList, R.layout.list_main_menu_row, rowNames, cellResIds);
         setListAdapter(mAdapter);
 
 	}
@@ -81,8 +80,7 @@ public class MainMenuActivity extends ListActivity {
 		}
 	}
 	
-	static {
-		System.loadLibrary("helloorion-v3");
-		System.loadLibrary("orion360");
-	}
+//	static {
+//		System.loadLibrary("orion360");
+//	}
 }

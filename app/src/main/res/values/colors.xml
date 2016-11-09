@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Color definitions -->
-    <!-- ================= -->
-    
-    <color name="pure_black">#FF000000</color>
+
+    <!-- Theme colors -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- Color definitions by name -->
+    <color name="black_overlay">#66000000</color>
     <color name="pure_white">#FFFFFFFF</color>
+
+    <!-- Custom Controls -->
+    <color name="controller_background">@color/black_overlay</color>
+    <color name="controller_position_label">@color/pure_white</color>
+    <color name="controller_duration_label">@color/pure_white</color>
+
+    <color name="pure_black">#FF000000</color>
     <color name="pure_transparent">#00000000</color>
     <color name="pure_red">#FFFF0000</color>
-    <color name="black_overlay">#66000000</color>
     <color name="light_gray">#FF999999</color>
     <color name="dark_gray">#FF333333</color>
     <color name="black_85pc_opacity">#D8000000</color>
     <color name="white_30pc_opacity">#4DFFFFFF</color>
-    
-    <!-- Color references -->
-    <!-- ================ -->
-    
     <color name="heatmap_gradient_0">#00FFFFFF</color>
     <color name="heatmap_gradient_1">#6500ffff</color>
     <color name="heatmap_gradient_2">#86ffb300</color>
     <color name="heatmap_gradient_3">#ffff0000</color>
-    
-	<!-- Control panel -->
-    <color name="controller_background">@color/black_85pc_opacity</color>
-    <color name="controller_position_label">@color/pure_white</color>
-    <color name="controller_duration_label">@color/pure_white</color>    
     <color name="controller_remaining_label">@color/pure_white</color>
+
 </resources>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!-- This is the view where 360 video will show up. -->
+    <fi.finwe.orion360.v3.OrionView
+        android:id="@+id/orion_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- This is a buffering indicator view on top of the video. -->
+    <ProgressBar
+        android:id="@+id/buffering_indicator"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- This is a buffering indicator view on top of the video, for VR mode. -->
+    <LinearLayout
+        android:id="@+id/buffering_indicator_vr"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" >
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".5">
+
+            <ProgressBar
+                android:id="@+id/buffering_indicator_vr_left_eye"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".5">
+
+            <ProgressBar
+                android:id="@+id/buffering_indicator_vr_right_eye"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <!-- This is a 'playback started' indicator image. -->
+    <ImageView
+        android:id="@+id/play_overlay"
+        android:layout_width="@dimen/player_controls_play_overlay_width"
+        android:layout_height="@dimen/player_controls_play_overlay_height"
+        android:layout_gravity="center"
+        android:contentDescription="@string/player_controls_play_overlay_desc"
+        android:src="@drawable/play_overlay"
+        android:visibility="gone" />
+
+    <!-- This is a 'playback paused' indicator image. -->
+    <ImageView
+        android:id="@+id/pause_overlay"
+        android:layout_width="@dimen/player_controls_pause_overlay_width"
+        android:layout_height="@dimen/player_controls_pause_overlay_height"
+        android:layout_gravity="center"
+        android:contentDescription="@string/player_controls_pause_overlay_desc"
+        android:src="@drawable/pause_overlay"
+        android:visibility="gone" />
+
+</FrameLayout>

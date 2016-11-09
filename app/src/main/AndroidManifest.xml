@@ -1,97 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fi.finwe.orion360.v3.Hello"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    package="fi.finwe.orion360.sdk.pro.examples">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- For streaming videos from the network. -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- For playing videos from local storage / memory card. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- For copying test content to local storage / memory card, saving screenshots. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- For accessing device camera (camera example). -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
-    
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="23" />
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher_orion_3_0_gold"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        
+
+        <!-- Main menu. -->
         <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.MainMenuActivity"
-             >
+            android:name=".MainMenuActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-            
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.MinimalActivity"
+
+        <!-- Examples: -->
+
+        <activity
+            android:name=".MinimalActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.audio.FB360TBEActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".audio.FB360TBEActivity"
             android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
             android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.camera.CameraActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".camera.CameraActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.source.SourceActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".source.SourceActivity"
             android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
             android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.sharedvar.SharedVariableActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".sharedvar.SharedVariableActivity"
             android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
             android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.sprite.SpriteActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".sprite.SpriteActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.polygon.PolygonActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".polygon.PolygonActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.keyboard.KeyboardActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".keyboard.KeyboardActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.vr3d.VR3DActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".vr3d.VR3DActivity"
             android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
             android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
-        
-        <activity 
-            android:name="fi.finwe.orion360.sdk.pro.examples.widget.SelectablePointerIconActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".widget.SelectablePointerIconActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity>
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+
+        <!-- For playing videos from an (optional) expansion package (.obb) -->
+        <provider
+            android:name=".ExpansionContentProvider"
+            android:authorities="fi.finwe.orion360.sdk.pro.examples.ExpansionContentProvider"
+            android:exported="false"
+            android:multiprocess="true">
+            <meta-data
+                android:name="mainVersion"
+                android:value="1000001" />
+            <meta-data
+                android:name="patchVersion"
+                android:value="1000001" />
+        </provider>
+
     </application>
 </manifest>

@@ -1,0 +1,11 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@android:id/background"
+        android:drawable="@drawable/progress_background">
+    </item>
+    <item android:id="@android:id/progress">
+        <clip android:drawable="@drawable/progress_progress" />
+    </item>
+
+</layer-list>

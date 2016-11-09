@@ -1,11 +1,11 @@
 <component name="libraryTable">
   <library name="orion360-sdk-pro-3.0.01">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/jars/libs/VrApi.jar!/" />
-      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/res" />
       <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/jars/classes.jar!/" />
       <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/jars/libs/exoplayer_1_4_2.jar!/" />
       <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/jars/libs/SystemUtils.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/res" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/fi.finwe.orion360/orion360-sdk-pro/3.0.01/jars/libs/VrApi.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
