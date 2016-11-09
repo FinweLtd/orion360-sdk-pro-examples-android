@@ -1,4 +1,4 @@
-package fi.finwe.orion360.sdk.pro.examples;
+package fi.finwe.orion360.sdk.pro.examples.common;
 
 import fi.finwe.orion360.v3.OrionContext;
 import fi.finwe.orion360.v3.OrionScene;

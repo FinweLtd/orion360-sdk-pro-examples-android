@@ -36,9 +36,15 @@
         </activity>
 
         <!-- Examples: -->
+        <activity
+            android:name=".minimal.TinyPlayer"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
 
         <activity
-            android:name=".MinimalActivity"
+            android:name=".common.MinimalActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"

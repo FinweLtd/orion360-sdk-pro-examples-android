@@ -1,4 +1,4 @@
-package fi.finwe.orion360.sdk.pro.examples;
+package fi.finwe.orion360.sdk.pro.examples.common;
 
 import android.graphics.Color;
 import android.os.Bundle;

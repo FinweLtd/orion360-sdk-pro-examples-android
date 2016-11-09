@@ -26,7 +26,7 @@ import fi.finwe.orion360.v3.controller.Clicker.ClickType;
 import fi.finwe.orion360.v3.controller.TouchDisplayClickListener;
 import fi.finwe.orion360.v3.controller.TouchWorldClickListener;
 import fi.finwe.orion360.v3.controller.TouchWorldClickListener.Listener;
-import fi.finwe.orion360.sdk.pro.examples.BaseScene;
+import fi.finwe.orion360.sdk.pro.examples.common.BaseScene;
 import fi.finwe.orion360.v3.item.OrionCamera;
 import fi.finwe.orion360.v3.item.OrionPolygon;
 import fi.finwe.orion360.v3.item.OrionPolygon.Face;
