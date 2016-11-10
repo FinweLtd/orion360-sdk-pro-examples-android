@@ -85,6 +85,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
+            android:name=".streaming.BufferingIndicator"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
             android:name=".audio.FB360TBEActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
