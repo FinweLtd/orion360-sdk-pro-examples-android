@@ -13,9 +13,14 @@ bin/
 gen/
 out/
 
+# User-specific stuff
+.idea/tasks.xml
+.idea/misc.xml
+
 # Gradle files
 .gradle/
 build/
+.idea/gradle.xml
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -35,6 +40,11 @@ captures/
 # Intellij
 *.iml
 .idea/workspace.xml
+.idea/libraries
 
 # Keystore files
 *.jks
+
+# Thumb files
+.DS_Store
+.idea/modules.xml
