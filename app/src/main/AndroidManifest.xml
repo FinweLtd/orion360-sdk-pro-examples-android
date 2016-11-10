@@ -37,12 +37,17 @@
 
         <!-- Examples: -->
         <activity
-            android:name=".minimal.TinyPlayer"
+            android:name=".minimal.MinimalVideoStreamPlayer"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-
+        <activity
+            android:name=".minimal.MinimalVideoDownloadPlayer"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
             android:name=".common.MinimalActivity"
             android:configChanges="orientation|screenSize"
