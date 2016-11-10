@@ -55,6 +55,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
+            android:name=".minimal.MinimalVideoControls"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
             android:name=".minimal.MinimalImageDownloadPlayer"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
@@ -66,9 +72,20 @@
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-
+        <activity
+            android:name=".minimal.MinimalVRVideoFilePlayer"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
             android:name=".common.MinimalActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".streaming.BufferingIndicator"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
