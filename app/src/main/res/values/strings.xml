@@ -1,6 +1,7 @@
 <resources>
     <!-- Application -->
     <string name="app_name">Orion Examples</string>
+    <string name="double_back_exit_notification">Please click BACK again to exit</string>
 
     <!-- Main menu -->
     <string name="main_menu_empty_list">No examples found</string>

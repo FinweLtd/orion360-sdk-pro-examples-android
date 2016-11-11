@@ -39,9 +39,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import fi.finwe.orion360.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.v3.SimpleOrionActivity;
 import fi.finwe.orion360.v3.source.OrionTexture;
 import fi.finwe.orion360.v3.source.OrionVideoTexture;
 

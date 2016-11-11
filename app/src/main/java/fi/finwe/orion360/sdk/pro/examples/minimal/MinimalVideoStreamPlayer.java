@@ -33,9 +33,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import fi.finwe.orion360.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.v3.SimpleOrionActivity;
 import fi.finwe.orion360.v3.source.OrionVideoTexture;
 
 /**
@@ -74,8 +74,9 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         // Set layout.
 		setContentView(R.layout.activity_video_player);
 
-        // Get buffering indicator.
+        // Get buffering indicator, and make it visible initially (buffering will be needed).
         mBufferingIndicator = (ProgressBar) findViewById(R.id.buffering_indicator);
+        mBufferingIndicator.setVisibility(View.VISIBLE);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);

@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ToggleButton;
 import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.OrionView;
+import fi.finwe.orion360.v3.view.OrionView;
 import fi.finwe.orion360.v3.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.v3.item.OrionCamera;

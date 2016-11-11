@@ -8,11 +8,11 @@ import fi.finwe.math.Vec3F;
 import fi.finwe.orion360.v3.OrionActivity;
 import fi.finwe.orion360.v3.OrionContext;
 import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.OrionView;
+import fi.finwe.orion360.v3.view.OrionView;
 import fi.finwe.orion360.v3.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.animator.TimedFloatAnimator;
-import fi.finwe.orion360.v3.animator.TimedFloatAnimator.WrappingMode;
+import fi.finwe.orion360.v3.variable.TimedVariable;
+import fi.finwe.orion360.v3.variable.TimedVariable.WrappingMode;
 import fi.finwe.orion360.v3.controllable.DisplayClickable;
 import fi.finwe.orion360.v3.controller.Clicker.ClickType;
 import fi.finwe.orion360.v3.controller.TouchDisplayClickListener;
@@ -40,9 +40,9 @@ public class SharedVariableActivity extends OrionActivity {
 	
 	protected OrionSprite			mSprite;
 	
-	protected TimedFloatAnimator 	mAlphaAnimator;
+	protected TimedVariable 	mAlphaAnimator;
 	
-	protected TimedFloatAnimator	mScaleAnimator;
+	protected TimedVariable	mScaleAnimator;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,44 +95,44 @@ public class SharedVariableActivity extends OrionActivity {
 		mSprite.setWorldTranslation(new Vec3F(0,0,-0.8f));
 		mScene.bindSceneItem(mSprite);
 		
-		mAlphaAnimator = TimedFloatAnimator.fromRange(0.0f, 1.0f, TimedFloatAnimator.Function.LINEAR);
-		mAlphaAnimator.setDurationMs(2000);
-		mAlphaAnimator.setListener(mAnimatorListener);
-		mPanorama2.bindSharedVariable(OrionSceneItem.VAR_FLOAT1_AMP_ALPHA, mAlphaAnimator);
-		
-		mScaleAnimator = TimedFloatAnimator.fromCoeffs(0.3f, 0.1f, TimedFloatAnimator.Function.SIN_360);
-		mScaleAnimator.setInputRange(0.25f, 0.75f);
-		mScaleAnimator.setDurationMs(2000);
-		mScaleAnimator.setWrappingMode(WrappingMode.REPEAT);
-		mScaleAnimator.animateFromCurrentPhase(true);
-		mSprite.bindSharedVariable(OrionSceneItem.VAR_FLOAT1_AMP_SCALE, mScaleAnimator);
-		
-		TouchDisplayClickListener displayClickListener = new TouchDisplayClickListener();
-		displayClickListener.bindClickable(null, new Listener() {
-			boolean positive = true;
-			@Override
-			public void onDisplayClick(DisplayClickable clickable, Vec2F displayCoords) {
-				Logger.logD(TAG, "Animating to phase: " + (positive ? "1.0" : "0.0"));
-				mAlphaAnimator.animateFromCurrentPhase(positive);
-				positive = !positive;
-			}
-			public void onDisplayDoubleClick(DisplayClickable clickable, Vec2F displayCoords) {
-				float phase = (float)Math.random();
-				Logger.logD(TAG, "Animating to phase: " + phase);
-				mAlphaAnimator.animateToPhase(phase);
-			}
-			public void onDisplayLongClick(DisplayClickable clickable, Vec2F displayCoords) { }
-		});
-		mScene.bindController(displayClickListener);
+//		mAlphaAnimator = TimedVariable.fromRange(0.0f, 1.0f, TimedFloatAnimator.Function.LINEAR);
+//		mAlphaAnimator.setDurationMs(2000);
+//		mAlphaAnimator.setListener(mAnimatorListener);
+//		mPanorama2.bindSharedVariable(OrionSceneItem.VAR_FLOAT1_AMP_ALPHA, mAlphaAnimator);
+//
+//		mScaleAnimator = TimedFloatAnimator.fromCoeffs(0.3f, 0.1f, TimedFloatAnimator.Function.SIN_360);
+//		mScaleAnimator.setInputRange(0.25f, 0.75f);
+//		mScaleAnimator.setDurationMs(2000);
+//		mScaleAnimator.setWrappingMode(WrappingMode.REPEAT);
+//		mScaleAnimator.animateFromCurrentPhase(true);
+//		mSprite.bindSharedVariable(OrionSceneItem.VAR_FLOAT1_AMP_SCALE, mScaleAnimator);
+//
+//		TouchDisplayClickListener displayClickListener = new TouchDisplayClickListener();
+//		displayClickListener.bindClickable(null, new Listener() {
+//			boolean positive = true;
+//			@Override
+//			public void onDisplayClick(DisplayClickable clickable, Vec2F displayCoords) {
+//				Logger.logD(TAG, "Animating to phase: " + (positive ? "1.0" : "0.0"));
+//				mAlphaAnimator.animateFromCurrentPhase(positive);
+//				positive = !positive;
+//			}
+//			public void onDisplayDoubleClick(DisplayClickable clickable, Vec2F displayCoords) {
+//				float phase = (float)Math.random();
+//				Logger.logD(TAG, "Animating to phase: " + phase);
+//				mAlphaAnimator.animateToPhase(phase);
+//			}
+//			public void onDisplayLongClick(DisplayClickable clickable, Vec2F displayCoords) { }
+//		});
+//		mScene.bindController(displayClickListener);
 	}
 	
-	private TimedFloatAnimator.Listener mAnimatorListener = new TimedFloatAnimator.Listener() {
-		@Override
-		public void onAnimationFinished(float phase, float value) {
-			// React to animation getting finished here
-			Logger.logD(TAG, "Animation finished. Phase = " + phase + ", value = " + value);
-		}
-	};
+//	private TimedFloatAnimator.Listener mAnimatorListener = new TimedFloatAnimator.Listener() {
+//		@Override
+//		public void onAnimationFinished(float phase, float value) {
+//			// React to animation getting finished here
+//			Logger.logD(TAG, "Animation finished. Phase = " + phase + ", value = " + value);
+//		}
+//	};
 	
 
 }

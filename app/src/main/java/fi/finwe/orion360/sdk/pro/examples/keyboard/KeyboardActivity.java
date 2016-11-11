@@ -17,7 +17,7 @@ import fi.finwe.math.Vec2F;
 import fi.finwe.math.Vec3F;
 import fi.finwe.orion360.v3.OrionActivity;
 import fi.finwe.orion360.v3.OrionContext;
-import fi.finwe.orion360.v3.OrionView;
+import fi.finwe.orion360.v3.view.OrionView;
 import fi.finwe.orion360.v3.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.v3.controllable.DisplayClickable;

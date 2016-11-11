@@ -40,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -47,8 +48,10 @@ import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -60,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.zip.CRC32;
@@ -191,6 +195,41 @@ public class MainMenu extends ListActivity {
 		private static final long serialVersionUID = 1L;
 	}
 
+	/** Store activity data structures grouped by their last package names. */
+	private HashMap<String, List<ActivityData>> mGroupedActivities;
+
+    /** Adapter for listing activity groups. */
+    private ArrayAdapter<String> mGroupAdapter;
+
+    /** Adapter for listing activities themselves. */
+    private SimpleAdapter mItemAdapter;
+
+    /** Text view for title text. */
+    private TextView mMainMenuTitleText;
+
+    /** Time limit for counting two back presses (in ms). */
+    protected static final int DOUBLE_BACK_TO_EXIT_TIME_WINDOW = 2000;
+
+    /** Flag for enabling double back to exit -feature. */
+    protected boolean mDoubleBackToExitEnabled = true;
+
+    /** Flag for counting two back presses for exit. */
+    protected boolean mDoubleBackToExitPressedOnce = false;
+
+    /** Toast for asking another back press. */
+    protected Toast mDoubleBackToExitNotification = null;
+
+    /** Handler for clearing back press counter. */
+    protected Handler mDoubleBackToExitHandler = null;
+
+    /** Runnable that actually resets back press counter (flag). */
+    private Runnable mDoubleBackToExitCounterReset = new Runnable() {
+        @Override
+        public void run() {
+            mDoubleBackToExitPressedOnce = false;
+        }
+    };
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -198,6 +237,9 @@ public class MainMenu extends ListActivity {
 
 		// Set layout.
 		setContentView(R.layout.activity_main_menu);
+
+        // Get title text view.
+        mMainMenuTitleText = (TextView) findViewById(R.id.main_menu_title);
 
 		// Initialize application's private paths (we need a Context to do these).
 		PRIVATE_R_RAW_FILES_PATH = "android.resource://" + getPackageName() + "/raw/";
@@ -218,32 +260,118 @@ public class MainMenu extends ListActivity {
 		// Find other activities in our package.
 		List<ActivityData> activityDataList = findOtherActivities();
 
-		// Setup an adapter for listing the activities in the UI.
-		String [] rowNames = new String [] { KEY_ACTIVITY_NAME };
-		int [] cellResIds = new int [] { R.id.textview_activity_name };
-		SimpleAdapter adapter = new SimpleAdapter(this, activityDataList,
-				R.layout.list_main_menu_row, rowNames, cellResIds);
-		setListAdapter(adapter);
-	}
+        // Group the activities based on last package name.
+        mGroupedActivities = createActivityGroups(activityDataList);
 
-	@Override
+        // Setup an adapter for listing the activity groups in the UI.
+        ArrayList<String> groupNames = new ArrayList<String>(mGroupedActivities.keySet());
+        Collections.sort(groupNames);
+        mGroupAdapter = new ArrayAdapter<String>(this,
+                R.layout.list_main_menu_row, R.id.textview_activity_name, groupNames);
+
+        // Show groups.
+        setListAdapter(mGroupAdapter);
+
+        // Double back press to exit.
+        mDoubleBackToExitPressedOnce = false;
+        mDoubleBackToExitNotification = Toast.makeText(this, getResources()
+                        .getString(R.string.double_back_exit_notification),
+                Toast.LENGTH_SHORT); // Disregard warning, not supposed to show the toast yet!
+        mDoubleBackToExitHandler = new Handler();
+    }
+
+    @Override
+    protected void onPause() {
+        if (null != mDoubleBackToExitNotification) {
+            mDoubleBackToExitNotification.cancel();
+        }
+        if (null != mDoubleBackToExitHandler) {
+            mDoubleBackToExitHandler.removeCallbacks(
+                    mDoubleBackToExitCounterReset);
+        }
+        mDoubleBackToExitPressedOnce = false;
+        super.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDoubleBackToExitEnabled) {
+
+            // Handle double back to exit -feature.
+            if (!mDoubleBackToExitPressedOnce) {
+
+                if (this.getListAdapter() != mGroupAdapter) {
+
+                    // Return to groups view.
+                    setListAdapter(mGroupAdapter);
+                    mMainMenuTitleText.setText(R.string.app_name);
+
+                } else {
+
+                    // First press observed.
+                    mDoubleBackToExitPressedOnce = true;
+
+                    // Notify user that another press is needed.
+                    mDoubleBackToExitNotification.show();
+
+                    // Cancel first press if second press is not observed in time.
+                    mDoubleBackToExitHandler.postDelayed(
+                            mDoubleBackToExitCounterReset,
+                            DOUBLE_BACK_TO_EXIT_TIME_WINDOW);
+
+                }
+
+            } else {
+
+                // Second press came in time. Cancel notification and handler.
+                mDoubleBackToExitNotification.cancel();
+                mDoubleBackToExitHandler
+                        .removeCallbacks(mDoubleBackToExitCounterReset);
+
+                // Let the app exit now.
+                super.onBackPressed();
+            }
+        } else {
+
+            // Let the app exit now.
+            super.onBackPressed();
+        }
+    }
+
+    @Override
 	public void onListItemClick(ListView listView, View view, int position, long id) {
 		view.setSelected(true);
 
-		// An activity was selected from the UI, try to start it now.
-		ActivityData activityData = (ActivityData) listView.getItemAtPosition(position);
-		try {
-			Intent intent = new Intent(this, Class.forName(
-					activityData.get(KEY_ACTIVITY_FULL_NAME)));
-			startActivity(intent);
-		} catch (ClassNotFoundException e) {
-			Log.e(TAG, "Failed to start selected activity", e);
-		}
+        if (listView.getAdapter() == mGroupAdapter) {
+
+            // An activity group was selected from the UI, try to show grouped activities.
+            String groupName = (String) listView.getItemAtPosition(position);
+            List<ActivityData> activities = mGroupedActivities.get(groupName);
+            String [] rowNames = new String [] { KEY_ACTIVITY_NAME };
+            int [] cellResIds = new int [] { R.id.textview_activity_name };
+            mItemAdapter = new SimpleAdapter(this, activities,
+                    R.layout.list_main_menu_row, rowNames, cellResIds);
+            setListAdapter(mItemAdapter);
+            mMainMenuTitleText.setText(groupName);
+
+        } else if (listView.getAdapter() == mItemAdapter) {
+
+            // An activity was selected from the UI, try to start it now.
+            ActivityData activityData = (ActivityData) listView.getItemAtPosition(position);
+            try {
+                Intent intent = new Intent(this, Class.forName(
+                        activityData.get(KEY_ACTIVITY_FULL_NAME)));
+                startActivity(intent);
+            } catch (ClassNotFoundException e) {
+                Log.e(TAG, "Failed to start selected activity", e);
+            }
+
+        }
 	}
 
-	/**
-	 * Check if write permission is granted, and if not, request it, and then copy the content.
-	 */
+    /**
+     * Check if write permission is granted, and if not, request it, and then copy the content.
+     */
 	private void checkWritePermissionAndCopyContent() {
 
 		// Check permission status.
@@ -667,4 +795,33 @@ public class MainMenu extends ListActivity {
 
 		return activityDataList;
 	}
+
+	/**
+	 * Group activity data structures by their last package names.
+	 *
+	 * @param data The key-value data structure of each activity to be grouped.
+	 * @return A map containing grouped activity data structures.
+     */
+	private HashMap<String, List<ActivityData>> createActivityGroups(List<ActivityData> data) {
+		HashMap<String, List<ActivityData>> grouped = new HashMap<>();
+
+		for (ActivityData activityData : data) {
+            String fullName = activityData.get(KEY_ACTIVITY_FULL_NAME);
+			String groupName = fullName.substring(
+                    (fullName.substring(0, fullName.lastIndexOf('.'))).lastIndexOf('.') + 1,
+                    fullName.lastIndexOf('.'));
+            String GroupName = groupName.substring(0, 1).toUpperCase() + groupName.substring(1);
+            if (grouped.containsKey(GroupName)) {
+                List<ActivityData> oldGroup = grouped.get(GroupName);
+                oldGroup.add(activityData);
+            } else {
+                List<ActivityData> newGroup = new ArrayList<>();
+                newGroup.add(activityData);
+                grouped.put(GroupName, newGroup);
+            }
+		}
+
+		return grouped;
+	}
+
 }

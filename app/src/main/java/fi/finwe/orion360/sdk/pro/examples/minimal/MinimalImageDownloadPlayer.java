@@ -45,15 +45,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import fi.finwe.orion360.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.v3.SimpleOrionActivity;
 
 import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
 import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_INTERNAL_FILES_PATH;
 
 /**
  * An example of a minimal Orion360 image player, for downloading an image file before playback.
+ * <p>
+ * This example uses custom code for downloading a file. See MinimalVideoDownloadPlayer for an
+ * example of using Android's DownloadManager service instead (recommended).
  * <p>
  * Features:
  * <ul>

@@ -29,32 +29,31 @@
 
 package fi.finwe.orion360.sdk.pro.examples.minimal;
 
-import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.util.Pair;
-import android.util.Log;
 import android.widget.Toast;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import fi.finwe.orion360.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.v3.SimpleOrionActivity;
 
-import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
-import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_INTERNAL_FILES_PATH;
 
 /**
  * An example of a minimal Orion360 video player, for downloading a video file before playback.
+ * <p>
+ * This example uses Android's DownloadManager service for downloading a file (recommended).
+ * See MinimalImageDownloadPlayer for an example of using custom code instead.
  * <p>
  * Notice that saving a copy of a video file while streaming it is not possible with Android
  * MediaPlayer as a video backend. To obtain a local copy of a video file that resides in the
@@ -80,15 +79,14 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
     /** Tag for logging. */
     public static final String TAG = MinimalVideoDownloadPlayer.class.getSimpleName();
 
-    /** Full path to a video file to be played. */
-    private String mVideoPath;
+    /** Download manager service. */
+    private DownloadManager mDownloadManager;
 
-    /** A class for creating a tuple from a URL and a file path. */
-    private class UrlFilePair extends Pair<String, String> {
-        UrlFilePair(String url, String filePath) {
-            super(url, filePath);
-        }
-    }
+    /** Download reference ID. */
+    private long mDownloadId;
+
+    /** Timer for updating download progress periodically on screen. */
+    private Timer mProgressTimer = new Timer();
 
 
 	@Override
@@ -103,13 +101,19 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         // Set layout.
 		setContentView(R.layout.activity_video_player);
 
+        // Get download manager service.
+        mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
         // Download the video file, then play it. Notice that this link points to a
         // 4k video file, older/mid-range devices may not be able to play it!
         // In case of problems, try MainMenu.TEST_VIDEO_URI_1920x960 instead.
-        downloadAndPlay(MainMenu.TEST_VIDEO_URI_3840x1920);
+        downloadAndPlay(
+                //MainMenu.TEST_VIDEO_URI_1920x960
+                MainMenu.TEST_VIDEO_URI_3840x1920
+        );
 
         // Notice that downloading video files over a network connection requires INTERNET
         // permission to be specified in the manifest file.
@@ -127,127 +131,91 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
      */
     public void downloadAndPlay(String videoUrl) {
 
-        // Save the file to external media, if it is currently mounted.
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            mVideoPath = PRIVATE_EXTERNAL_FILES_PATH;
-        } else {
-            mVideoPath = PRIVATE_INTERNAL_FILES_PATH;
-        }
-
         // Create a name for the video file.
         String name = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
-        mVideoPath += name;
 
         // Create a progress bar to be shown while downloading the file.
-        ProgressDialog progress = new ProgressDialog(this);
+        final ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle(getString(R.string.player_file_download_title));
         progress.setMessage(String.format(getString(R.string.player_file_download_message), name));
         progress.setMax(100);
         progress.setIndeterminate(false);
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progress.show();
 
-        // Create a background task for downloading the file (will take a moment).
-        new DownloadFileTask(progress).execute(new UrlFilePair(videoUrl, mVideoPath));
-    }
+        // Create and register a receiver for handling a completed download.
+        final BroadcastReceiver receiver = new BroadcastReceiver() {
 
-    /**
-     * Background task for downloading files.
-     */
-    private class DownloadFileTask extends AsyncTask<UrlFilePair, Integer, Integer> {
+            @Override
+            public void onReceive(Context context, Intent intent) {
 
-        /** Progress dialog to be shown while working. */
-        ProgressDialog mProgress;
+                if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
 
-        /**
-         * Constructor.
-         *
-         * @param progress The progress dialog to be used.
-         */
-        DownloadFileTask(ProgressDialog progress) {
-            mProgress = progress;
-        }
+                    DownloadManager.Query query = new DownloadManager.Query();
+                    query.setFilterById(mDownloadId);
+                    Cursor c = mDownloadManager.query(query);
+                    if (c.moveToFirst()) {
 
-        @Override
-        public void onPreExecute() {
-            mProgress.show();
-        }
+                        int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                        if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
 
-        @Override
-        protected Integer doInBackground(UrlFilePair... files) {
+                            mProgressTimer.cancel();
+                            progress.cancel();
+                            unregisterReceiver(this);
 
-            // Download files over the network to the local file system,
-            // if not already there.
-            int downloadFileCount = 0;
-            for (UrlFilePair filePair : files) {
-                String downloadUrl = filePair.first;
-                String outputFile = filePair.second;
+                            Toast.makeText(MinimalVideoDownloadPlayer.this,
+                                    String.format(getString(
+                                            R.string.player_file_download_completed), 1),
+                                    Toast.LENGTH_LONG).show();
 
-                if (!new File(outputFile).exists()) {
-                    DataInputStream in = null;
-                    DataOutputStream out = null;
+                            String uriString = c.getString(c.getColumnIndex(
+                                    DownloadManager.COLUMN_LOCAL_URI));
+                            setContentUri(uriString); // Play downloaded video file.
 
-                    try {
-                        URL url = new URL(downloadUrl);
-                        URLConnection connection = url.openConnection();
-                        int contentLength = connection.getContentLength();
-                        in = new DataInputStream(url.openStream());
-                        out = new DataOutputStream(new FileOutputStream(outputFile));
-
-                        byte [] buffer = new byte[1024];
-                        int read;
-                        int total = 0;
-                        while (( read = in.read(buffer) ) != -1 ) {
-                            out.write(buffer, 0, read);
-                            out.flush();
-                            total += read;
-                            publishProgress((int) ((total / (float) contentLength) * 100));
-
-                            // Escape early if cancel() is called.
-                            if (isCancelled()) break;
-                        }
-                        downloadFileCount++;
-
-                    } catch (Exception e) {
-                        Log.e(TAG, "Failed to download " + downloadUrl + " to " + outputFile, e);
-                    } finally {
-                        if (null != in) {
-                            try { in.close(); } catch (IOException e) { Log.e(TAG,
-                                    "Failed to close input stream."); }
-                        }
-                        if (null != out) {
-                            try { out.close(); } catch (IOException e) { Log.e(TAG,
-                                    "Failed to close output stream."); }
                         }
                     }
                 }
             }
+        };
+        registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
-            return downloadFileCount;
-        }
+        // Use download manager to download the file.
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(videoUrl));
+        request.setTitle(getResources().getString(R.string.app_name));
+        request.setDescription(videoUrl);
+        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS,
+                videoUrl.substring(videoUrl.lastIndexOf('/') + 1));
+        mDownloadId = mDownloadManager.enqueue(request);
 
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-            mProgress.setProgress(progress[0]);
-        }
+        // Create a background task for updating download progress.
+        mProgressTimer.schedule(new TimerTask() {
 
-        @Override
-        protected void onPostExecute(Integer result) {
-            mProgress.dismiss();
+            @Override
+            public void run() {
 
-            // Notify downloaded files.
-            if (result > 0) {
-                Toast.makeText(MinimalVideoDownloadPlayer.this,
-                        String.format(getString(R.string.player_file_download_completed), result),
-                        Toast.LENGTH_LONG).show();
+                DownloadManager.Query q = new DownloadManager.Query();
+                q.setFilterById(mDownloadId);
+                Cursor cursor = mDownloadManager.query(q);
+                cursor.moveToFirst();
+                int downloaded = cursor.getInt(cursor.getColumnIndex(
+                        DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                int total = cursor.getInt(cursor.getColumnIndex(
+                        DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                cursor.close();
+                final int percent = (int) (100.0 * downloaded / total);
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        progress.setProgress(percent);
+                    }
+
+                });
+
             }
 
-            // Play the downloaded video, if the file exists.
-            if (new File(mVideoPath).exists()) {
+        }, 500, 500);
 
-                setContentUri(mVideoPath);
-
-            }
-        }
     }
 
 }
