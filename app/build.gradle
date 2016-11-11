@@ -21,6 +21,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:24.0.0'
     compile 'com.android.support:appcompat-v7:24.1.1'
     compile files('libs/google-play-zip-file_lib.jar')
     compile 'fi.finwe.orion360:orion360-sdk-pro:3.0.02-debug' // From Finwe maven repo at Bintray
