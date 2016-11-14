@@ -84,7 +84,7 @@ Next, connect an Android device to your computer via a USB cable, and then compi
 
 > While 360 photo/video apps can in theory be developed using an emulator, real Android hardware is highly recommended. The Android emulator does not support video playback. Moreover, to work with sensor fusion, touch control and VR mode, the developer frequently needs to run the app on target device.
 
-When the app starts on your device, a menu of examples similar to the image below will be shown. Tap any example from the list to run it, and return to the examples menu by tapping the *Back* button from your device's Navigation Bar. In order to really understand what each example is about, you should always read the source code and comments.
+When the app starts on your device, a menu of topics similar to the image below will be shown. Tap any topic to move to its submenu that contains one or more examples. Tap an example from the list to run it, and return to the examples menu by tapping the *Back* button from your device's Navigation Bar, and again to return to main menu (topics). In order to really understand what each example is about, you should always read the source code and comments.
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263452/66561464-aa6f-11e6-898c-f6329015dad6.png)
 
