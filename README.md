@@ -13,7 +13,7 @@ We encourage you to begin studying from the _minimal_ examples. These are short 
 
 In order to make studying the examples as easy as possible, each example has been implemented as an individual activity with very few dependencies outside of its own source code file - everything you need for a particular feature can be found from one place. To keep the examples short and easy to grasp, different topics are covered in separate examples. You don't need to go through them in order; just keep building your own app by adding features one-by-one based on your needs and priorities.
 
-The aim of the examples is to show how the most common features can be implemented easily with Orion360, but also to help you understand _why_ something is done. Therefore, the examples are thoroughly commented and also briefly explained in this README. Notice that the PRO version of the SDK contains a number of features not available in the Basic version. Hence, also the amount of examples is greater, and they have been categorized under topics to keep everything organized.
+The aim of the examples is to show how the most common features can be implemented easily with Orion360, but also to help you understand _why_ something is done. Therefore, the examples are thoroughly commented and also briefly explained in this README. Notice that the Pro version of the SDK contains a number of features not available in the Basic version. Hence, also the amount of examples is greater, and they have been categorized under topics to keep everything organized.
 
 Finally, all the examples are collected under a single application that can be compiled from this project, installed and run on your own Android device. This way you can try out the reference implementation with ease, and also experiment by modifying the examples. Notice that you are allowed to utilize the example code and resources in your own app project as described in the copyright section of the source code files.
 
@@ -25,6 +25,7 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
+
 5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
 6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
 7. [Example: Minimal Video File Player](#example-minimal-video-file-player)
