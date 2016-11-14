@@ -69,8 +69,7 @@ import fi.finwe.orion360.v3.source.OrionVideoTexture;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class MinimalVideoControls extends SimpleOrionActivity implements
-        MediaController.MediaPlayerControl {
+public class MinimalVideoControls extends SimpleOrionActivity {
 
     /** Media controller. */
     private MediaController mMediaController;
@@ -94,17 +93,17 @@ public class MinimalVideoControls extends SimpleOrionActivity implements
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
+        // Initialize Orion360 video view with a URI to an .mp4 video file.
+        setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+
         // Create a media controller.
         mMediaController = new MediaController(this);
 
-        // Set video view as media player; media controller interacts with it.
-        mMediaController.setMediaPlayer(this);
+        // Set Orion360 video texture as media player; media controller interacts with it.
+        mMediaController.setMediaPlayer((OrionVideoTexture)getOrionTexture());
 
-        // Set video view as anchor view; media controller positions itself on screen on top of it.
+        // Set Orion360 view as anchor view; media controller positions itself on top of it.
         mMediaController.setAnchorView(getOrionView());
-
-        // Initialize Orion360 video view with a URI to an .mp4 video file.
-        setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Propagate all touch events from the Orion view to a gesture detector.
         getOrionView().setOnTouchListener(new View.OnTouchListener() {
@@ -144,65 +143,4 @@ public class MinimalVideoControls extends SimpleOrionActivity implements
 
     }
 
-    @Override
-    public void start() {
-        ((OrionVideoTexture)getOrionTexture()).play();
-    }
-
-    @Override
-    public void pause() {
-        ((OrionVideoTexture)getOrionTexture()).pause();
-    }
-
-    @Override
-    public int getDuration() {
-        //TODO how to do this?
-        return 0;
-    }
-
-    @Override
-    public int getCurrentPosition() {
-        return (int)((OrionVideoTexture)getOrionTexture()).getCurrentPosition();
-    }
-
-    @Override
-    public void seekTo(int i) {
-        ((OrionVideoTexture)getOrionTexture()).seekTo(i);
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return (((OrionVideoTexture)getOrionTexture()).getActualPlaybackState()
-                == OrionTexture.PlaybackState.PLAYING);
-    }
-
-    @Override
-    public int getBufferPercentage() {
-        //TODO how to do this?
-        return 0;
-    }
-
-    @Override
-    public boolean canPause() {
-        //TODO these depend on content, consider live streams.
-        return true;
-    }
-
-    @Override
-    public boolean canSeekBackward() {
-        //TODO these depend on content, consider live streams.
-        return true;
-    }
-
-    @Override
-    public boolean canSeekForward() {
-        //TODO these depend on content, consider live streams.
-        return true;
-    }
-
-    @Override
-    public int getAudioSessionId() {
-        // TODO how to do this?
-        return 0;
-    }
 }
