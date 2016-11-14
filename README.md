@@ -55,9 +55,9 @@ Basic Android software development skills are enough for understanding, modifyin
 As a first step, you should install Android Studio IDE (recommended version is 2.2 or newer):
 https://developer.android.com/studio/install.html
 
-Then, using the SDK Manager tool that comes with the IDE, install one or more Android SDKs. Notice that for Orion360 SDK Basic the minimum is **Android API level 14: Android 4.0 IceCreamSandwitch**.
+Then, using the SDK Manager tool that comes with the IDE, install one or more Android SDKs. Notice that for Orion360 SDK Pro the minimum is **Android API level 19: Android 4.4 KitKat**.
 
-> If you haven't already studied the Hello World project for Orion360 SDK (Basic), you should do that first and then continue with this example project. https://github.com/FinweLtd/orion360-sdk-basic-hello-android
+> If you haven't already studied the Hello World project for Orion360 SDK (Pro), you should do that first and then continue with this example project. https://github.com/FinweLtd/orion360-sdk-pro-hello-android
 
 Cloning and Running the Project
 -------------------------------
