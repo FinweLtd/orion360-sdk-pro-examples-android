@@ -64,7 +64,7 @@ Cloning and Running the Project
 
 To clone the project from GitHub, start Android Studio, select *Check out project from Version Control* and *Git* from the popup dialog.
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/18541651/2264faaa-7b2f-11e6-9a21-75182dcf9666.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263277/863eb084-aa6e-11e6-9136-b7f4decc6556.png)
 
 Set repository URL, parent directory, and project directory.
 
@@ -72,21 +72,21 @@ Set repository URL, parent directory, and project directory.
 
 Hit *Clone* button to retrieve the repository contents to your local machine.
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/18541713/a98e6ebc-7b2f-11e6-8c89-fa32266131e1.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263303/adaf4bc4-aa6e-11e6-8282-5826b4035f76.png)
 
 Cloning the project will take a moment. Android Studio then asks if you want to open the project, answer *Yes*.
 
 When the project opens Android Studio performs Gradle sync that will take some time (please wait). After Gradle sync finishes, you can find the project files by opening the *Project* view on the left edge of the IDE window.
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/18541727/b5e46a72-7b2f-11e6-99df-3fe4ee471547.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263375/0d9c4bb8-aa6f-11e6-9356-fbca191643a8.png)
 
 Next, connect an Android device to your computer via a USB cable, and then compile the project and run the app on your device by simply clicking the green *Play* button in the top toolbar. This will take a moment.
 
 > While 360 photo/video apps can in theory be developed using an emulator, real Android hardware is highly recommended. The Android emulator does not support video playback. Moreover, to work with sensor fusion, touch control and VR mode, the developer frequently needs to run the app on target device.
 
-When the app starts on your device, a menu of examples similar to the image below will be shown. Tap any example from the list to run it, and return to the examples menu by tapping the *Back* button from your device's Navigation Bar. In order to really understand what each example is about, you should always read the source code and comments.
+When the app starts on your device, a menu of topics similar to the image below will be shown. Tap any topic to move to its submenu that contains one or more examples. Tap an example from the list to run it, and return to the examples menu by tapping the *Back* button from your device's Navigation Bar, and again to return to main menu (topics). In order to really understand what each example is about, you should always read the source code and comments.
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034066/49117eb4-896a-11e6-8277-864ba36f9e1a.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263452/66561464-aa6f-11e6-898c-f6329015dad6.png)
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
