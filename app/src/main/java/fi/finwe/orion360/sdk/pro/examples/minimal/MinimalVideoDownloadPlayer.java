@@ -39,14 +39,18 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.v3.SimpleOrionActivity;
+
+import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
 
 
 /**
@@ -134,6 +138,14 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         // Create a name for the video file.
         String name = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
 
+        // Skip download, if file already exists.
+        String localFile = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS
+                + File.separator + name;
+        if (new File(localFile).exists()) {
+            setContentUri(localFile);
+            return;
+        }
+
         // Create a progress bar to be shown while downloading the file.
         final ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle(getString(R.string.player_file_download_title));
@@ -183,8 +195,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(videoUrl));
         request.setTitle(getResources().getString(R.string.app_name));
         request.setDescription(videoUrl);
-        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS,
-                videoUrl.substring(videoUrl.lastIndexOf('/') + 1));
+        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, name);
         mDownloadId = mDownloadManager.enqueue(request);
 
         // Create a background task for updating download progress.

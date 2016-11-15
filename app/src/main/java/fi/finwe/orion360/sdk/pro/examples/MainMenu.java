@@ -32,6 +32,7 @@ package fi.finwe.orion360.sdk.pro.examples;
 import android.Manifest;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -242,14 +243,17 @@ public class MainMenu extends ListActivity {
         mMainMenuTitleText = (TextView) findViewById(R.id.main_menu_title);
 
 		// Initialize application's private paths (we need a Context to do these).
-		PRIVATE_R_RAW_FILES_PATH = "android.resource://" + getPackageName() + "/raw/";
+		PRIVATE_R_RAW_FILES_PATH = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+				+ getPackageName() + "/raw/";
 		File filesDir = getFilesDir();
 		if (null != filesDir) {
-			PRIVATE_INTERNAL_FILES_PATH = filesDir.getAbsolutePath() + File.separator;
+			PRIVATE_INTERNAL_FILES_PATH = ContentResolver.SCHEME_FILE + "://"
+					+ filesDir.getAbsolutePath() + File.separator;
 		}
 		File externalFilesDir = getExternalFilesDir(null);
 		if (null != externalFilesDir) {
-			PRIVATE_EXTERNAL_FILES_PATH = externalFilesDir.getAbsolutePath() + File.separator;
+			PRIVATE_EXTERNAL_FILES_PATH = ContentResolver.SCHEME_FILE + "://"
+					+ externalFilesDir.getAbsolutePath() + File.separator;
 		}
 
 		// Copy test content in place to private and public dirs. Note: We need to check write
