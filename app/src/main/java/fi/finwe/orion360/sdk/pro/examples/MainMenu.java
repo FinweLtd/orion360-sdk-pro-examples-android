@@ -247,13 +247,11 @@ public class MainMenu extends ListActivity {
 				+ getPackageName() + "/raw/";
 		File filesDir = getFilesDir();
 		if (null != filesDir) {
-			PRIVATE_INTERNAL_FILES_PATH = ContentResolver.SCHEME_FILE + "://"
-					+ filesDir.getAbsolutePath() + File.separator;
+			PRIVATE_INTERNAL_FILES_PATH = filesDir.getAbsolutePath() + File.separator;
 		}
 		File externalFilesDir = getExternalFilesDir(null);
 		if (null != externalFilesDir) {
-			PRIVATE_EXTERNAL_FILES_PATH = ContentResolver.SCHEME_FILE + "://"
-					+ externalFilesDir.getAbsolutePath() + File.separator;
+			PRIVATE_EXTERNAL_FILES_PATH = externalFilesDir.getAbsolutePath() + File.separator;
 		}
 
 		// Copy test content in place to private and public dirs. Note: We need to check write

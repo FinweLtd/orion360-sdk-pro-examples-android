@@ -125,6 +125,7 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
         // Private raw resource folder allows playing content embedded to the app's own
         // installation package (.apk) (notice 100MB apk size limit in Google Play).
         // Use lowercase characters in filename, and access it without extension!
+        // NOTE: Playing images from R.raw is currently NOT supported!
         //image = PRIVATE_R_RAW_IMAGE_PATH;
 
         // Private internal folder is useful mainly when the app downloads an image file,
@@ -143,6 +144,7 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
 
         // Private expansion package allows playing content embedded to the app's
         // extra installation package (.obb) (up to 2 GB per package, max 2 packages).
+        // NOTE: Playing images from expansion package is currently NOT supported!
         //image = PRIVATE_EXPANSION_IMAGE_PATH;
 
         // Show the selected image file.

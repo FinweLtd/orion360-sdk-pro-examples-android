@@ -138,11 +138,11 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         // Create a name for the video file.
         String name = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
 
-        // Skip download, if file already exists.
-        String localFile = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS
+        // Skip download, if file already exists (remove file:// scheme before testing).
+        String localUri = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS
                 + File.separator + name;
-        if (new File(localFile).exists()) {
-            setContentUri(localFile);
+        if (new File(Uri.parse(localUri).getPath()).exists()) {
+            setContentUri(localUri);
             return;
         }
 
