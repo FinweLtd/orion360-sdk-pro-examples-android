@@ -39,7 +39,7 @@ import fi.finwe.orion360.v3.SimpleOrionActivity;
 import fi.finwe.orion360.v3.source.OrionVideoTexture;
 
 /**
- * An example of a minimal Orion360 video player, for streaming an MP4 video file over the network.
+ * An example of a minimal Orion360 video player, for streaming a HLS stream over the network.
  * <p>
  * Features:
  * <ul>
@@ -56,7 +56,7 @@ import fi.finwe.orion360.v3.source.OrionVideoTexture;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
+public class MinimalVideoAdaptiveStreamPlayer extends SimpleOrionActivity {
 
     /** Buffering indicator, to be shown while buffering video from the network. */
     private ProgressBar mBufferingIndicator;
@@ -81,9 +81,8 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
-        // Set a URI that points to an .mp4 video-on-demand stream in the network.
-        // Encode video with web/progressive setting enabled for best performance.
-        setContentUri(MainMenu.TEST_VIDEO_URI_1280x640);
+        // Set a URI that points to an .m3u8 adaptive HLS stream in the network.
+        setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
 
         // Notice that accessing video streams over a network connection requires INTERNET
         // permission to be specified in the manifest file.

@@ -100,7 +100,8 @@ public class MinimalVideoControls extends SimpleOrionActivity {
         mMediaController = new MediaController(this);
 
         // Set Orion360 video texture as media player; media controller interacts with it.
-        mMediaController.setMediaPlayer((OrionVideoTexture)getOrionTexture());
+        mMediaController.setMediaPlayer(
+                ((OrionVideoTexture)getOrionTexture()).getMediaPlayerControl());
 
         // Set Orion360 view as anchor view; media controller positions itself on top of it.
         mMediaController.setAnchorView(getOrionView());
