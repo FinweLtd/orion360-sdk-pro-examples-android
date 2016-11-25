@@ -50,7 +50,6 @@ import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 
 import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
-import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_INTERNAL_FILES_PATH;
 
 /**
  * An example of a minimal Orion360 video player, for downloading a video file before playback.
