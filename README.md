@@ -27,10 +27,11 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
+5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
 
 TODO
 ----
-5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
+
 6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
 7. [Example: Minimal Video File Player](#example-minimal-video-file-player)
 8. [Example: Minimal Video Controls](#example-minimal-video-controls)
@@ -95,22 +96,22 @@ When the app starts on your device, a menu of topics similar to the image below 
 Example: Minimal Video Stream Player
 ------------------------------------
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034085/5a676494-896a-11e6-878a-6f210a25ab27.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20630890/760a7514-b33c-11e6-9137-afba3863c5cc.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalVideoStreamPlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVideoStreamPlayer.java)
 
 An example of a minimal Orion360 video player, for streaming a video file over the network.
 
-This example shows how to add an Orion360 video view to an XML layout, get a handle to it from Java code, request the video view to prepare an MP4 video file (that resides somewhere in the network) for playback, and start playback when an asynchronous callback tells that enough video frames have been downloaded and buffered.
+This example shows how to add an Orion360 view to an XML layout, set it as a rendering target in Java code, and define an MP4 video file (that resides somewhere in the network) as a content source. The video playback begins automatically when enough video frames have been downloaded and buffered. The example also shows how to create a simple buffering indicator by responding to buffering events.
 
-The example also shows how to create a simple buffering indicator by listening to video view buffering events, and how to propagate activity life cycle events to the video view so that it can automatically respond to them (for example pause video playback if user navigates to another app).
+The activity class extends SimpleOrionActivity, which creates a basic Orion360 player configuration, handles license checks, and propagates activity lifecycle events to Orion360.
 
 Orion360 views have lots of features built-in; you will have all the following without writing any additional code:
 - Support for rendering full spherical (360x180) equirectangular video content with rectilinear projection
 - Panning, zooming and tilting the view with touch and movement sensors, which work seamlessly together
 - Auto Horizon Aligner (AHL) keeps the horizon straight by gently re-orienting it when necessary
 
-> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded, but to be rendered on screen, the decoded video frame also needs to fit inside a single OpenGL texture. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, offer another 3840x1920 stream for high-end devices.
+> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded, but to be rendered on screen, the decoded video frame also needs to fit inside a single OpenGL texture. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, offer another 3840x1920 stream for high-end devices. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
 
 Example: Minimal Video Download Player
 --------------------------------------
