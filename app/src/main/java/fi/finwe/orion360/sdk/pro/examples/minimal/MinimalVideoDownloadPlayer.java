@@ -39,7 +39,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -51,7 +50,7 @@ import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 
 import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
-
+import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_INTERNAL_FILES_PATH;
 
 /**
  * An example of a minimal Orion360 video player, for downloading a video file before playback.
@@ -79,9 +78,6 @@ import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES
  * </ul>
  */
 public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
-
-    /** Tag for logging. */
-    public static final String TAG = MinimalVideoDownloadPlayer.class.getSimpleName();
 
     /** Download manager service. */
     private DownloadManager mDownloadManager;
@@ -131,25 +127,27 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
     /**
      * Downloads a video file over the network to the local file system, then plays it.
      *
-     * @param videoUrl The URL to the video to be downloaded and played.
+     * @param videoUrl The URL to the video file to be downloaded and played.
      */
     public void downloadAndPlay(String videoUrl) {
 
-        // Create a name for the video file.
-        String name = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
+        // Create a filename for the local copy of the video file.
+        String fileName = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
 
-        // Skip download, if file already exists (remove file:// scheme before testing).
-        String localUri = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS
-                + File.separator + name;
+        // Skip download, if a file with that name already exists in our downloads directory.
+        // Notice that we need to remove scheme from the URI (file://) for file existence check.
+        // Notice that we should check if external media is mounted (omitted here for simplicity).
+        String localUri = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS +
+                File.separator + fileName;
         if (new File(Uri.parse(localUri).getPath()).exists()) {
-            setContentUri(localUri);
+            setContentUri(localUri); // Play already downloaded video file.
             return;
         }
 
         // Create a progress bar to be shown while downloading the file.
         final ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle(getString(R.string.player_file_download_title));
-        progress.setMessage(String.format(getString(R.string.player_file_download_message), name));
+        progress.setMessage(String.format(getString(R.string.player_file_download_message), fileName));
         progress.setMax(100);
         progress.setIndeterminate(false);
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -182,7 +180,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
 
                             String uriString = c.getString(c.getColumnIndex(
                                     DownloadManager.COLUMN_LOCAL_URI));
-                            setContentUri(uriString); // Play downloaded video file.
+                            setContentUri(uriString); // Play just downloaded video file.
 
                         }
                     }
@@ -195,7 +193,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(videoUrl));
         request.setTitle(getResources().getString(R.string.app_name));
         request.setDescription(videoUrl);
-        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, name);
+        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, fileName);
         mDownloadId = mDownloadManager.enqueue(request);
 
         // Create a background task for updating download progress.
@@ -226,6 +224,8 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
             }
 
         }, 500, 500);
+
+        // Notice that we have omitted here handling of all situations where download gets canceled!
 
     }
 
