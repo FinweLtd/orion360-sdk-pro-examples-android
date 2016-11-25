@@ -104,7 +104,7 @@ An example of a minimal Orion360 video player, for streaming a video file over t
 
 This example shows how to add an Orion360 view to an XML layout, set it as a rendering target in Java code, and define an MP4 video file (that resides somewhere in the network) as a content source. The video playback begins automatically when enough video frames have been downloaded and buffered. The example also shows how to create a simple buffering indicator by responding to buffering events.
 
-The activity class extends SimpleOrionActivity, which creates a basic Orion360 player configuration, handles license checks, and propagates activity lifecycle events to Orion360.
+The activity class extends _SimpleOrionActivity_, which creates a basic Orion360 player configuration, handles license checks, and propagates activity lifecycle events to Orion360.
 
 Orion360 views have lots of features built-in; you will have all the following without writing any additional code:
 - Support for rendering full spherical (360x180) equirectangular video content with rectilinear projection
