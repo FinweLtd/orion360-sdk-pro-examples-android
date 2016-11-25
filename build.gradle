@@ -12,38 +12,38 @@ buildscript {
     }
 }
 
-//allprojects {
-//    repositories {
-//        jcenter()
-//
-//        maven {
-//            url 'https://finwe.bintray.com/orion360-sdk-public' // For Orion360 SDK
-//        }
-//    }
-//}
+allprojects {
+    repositories {
+        jcenter()
+
+        maven {
+            url 'https://finwe.bintray.com/orion360-sdk-public' // For Orion360 SDK
+        }
+    }
+}
 
 // Define Bintray username and personal API key in root project's local.properties file
 // bintray.user=[username]
 // bintray.apikey=[apikey]
 
-// Read user credentials from root project's local.properties file (unversioned)
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-allprojects {
-    repositories {
-        jcenter()
-
-        // This is required for accessing libraries in Finwe maven repo at Bintray.
-        maven {
-            url 'https://finwe.bintray.com/maven'
-            credentials {
-                username properties.getProperty("bintray.user")
-                password properties.getProperty("bintray.apikey")
-            }
-        }
-    }
-}
+//// Read user credentials from root project's local.properties file (unversioned)
+//Properties properties = new Properties()
+//properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//
+//allprojects {
+//    repositories {
+//        jcenter()
+//
+//        // This is required for accessing libraries in Finwe maven repo at Bintray.
+//        maven {
+//            url 'https://finwe.bintray.com/maven'
+//            credentials {
+//                username properties.getProperty("bintray.user")
+//                password properties.getProperty("bintray.apikey")
+//            }
+//        }
+//    }
+//}
 
 task clean(type: Delete) {
     delete rootProject.buildDir

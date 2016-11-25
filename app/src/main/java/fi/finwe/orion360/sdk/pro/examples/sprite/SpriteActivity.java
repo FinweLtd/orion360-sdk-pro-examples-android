@@ -3,12 +3,12 @@ package fi.finwe.orion360.sdk.pro.examples.sprite;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ToggleButton;
-import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.view.OrionView;
-import fi.finwe.orion360.v3.OrionViewport;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
 
 public class SpriteActivity extends OrionActivity {
 	// Logging tag, ready to be copy-pasted into any other class.

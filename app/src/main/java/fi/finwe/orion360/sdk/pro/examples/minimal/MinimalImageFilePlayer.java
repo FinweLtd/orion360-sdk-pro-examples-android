@@ -43,7 +43,7 @@ import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 
 /**
  * An example of a minimal Orion360 image player, for playing an image file from local file system.

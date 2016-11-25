@@ -35,8 +35,8 @@ import android.widget.ProgressBar;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.SimpleOrionActivity;
-import fi.finwe.orion360.v3.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, for streaming an MP4 video file over the network.
@@ -62,8 +62,8 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
     private ProgressBar mBufferingIndicator;
 
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
 
         // Call super class implementation FIRST to set up a simple Orion360 player configuration.
         super.onCreate(savedInstanceState);
@@ -72,7 +72,7 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         // the application's manifest/build.gradle files cannot be found!
 
         // Set layout.
-		setContentView(R.layout.activity_video_player);
+        setContentView(R.layout.activity_video_player);
 
         // Get buffering indicator, and make it visible initially (buffering will be needed).
         mBufferingIndicator = (ProgressBar) findViewById(R.id.buffering_indicator);
@@ -92,7 +92,7 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         // W/MediaPlayer: Couldn't open []: java.io.FileNotFoundException: No content provider: []
         // Here Android MediaPlayer is using an exception for control flow; you can disregard it.
 
-	}
+    }
 
     @Override
     public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {

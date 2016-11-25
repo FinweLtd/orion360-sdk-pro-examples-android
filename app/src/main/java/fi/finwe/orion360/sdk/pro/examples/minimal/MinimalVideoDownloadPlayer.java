@@ -48,7 +48,7 @@ import java.util.TimerTask;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 
 import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
 

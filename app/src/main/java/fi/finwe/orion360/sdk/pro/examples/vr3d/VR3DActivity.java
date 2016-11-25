@@ -5,20 +5,20 @@ import android.view.KeyEvent;
 import fi.finwe.log.Logger;
 import fi.finwe.math.QuatF;
 import fi.finwe.math.Vec2F;
-import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.OrionContext;
-import fi.finwe.orion360.v3.view.OrionView;
-import fi.finwe.orion360.v3.OrionViewport;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.OrionContext;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.controllable.DisplayClickable;
-import fi.finwe.orion360.v3.controller.TouchDisplayClickListener;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.item.OrionPanorama;
-import fi.finwe.orion360.v3.item.OrionSceneItem;
-import fi.finwe.orion360.v3.item.OrionSceneItem.RotationBaseControllerListenerBase;
-import fi.finwe.orion360.v3.item.sprite.OrionSprite;
-import fi.finwe.orion360.v3.source.OrionTexture;
-import fi.finwe.orion360.v3.viewport.fx.BarrelDistortion;
+import fi.finwe.orion360.sdk.pro.controllable.DisplayClickable;
+import fi.finwe.orion360.sdk.pro.controller.TouchDisplayClickListener;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem.RotationBaseControllerListenerBase;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
 
 public class VR3DActivity extends OrionActivity {
 	// Logging tag, ready to be copy-pasted into any other class.

@@ -35,8 +35,8 @@ import android.widget.ProgressBar;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.SimpleOrionActivity;
-import fi.finwe.orion360.v3.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, for streaming a HLS stream over the network.

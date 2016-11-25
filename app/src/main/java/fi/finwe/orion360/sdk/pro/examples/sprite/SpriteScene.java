@@ -2,10 +2,10 @@ package fi.finwe.orion360.sdk.pro.examples.sprite;
 
 import android.content.Context;
 import fi.finwe.math.Vec3F;
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.item.sprite.OrionSprite;
-import fi.finwe.orion360.v3.item.OrionSceneItem.RenderingMode;
-import fi.finwe.orion360.v3.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem.RenderingMode;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 
 public class SpriteScene extends OrionScene {
 	// Logging tag, ready to be copy-pasted into any other class.

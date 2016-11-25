@@ -41,9 +41,9 @@ import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.SimpleOrionActivity;
-import fi.finwe.orion360.v3.source.OrionTexture;
-import fi.finwe.orion360.v3.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, with a buffering indicator.

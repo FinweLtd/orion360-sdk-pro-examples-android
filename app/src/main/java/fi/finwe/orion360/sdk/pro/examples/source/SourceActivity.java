@@ -1,14 +1,14 @@
 package fi.finwe.orion360.sdk.pro.examples.source;
 
 import android.os.Bundle;
-import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.view.OrionView;
-import fi.finwe.orion360.v3.OrionViewport;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.common.BaseScene;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.item.OrionCamera.CameraProjection;
-import fi.finwe.orion360.v3.item.OrionPanorama.PanoramaType;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera.CameraProjection;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama.PanoramaType;
 
 public class SourceActivity extends OrionActivity {
 	// Logging tag, ready to be copy-pasted into any other class.

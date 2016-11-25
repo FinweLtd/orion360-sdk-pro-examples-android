@@ -6,17 +6,17 @@ import java.util.TimerTask;
 import android.os.Bundle;
 import fi.finwe.math.QuatF;
 import fi.finwe.math.Vec3F;
-import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.OrionContext;
-import fi.finwe.orion360.v3.view.OrionView;
-import fi.finwe.orion360.v3.OrionViewport;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.OrionContext;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.common.BaseScene;
 import fi.finwe.orion360.sdk.pro.examples.common.TouchControllerWidget;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.item.OrionPolygon;
-import fi.finwe.orion360.v3.item.OrionSceneItem;
-import fi.finwe.orion360.v3.item.OrionSceneItem.RotationBaseControllerListenerBase;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionPolygon;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem.RotationBaseControllerListenerBase;
 
 public class PolygonActivity extends OrionActivity {
 

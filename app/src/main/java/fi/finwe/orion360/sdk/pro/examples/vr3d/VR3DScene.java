@@ -2,9 +2,9 @@ package fi.finwe.orion360.sdk.pro.examples.vr3d;
 
 import android.content.Context;
 import android.graphics.RectF;
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.item.OrionPanorama;
-import fi.finwe.orion360.v3.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 
 public class VR3DScene extends OrionScene {
 	// Logging tag, ready to be copy-pasted into any other class.

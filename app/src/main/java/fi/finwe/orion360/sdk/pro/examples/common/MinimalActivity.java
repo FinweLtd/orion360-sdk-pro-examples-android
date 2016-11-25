@@ -3,18 +3,18 @@ package fi.finwe.orion360.sdk.pro.examples.common;
 import android.graphics.Color;
 import android.os.Bundle;
 import fi.finwe.math.QuatF;
-import fi.finwe.orion360.v3.OrionActivity;
-import fi.finwe.orion360.v3.OrionContext;
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.view.OrionView;
-import fi.finwe.orion360.v3.OrionViewport;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.OrionContext;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.item.OrionPanorama;
-import fi.finwe.orion360.v3.item.OrionSceneItem;
-import fi.finwe.orion360.v3.item.OrionSceneItem.RotationBaseControllerListenerBase;
-import fi.finwe.orion360.v3.source.OrionImageTexture;
-import fi.finwe.orion360.v3.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem.RotationBaseControllerListenerBase;
+import fi.finwe.orion360.sdk.pro.source.OrionImageTexture;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 
 public class MinimalActivity extends OrionActivity {
 	// Logging tag, ready to be copy-pasted into any other class.

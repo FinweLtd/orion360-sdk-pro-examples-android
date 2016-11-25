@@ -1,9 +1,9 @@
 package fi.finwe.orion360.sdk.pro.examples.common;
 
 import android.content.Context;
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.item.OrionPanorama;
-import fi.finwe.orion360.v3.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 
 public class BaseScene extends OrionScene {
 	// Logging tag, ready to be copy-pasted into any other class.

@@ -1,12 +1,12 @@
 package fi.finwe.orion360.sdk.pro.examples.common;
 
-import fi.finwe.orion360.v3.OrionContext;
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.controller.RotationAligner;
-import fi.finwe.orion360.v3.controller.TouchPincher;
-import fi.finwe.orion360.v3.controller.TouchRotater;
-import fi.finwe.orion360.v3.item.OrionCamera;
-import fi.finwe.orion360.v3.widget.OrionWidget;
+import fi.finwe.orion360.sdk.pro.OrionContext;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
+import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
+import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
+import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
 
 public class TouchControllerWidget implements OrionWidget {

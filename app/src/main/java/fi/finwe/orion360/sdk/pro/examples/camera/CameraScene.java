@@ -1,8 +1,8 @@
 package fi.finwe.orion360.sdk.pro.examples.camera;
 
-import fi.finwe.orion360.v3.OrionScene;
-import fi.finwe.orion360.v3.item.sprite.OrionSprite;
-import fi.finwe.orion360.v3.source.OrionCameraTexture;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.source.OrionCameraTexture;
 
 public class CameraScene extends OrionScene implements OrionCameraTexture.Listener {
 	// Logging tag, ready to be copy-pasted into any other class.
