@@ -28,11 +28,11 @@ Table of Contents
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
 5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
+6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
 
 TODO
 ----
 
-6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
 7. [Example: Minimal Video File Player](#example-minimal-video-file-player)
 8. [Example: Minimal Video Controls](#example-minimal-video-controls)
 9. [Example: Minimal VR Video File Player](#example-minimal-vr-video-file-player)
