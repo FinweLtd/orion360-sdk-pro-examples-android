@@ -147,7 +147,7 @@ Since downloading a large file will take a considerable amount of time, it needs
 
 Video files are large and device models with small amounts of storage space tend to be popular as they are priced competitively. Consider saving the downloaded video file to external memory if it is currently present. It is also a good idea to offer a method for deleting downloaded content without uninstalling the whole app; this way users can still keep your app installed when they need to restore some storage space.
 
-### Example: Minimal Video File Player
+### Minimal Video File Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640465/3601e564-b3e7-11e6-961e-9d2e065856c1.png)
 
