@@ -32,11 +32,11 @@ Table of Contents
   2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
   3. [Minimal Video Download Player](#minimal-video-download-player)
   4. [Minimal Video File Player](#minimal-video-file-player)
+  5. [Minimal Video Controls](#minimal-video-controls)
 
 TODO
 ----
 
-8. [Example: Minimal Video Controls](#example-minimal-video-controls)
 9. [Example: Minimal VR Video File Player](#example-minimal-vr-video-file-player)
 10. [Example: Minimal Image Download Player](#example-minimal-image-download-player)
 11. [Example: Minimal Image File Player](#example-minimal-image-file-player)
@@ -195,16 +195,15 @@ This example showcases all supported file system locations and file access metho
 > 
 > Typically one-shot apps that are intended for a particular event, product campaign, or offline use have embedded content. However, also apps that mostly use streamed content may include a few embedded items that are frequently needed and rarely updated, such as brand introduction, user tutorials, and menu backgrounds.
 
-Example: Minimal Video Controls
--------------------------------
+### Minimal Video Controls
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034118/8a0634dc-896a-11e6-8878-8ecdc13549d4.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640544/41565e3e-b3e9-11e6-8c00-cf9662f088eb.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalVideoControls.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVideoControls.java)
 
 An example of a minimal Orion360 video player, with minimal video controls.
 
-This example uses _MediaController_ class as a simple way to add controls into a 360 video player. This approach requires only a few lines of code: first a new media controller is instantiated, and then Orion360 video view is added to it as a media player to control, and as a UI anchor view where to position the control widget. Finally, a gesture detector is used for showing and hiding the controls when the video view is tapped (by default, the media controller automatically hides itself after a moment of inactivity).
+This example uses _MediaController_ class as a simple way to add controls into a 360 video player. This approach requires only a few lines of code: first a new media controller is instantiated and the _OrionVideoTexture_ that is associated with our Orion360 view is added to it as a media player to control. Next the Orion360 view is set as a UI anchor view where to position the control widget. Finally, a gesture detector is used for showing and hiding the controls when the Orion360 view is tapped (by default, the media controller automatically hides itself after a moment of inactivity).
 
 The control widget includes play/pause button, rewind and fast forward buttons, a seek bar, and labels for elapsed and total playing time. If you want to customize the look&feel of the control widget or add your own buttons, see _CustomControls_ example where video controls are created from scratch.
 
