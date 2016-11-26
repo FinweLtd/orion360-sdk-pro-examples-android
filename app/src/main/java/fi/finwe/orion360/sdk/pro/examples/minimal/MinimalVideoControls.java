@@ -90,7 +90,7 @@ public class MinimalVideoControls extends SimpleOrionActivity {
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
-        // Set a URI that points to an .mp4 video file.
+        // Initialize Orion360 video view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Create a media controller.

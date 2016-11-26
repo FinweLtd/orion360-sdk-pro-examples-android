@@ -59,9 +59,6 @@ import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
  */
 public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
 
-    /** Tag for logging. */
-    public static final String TAG = MinimalVRVideoFilePlayer.class.getSimpleName();
-
     /** Gesture detector for touch events. */
     private GestureDetector mGestureDetector;
 
