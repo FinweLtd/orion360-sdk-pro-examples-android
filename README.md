@@ -36,11 +36,12 @@ Table of Contents
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
   7. [Minimal Image Download Player](#minimal-image-download-player)
   8. [Minimal Image File Player](#minimal-image-file-player)
+6. [Examples - Streaming](#examples-streaming)
+  1. [Buffering Indicator](#buffering-indicator)
 
 TODO
 ----
 
-12. [Example: Buffering Indicator](#example-buffering-indicator)
 13. [Example: Preview Image](#example-preview-image)
 14. [Example: Sensor Fusion](#example-sensor-fusion)
 15. [Example: Touch Input](#example-touch-input)
@@ -298,8 +299,12 @@ This example showcases all supported file system locations and file access metho
 
 > *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
-Example: Buffering Indicator
-----------------------------
+Examples: Streaming
+-------------------
+
+This category contains examples that discuss about streaming video files over a network connection.
+
+### Buffering Indicator
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034193/d91729aa-896a-11e6-8150-ed986d9483e3.jpg)
 
