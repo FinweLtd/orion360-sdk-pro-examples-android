@@ -33,11 +33,11 @@ Table of Contents
   3. [Minimal Video Download Player](#minimal-video-download-player)
   4. [Minimal Video File Player](#minimal-video-file-player)
   5. [Minimal Video Controls](#minimal-video-controls)
+  6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
 
 TODO
 ----
 
-9. [Example: Minimal VR Video File Player](#example-minimal-vr-video-file-player)
 10. [Example: Minimal Image Download Player](#example-minimal-image-download-player)
 11. [Example: Minimal Image File Player](#example-minimal-image-file-player)
 12. [Example: Buffering Indicator](#example-buffering-indicator)
@@ -209,12 +209,11 @@ The control widget includes play/pause button, rewind and fast forward buttons, 
 
 > When seeking within a video, notice that it is only possible to seek to keyframes - the player will automatically jump to the nearest one. The number of keyframes and their positions depend on video content, used video encoder, and encoder settings. In general, the more keyframes are added the larger the video file will be. The Orion360 example video is mostly static and thus has very few keyframes, allowing the user to seek only to a few positions.
 
-Example: Minimal VR Video File Player
--------------------------------------
+### Minimal VR Video File Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034144/a45fb86c-896a-11e6-905c-c538897c20ad.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640590/f3459640-b3ea-11e6-9e9a-bd9851d7ef11.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalVRVideoFilePlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVRVideoFilePlayer.java)
 
 An example of a minimal Orion360 video player, with VR mode enabled.
 
@@ -222,12 +221,12 @@ The most impressive way to experience 360 photos and videos is through virtual r
 
 Currently the most popular VR frame by far is Google Cardboard (https://vr.google.com/cardboard); millions of them have been distributed to users already. There are also plenty of Cardboard clones available from different manufacturers. It is a fairly common practice to create a custom-printed Cardboard-style VR frame for a dollar or two per piece, and give them out to users for free along with a 360/VR video app and content. That combo makes a really great marketing tool.
 
-This example shows how to enable VR mode from an Orion360 video view for viewing content with Google Cardboard or other similar VR frame where smartphone can be slided in. In short, the example shows how to:
+This example shows how to enable VR mode from an Orion360 video view for viewing content with Google Cardboard or other similar VR frame where smartphone can be slided in. The _SimpleOrionActivity_ class provides a convenience method that performs all necessary tasks:
 - Configure horizontally split video view in landscape orientation
 - Configure (and lock) the field-of-view into a realistic setting
 - Configure VR frame lens distortion compensation for improved image quality
 - Initialize the view orientation to World orientation ie. keep video horizon perpendicular to gravity vector
-- Hide the system navigation bar for occlusion free viewing in devices where it is made by software
+- Hide the system navigation bar for occlusion free viewing in devices where it is with by software
 - Disable magnetometer from sensor fusion so that Cardboard's magnetic switch does not interfere with it
 - Create a gesture detector for toggling VR mode on/off with long taps and a hint about it with a single tap
 
