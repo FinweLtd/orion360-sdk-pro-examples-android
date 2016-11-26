@@ -118,6 +118,20 @@ Orion360 views have lots of features built-in; you will have all the following w
 
 > Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. In addition, a decoded video frame needs to fit inside a single OpenGL texture. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, our recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, you can offer another 3840x1920 stream for high-end devices, perhaps with an option to download the file first. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
 
+### Minimal Video Adaptive Stream Player
+
+![alt_tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVideoAdaptiveStreamPlayer.java)
+
+An example of a minimal Orion360 video player, for playing a HLS stream over the network.
+
+This example shows how to play adaptive HLS video streams. The principal idea is to encode a video multiple times with different parameters to create a set of different quality streams, and further divide these streams to short chunks at exactly the same timecodes so that video player can seamlessly switch between the streams by downloading the next chunk either at lower, same or better quality - depending on device capabilities and available network bandwidth.
+
+Playing adaptive HLS streams can be surprisingly easy with Orion360 - simply use a URI that ends with an _.m3u8_ filename extension as a content URI, and Orion360 will recognize it as a HLS stream. It will then use the built-in ExoPlayer instance for downloading the HLS playlist/manifest file that defines the available stream qualities, estimates network bandwidth and device capabilities, and switches between streams automatically.
+
+> More inforamtion about adaptive video streams: https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming
+
 ### Minimal Video Download Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20632132/eb5799b2-b343-11e6-8828-4fa61144fa2e.png)
