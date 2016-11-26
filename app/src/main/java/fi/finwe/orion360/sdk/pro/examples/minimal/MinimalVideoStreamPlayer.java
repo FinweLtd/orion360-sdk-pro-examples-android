@@ -97,7 +97,7 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
     @Override
     public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
 
-        // Show buffering indicator whenever the player starts buffering video.
+        // Show buffering indicator whenever the player begins buffering video.
         if (null != mBufferingIndicator) {
             mBufferingIndicator.setVisibility(View.VISIBLE);
         }
@@ -107,7 +107,7 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
     @Override
     public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
 
-        // Hide buffering indicator whenever the player stops buffering video.
+        // Hide buffering indicator whenever the player ends buffering video.
         if (null != mBufferingIndicator) {
             mBufferingIndicator.setVisibility(View.GONE);
         }

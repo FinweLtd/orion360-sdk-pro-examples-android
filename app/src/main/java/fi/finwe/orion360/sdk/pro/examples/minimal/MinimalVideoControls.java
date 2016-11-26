@@ -29,18 +29,15 @@
 
 package fi.finwe.orion360.sdk.pro.examples.minimal;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.MediaController;
-import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 
 /**
@@ -93,17 +90,17 @@ public class MinimalVideoControls extends SimpleOrionActivity {
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
-        // Initialize Orion360 video view with a URI to an .mp4 video file.
+        // Set a URI that points to an .mp4 video file.
         setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Create a media controller.
         mMediaController = new MediaController(this);
 
-        // Set Orion360 video texture as media player; media controller interacts with it.
+        // Set Orion360 video texture as media player (media controller interacts directly with it).
         mMediaController.setMediaPlayer(
                 ((OrionVideoTexture)getOrionTexture()).getMediaPlayerControl());
 
-        // Set Orion360 view as anchor view; media controller positions itself on top of it.
+        // Set Orion360 view as anchor view (media controller positions itself on top of anchor).
         mMediaController.setAnchorView(getOrionView());
 
         // Propagate all touch events from the Orion view to a gesture detector.
@@ -139,7 +136,7 @@ public class MinimalVideoControls extends SimpleOrionActivity {
     @Override
     public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
 
-        // Make the controls visible when we have a video prepared.
+        // Make the controls visible when a video has been prepared.
         mMediaController.show();
 
     }
