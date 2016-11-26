@@ -29,7 +29,8 @@ Table of Contents
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
 5. [Examples - Minimal](#examples-minimal)
   1. [Minimal Video Stream Player](#minimal-video-stream-player)
-  2. [Minimal Video Download Player](#minimal-video-download-player)
+  2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
+  3. [Minimal Video Download Player](#minimal-video-download-player)
 
 TODO
 ----
