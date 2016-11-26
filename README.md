@@ -27,8 +27,9 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
-5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
-6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
+5. Examples - Minimal
+  1. [Minimal Video Stream Player](#example-minimal-video-stream-player)
+  2. [Minimal Video Download Player](#example-minimal-video-download-player)
 
 TODO
 ----
