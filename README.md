@@ -34,11 +34,11 @@ Table of Contents
   4. [Minimal Video File Player](#minimal-video-file-player)
   5. [Minimal Video Controls](#minimal-video-controls)
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
+  7. [Minimal Image Download Player](#minimal-image-download-player)
 
 TODO
 ----
 
-10. [Example: Minimal Image Download Player](#example-minimal-image-download-player)
 11. [Example: Minimal Image File Player](#example-minimal-image-file-player)
 12. [Example: Buffering Indicator](#example-buffering-indicator)
 13. [Example: Preview Image](#example-preview-image)
@@ -232,24 +232,21 @@ This example shows how to enable VR mode from an Orion360 video view for viewing
 
 > For high-quality VR experiences, consider using a high-end Samsung smartphone and an active GearVR frame (you will also need to use the Pro version of the Orion360 SDK). The equipment cost will be significantly higher, but also the improvement in quality is remarkable and well worth it. GearVR frame has great optics, high speed sensors and touch controls built-in. They only work with specific Samsung models that have a number of performance tunings built-in and drivers for the GearVR frame. In general, Cardboard-style VR is recommended when you want to provide the VR viewing experience for a large audience by giving out free VR frames, while GearVR-style VR is best for trade shows, shop desks and one-to-one marketing where quality counts the most!
 
-Example: Minimal Image Download Player
---------------------------------------
+### Minimal Image Download Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034160/b779c2e4-896a-11e6-978b-354ba1962177.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640668/e1a00b9e-b3ec-11e6-94c7-7645f4ef490d.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalImageDownloadPlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalImageDownloadPlayer.java)
 
 An example of a minimal Orion360 image player, for downloading an image file before playback.
 
-> Notice that there is no example of a streaming player for 360 images, as an image always needs to be downloaded completely before it can be shown (tiled 360 images are not supported in the Basic version of the Orion360 SDK).
-
-This example is similar to _MinimalVideoDownloadPlayer_, but showcases how to use _OrionImageView_ component instead of _OrionVideoView_ for showing a 360 image.
+> Notice that there is no example of a streaming player for 360 images, as an image always needs to be downloaded completely before it can be shown (tiled 360 images are not yet supported by Orion360 public SDKs).
 
 Since downloading a large file will take a considerable amount of time, the example uses an AsyncTask to download the file in the background and updates download progress on screen. In this simple example, user needs to wait for the download to complete and the playback to begin as there is nothing else to do. However, you should consider placing a small download indicator somewhere in your app and allowing the user to continue using the app while the download is in progress. A high quality app has a download queue for downloading multiple files sequentially, is able to continue a download if it gets terminated early for example because of a network issue, allows user to cancel ongoing downloads, and uses platform notifications for indicating download progress and completion of a download. These features go beyond this example.
 
 Image files are large and device models with small amounts of storage space tend to be popular as they are priced competitively. Consider saving the downloaded image file to external memory if it is currently present. It is also a good idea to offer a method for deleting downloaded content without uninstalling the whole app; this way users can still keep your app installed when they need to restore some storage space.
 
-> The hardware limits for 360 image resolution come from available memory for decoding the image file and maximum texture size for storing and rendering it. Notice that Orion360 automatically scales the image to fit to device's maximum texture size if necessary. In 2016, some popular older devices have 2048x2048 pixel texture size (4 megapixels), while new devices range from 4096x4096 (16 megapixels) to 16384x16384 pixels (256 megapixels). Obviously, depending on target device, the difference in rendered image quality can be quite remarkable with a high-resolution source image.
+> The hardware limits for 360 image resolution come from available memory for decoding the image file and maximum texture size for rendering it. Notice that Orion360 automatically scales the image to fit to device's maximum texture size if necessary. In 2016, some popular older devices have 2048x2048 pixel texture size (4 megapixels), while new devices range from 4096x4096 (16 megapixels) to 16384x16384 pixels (256 megapixels). Obviously, depending on target device, the difference in rendered image quality can be quite remarkable with a high-resolution source image.
 
 Example: Minimal Image File Player
 ----------------------------------
