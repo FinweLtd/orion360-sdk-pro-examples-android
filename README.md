@@ -27,7 +27,7 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
-5. Examples - Minimal
+5. [Examples - Minimal](#examples-minimal)
   1. [Minimal Video Stream Player](#example-minimal-video-stream-player)
   2. [Minimal Video Download Player](#example-minimal-video-download-player)
 
@@ -94,8 +94,12 @@ When the app starts on your device, a menu of topics similar to the image below 
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
-Example: Minimal Video Stream Player
-------------------------------------
+Examples: Minimal
+-----------------
+
+This category contains examples that show a very minimal implementation for a particular topic, and thus provide a good starting point for studying Orion360.
+
+### Example: Minimal Video Stream Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20630890/760a7514-b33c-11e6-9137-afba3863c5cc.png)
 
@@ -114,8 +118,7 @@ Orion360 views have lots of features built-in; you will have all the following w
 
 > Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded, but to be rendered on screen, the decoded video frame also needs to fit inside a single OpenGL texture. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, offer another 3840x1920 stream for high-end devices. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
 
-Example: Minimal Video Download Player
---------------------------------------
+### Example: Minimal Video Download Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20632132/eb5799b2-b343-11e6-8828-4fa61144fa2e.png)
 
