@@ -39,7 +39,7 @@ import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 
 /**
- * An example of a minimal Orion360 video player, for streaming a HLS stream over the network.
+ * An example of a minimal Orion360 video player, for playing a HLS stream over the network.
  * <p>
  * Features:
  * <ul>
