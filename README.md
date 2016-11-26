@@ -27,12 +27,14 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
-5. [Example: Minimal Video Stream Player](#example-minimal-video-stream-player)
+5. [Examples - Minimal](#examples-minimal)
+  1. [Minimal Video Stream Player](#minimal-video-stream-player)
+  2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
+  3. [Minimal Video Download Player](#minimal-video-download-player)
 
 TODO
 ----
 
-6. [Example: Minimal Video Download Player](#example-minimal-video-download-player)
 7. [Example: Minimal Video File Player](#example-minimal-video-file-player)
 8. [Example: Minimal Video Controls](#example-minimal-video-controls)
 9. [Example: Minimal VR Video File Player](#example-minimal-vr-video-file-player)
@@ -93,8 +95,12 @@ When the app starts on your device, a menu of topics similar to the image below 
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
-Example: Minimal Video Stream Player
-------------------------------------
+Examples: Minimal
+-----------------
+
+This category contains examples that show a very minimal implementation for a particular topic, and thus provide a good starting point for studying Orion360.
+
+### Minimal Video Stream Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20630890/760a7514-b33c-11e6-9137-afba3863c5cc.png)
 
@@ -104,17 +110,30 @@ An example of a minimal Orion360 video player, for streaming a video file over t
 
 This example shows how to add an Orion360 view to an XML layout, set it as a rendering target in Java code, and define an MP4 video file (that resides somewhere in the network) as a content source. The video playback begins automatically when enough video frames have been downloaded and buffered. The example also shows how to create a simple buffering indicator by responding to buffering events.
 
-The activity class extends _SimpleOrionActivity_, which creates a basic Orion360 player configuration, handles license checks, and propagates activity lifecycle events to Orion360.
+The activity class extends _SimpleOrionActivity_, which creates a basic Orion360 player configuration, handles license checks etc., and propagates activity lifecycle events to Orion360 so that video playback can pause and continue automatically and get cleaned up.
 
 Orion360 views have lots of features built-in; you will have all the following without writing any additional code:
 - Support for rendering full spherical (360x180) equirectangular video content with rectilinear projection
 - Panning, zooming and tilting the view with touch and movement sensors, which work seamlessly together
 - Auto Horizon Aligner (AHL) keeps the horizon straight by gently re-orienting it when necessary
 
-> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded, but to be rendered on screen, the decoded video frame also needs to fit inside a single OpenGL texture. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, offer another 3840x1920 stream for high-end devices. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
+> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. In addition, a decoded video frame needs to fit inside a single OpenGL texture. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, our recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, you can offer another 3840x1920 stream for high-end devices, perhaps with an option to download the file first. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
 
-Example: Minimal Video Download Player
---------------------------------------
+### Minimal Video Adaptive Stream Player
+
+![alt_tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVideoAdaptiveStreamPlayer.java)
+
+An example of a minimal Orion360 video player, for playing a HLS stream over the network.
+
+This example shows how to play adaptive HLS video streams. The principal idea is to encode a video multiple times with different parameters to create a set of different quality streams, and further divide these streams to short chunks at exactly the same timecodes so that video player can seamlessly switch between the streams by downloading the next chunk either at lower, same or better quality - depending on device capabilities and available network bandwidth.
+
+Playing adaptive HLS streams can be surprisingly easy with Orion360 - simply use a URI that ends with an _.m3u8_ filename extension as a content URI, and Orion360 will recognize it as a HLS stream. It will then use the built-in ExoPlayer instance for downloading the HLS playlist/manifest file that defines the available stream qualities, estimates network bandwidth and device capabilities, and switches between streams automatically. Describing how HLS stream files can be created goes beyond this simple example (there are free tools such as _ffmpeg_ that can be used for the task).
+
+> More information about adaptive video streams: https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming
+
+### Minimal Video Download Player
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20632132/eb5799b2-b343-11e6-8828-4fa61144fa2e.png)
 
