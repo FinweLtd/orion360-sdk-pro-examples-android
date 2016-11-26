@@ -31,11 +31,11 @@ Table of Contents
   1. [Minimal Video Stream Player](#minimal-video-stream-player)
   2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
   3. [Minimal Video Download Player](#minimal-video-download-player)
+  4. [Minimal Video File Player](#minimal-video-file-player)
 
 TODO
 ----
 
-7. [Example: Minimal Video File Player](#example-minimal-video-file-player)
 8. [Example: Minimal Video Controls](#example-minimal-video-controls)
 9. [Example: Minimal VR Video File Player](#example-minimal-vr-video-file-player)
 10. [Example: Minimal Image Download Player](#example-minimal-image-download-player)
@@ -147,12 +147,11 @@ Since downloading a large file will take a considerable amount of time, it needs
 
 Video files are large and device models with small amounts of storage space tend to be popular as they are priced competitively. Consider saving the downloaded video file to external memory if it is currently present. It is also a good idea to offer a method for deleting downloaded content without uninstalling the whole app; this way users can still keep your app installed when they need to restore some storage space.
 
-Example: Minimal Video File Player
-----------------------------------
+### Example: Minimal Video File Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034111/7b9fa784-896a-11e6-9fa9-67404a1df041.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640465/3601e564-b3e7-11e6-961e-9d2e065856c1.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalVideoFilePlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalVideoFilePlayer.java)
 
 An example of a minimal Orion360 video player, for playing a video file from local file system.
 
