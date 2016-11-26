@@ -109,14 +109,14 @@ An example of a minimal Orion360 video player, for streaming a video file over t
 
 This example shows how to add an Orion360 view to an XML layout, set it as a rendering target in Java code, and define an MP4 video file (that resides somewhere in the network) as a content source. The video playback begins automatically when enough video frames have been downloaded and buffered. The example also shows how to create a simple buffering indicator by responding to buffering events.
 
-The activity class extends _SimpleOrionActivity_, which creates a basic Orion360 player configuration, handles license checks, and propagates activity lifecycle events to Orion360.
+The activity class extends _SimpleOrionActivity_, which creates a basic Orion360 player configuration, handles license checks etc., and propagates activity lifecycle events to Orion360 so that video playback can pause and continue automatically and get cleaned up.
 
 Orion360 views have lots of features built-in; you will have all the following without writing any additional code:
 - Support for rendering full spherical (360x180) equirectangular video content with rectilinear projection
 - Panning, zooming and tilting the view with touch and movement sensors, which work seamlessly together
 - Auto Horizon Aligner (AHL) keeps the horizon straight by gently re-orienting it when necessary
 
-> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded, but to be rendered on screen, the decoded video frame also needs to fit inside a single OpenGL texture. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, offer another 3840x1920 stream for high-end devices. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
+> Android device's hardware video decoder sets a limit for the maximum resolution / bitrate of a video file that can be decoded. In 2016, new mid-range devices support FullHD video and high-end devices 4k UHD video, while some popular older models cannot decode even FullHD. In addition, a decoded video frame needs to fit inside a single OpenGL texture. The maximum texture size in new devices ranges from 4096x4096 to 16384x16384, while some popular older models have 2048x2048 texture size. To be on the safe side, our recommendation is to use 1920x960 video resolution and a moderate bitrate. If necessary, you can offer another 3840x1920 stream for high-end devices, perhaps with an option to download them first. With Orion360 SDK (Pro) you can also use adaptive HLS streams.
 
 ### Minimal Video Download Player
 
