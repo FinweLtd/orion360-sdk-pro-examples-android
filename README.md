@@ -256,11 +256,25 @@ Image files are large and device models with small amounts of storage space tend
 
 An example of a minimal Orion360 image player, for playing an image file from local file system.
 
-This example is similar to _MinimalVideoFilePlayer_, but showcases how to use _OrionImageView_ component instead of _OrionVideoView_ for showing a 360 image.
+This example showcases all supported file system locations and file access methods for image sources: the locations embedded to the app distribution packages, the app's private locations that become available after installation, and the locations that are more or less external to the app. To keep the example simple, only one location is active at a time and the others are commented out (you can easily select the active location from the source code). The locations are:
 
-This example showcases all supported file system locations and file access methods for image sources: the locations embedded to the app distribution packages, the app's private locations that become available after installation, and the locations that are more or less external to the app. To keep the example simple, only one location is active at a time and the others are commented out (you can easily select the active location from the source code). The supported locations are:
+1. Application installation package's _/assets_ folder
 
-1. Application's private path on device's internal memory
+   Private assets folder allows playing content embedded to the apps's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds image files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery), or contains only a few images.
+
+2. Application installation package's _/res/raw_ folder
+
+   Private raw resource folder allows playing content embedded to the app's own installation package (.apk). Notice 100MB .apk size limit in Google Play. Must use lowercase characters in filenames and access them without filename extension. This location is generally not recommended; use _/assets_ folder instead.
+
+> This location is currently not supported for images.
+
+3. Application expansion packages
+
+   Private expansion package allows playing content embedded to the app's extra installation package (.obb). Up to 2 GB per package, max 2 packages. This is the recommended location when the application embeds lots of large image files to the installation package and _is_ distributed via Google Play store. Fairly complex but very useful solution. For more information, see https://developer.android.com/google/play/expansion-files.html
+
+> This location is currently not supported for images.
+
+4. Application's private path on device's internal memory
 
    Private internal folder is useful mainly when the app _downloads_ an image file for offline mode or to be cached, as only the app itself can access that location (exception: rooted devices). This location is recommended only if downloaded content files need to be protected from ordinary users - although the protection is easy to circumvent with a rooted device.
 
@@ -286,7 +300,7 @@ This example showcases all supported file system locations and file access metho
 > 
 > Typically one-shot apps that are intended for a particular event, product campaign, or offline use have embedded content. However, also apps that mostly use streamed content may include a few embedded items that are frequently needed and rarely updated, such as brand introduction, user tutorials, and menu backgrounds.
 
-> *Current version of Orion360 SDK (Basic) for Android does not support playing 360 images directly from the application installation package or expansion package. This feature will be added later in an update to the SDK. However, it is possible to embed content to these locations, and copy the image file before it is used, for example to application's private path on external memory.*
+> *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
 Example: Buffering Indicator
 ----------------------------
