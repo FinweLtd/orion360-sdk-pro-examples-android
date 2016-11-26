@@ -35,11 +35,11 @@ Table of Contents
   5. [Minimal Video Controls](#minimal-video-controls)
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
   7. [Minimal Image Download Player](#minimal-image-download-player)
+  8. [Minimal Image File Player](#minimal-image-file-player)
 
 TODO
 ----
 
-11. [Example: Minimal Image File Player](#example-minimal-image-file-player)
 12. [Example: Buffering Indicator](#example-buffering-indicator)
 13. [Example: Preview Image](#example-preview-image)
 14. [Example: Sensor Fusion](#example-sensor-fusion)
@@ -248,12 +248,11 @@ Image files are large and device models with small amounts of storage space tend
 
 > The hardware limits for 360 image resolution come from available memory for decoding the image file and maximum texture size for rendering it. Notice that Orion360 automatically scales the image to fit to device's maximum texture size if necessary. In 2016, some popular older devices have 2048x2048 pixel texture size (4 megapixels), while new devices range from 4096x4096 (16 megapixels) to 16384x16384 pixels (256 megapixels). Obviously, depending on target device, the difference in rendered image quality can be quite remarkable with a high-resolution source image.
 
-Example: Minimal Image File Player
-----------------------------------
+### Minimal Image File Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034171/c8331e82-896a-11e6-970c-052b498a2344.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640714/bf81686c-b3ee-11e6-961a-6189dbdaf1bd.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalImageFilePlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalImageFilePlayer.java)
 
 An example of a minimal Orion360 image player, for playing an image file from local file system.
 
