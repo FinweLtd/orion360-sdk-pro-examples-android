@@ -34,13 +34,14 @@ Table of Contents
   4. [Minimal Video File Player](#minimal-video-file-player)
   5. [Minimal Video Controls](#minimal-video-controls)
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
+  7. [Minimal Image Download Player](#minimal-image-download-player)
+  8. [Minimal Image File Player](#minimal-image-file-player)
+6. [Examples - Streaming](#examples-streaming)
+  1. [Buffering Indicator](#buffering-indicator)
 
 TODO
 ----
 
-10. [Example: Minimal Image Download Player](#example-minimal-image-download-player)
-11. [Example: Minimal Image File Player](#example-minimal-image-file-player)
-12. [Example: Buffering Indicator](#example-buffering-indicator)
 13. [Example: Preview Image](#example-preview-image)
 14. [Example: Sensor Fusion](#example-sensor-fusion)
 15. [Example: Touch Input](#example-touch-input)
@@ -232,39 +233,45 @@ This example shows how to enable VR mode from an Orion360 video view for viewing
 
 > For high-quality VR experiences, consider using a high-end Samsung smartphone and an active GearVR frame (you will also need to use the Pro version of the Orion360 SDK). The equipment cost will be significantly higher, but also the improvement in quality is remarkable and well worth it. GearVR frame has great optics, high speed sensors and touch controls built-in. They only work with specific Samsung models that have a number of performance tunings built-in and drivers for the GearVR frame. In general, Cardboard-style VR is recommended when you want to provide the VR viewing experience for a large audience by giving out free VR frames, while GearVR-style VR is best for trade shows, shop desks and one-to-one marketing where quality counts the most!
 
-Example: Minimal Image Download Player
---------------------------------------
+### Minimal Image Download Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034160/b779c2e4-896a-11e6-978b-354ba1962177.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640668/e1a00b9e-b3ec-11e6-94c7-7645f4ef490d.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalImageDownloadPlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalImageDownloadPlayer.java)
 
 An example of a minimal Orion360 image player, for downloading an image file before playback.
 
-> Notice that there is no example of a streaming player for 360 images, as an image always needs to be downloaded completely before it can be shown (tiled 360 images are not supported in the Basic version of the Orion360 SDK).
-
-This example is similar to _MinimalVideoDownloadPlayer_, but showcases how to use _OrionImageView_ component instead of _OrionVideoView_ for showing a 360 image.
+> Notice that there is no example of a streaming player for 360 images, as an image always needs to be downloaded completely before it can be shown (tiled 360 images are not yet supported by Orion360 public SDKs).
 
 Since downloading a large file will take a considerable amount of time, the example uses an AsyncTask to download the file in the background and updates download progress on screen. In this simple example, user needs to wait for the download to complete and the playback to begin as there is nothing else to do. However, you should consider placing a small download indicator somewhere in your app and allowing the user to continue using the app while the download is in progress. A high quality app has a download queue for downloading multiple files sequentially, is able to continue a download if it gets terminated early for example because of a network issue, allows user to cancel ongoing downloads, and uses platform notifications for indicating download progress and completion of a download. These features go beyond this example.
 
 Image files are large and device models with small amounts of storage space tend to be popular as they are priced competitively. Consider saving the downloaded image file to external memory if it is currently present. It is also a good idea to offer a method for deleting downloaded content without uninstalling the whole app; this way users can still keep your app installed when they need to restore some storage space.
 
-> The hardware limits for 360 image resolution come from available memory for decoding the image file and maximum texture size for storing and rendering it. Notice that Orion360 automatically scales the image to fit to device's maximum texture size if necessary. In 2016, some popular older devices have 2048x2048 pixel texture size (4 megapixels), while new devices range from 4096x4096 (16 megapixels) to 16384x16384 pixels (256 megapixels). Obviously, depending on target device, the difference in rendered image quality can be quite remarkable with a high-resolution source image.
+> The hardware limits for 360 image resolution come from available memory for decoding the image file and maximum texture size for rendering it. Notice that Orion360 automatically scales the image to fit to device's maximum texture size if necessary. In 2016, some popular older devices have 2048x2048 pixel texture size (4 megapixels), while new devices range from 4096x4096 (16 megapixels) to 16384x16384 pixels (256 megapixels). Obviously, depending on target device, the difference in rendered image quality can be quite remarkable with a high-resolution source image.
 
-Example: Minimal Image File Player
-----------------------------------
+### Minimal Image File Player
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034171/c8331e82-896a-11e6-970c-052b498a2344.jpg)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640714/bf81686c-b3ee-11e6-961a-6189dbdaf1bd.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/basic/examples/examples/MinimalImageFilePlayer.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/minimal/MinimalImageFilePlayer.java)
 
 An example of a minimal Orion360 image player, for playing an image file from local file system.
 
-This example is similar to _MinimalVideoFilePlayer_, but showcases how to use _OrionImageView_ component instead of _OrionVideoView_ for showing a 360 image.
+This example showcases all supported file system locations and file access methods for image sources: the locations embedded to the app distribution packages, the app's private locations that become available after installation, and the locations that are more or less external to the app. To keep the example simple, only one location is active at a time and the others are commented out (you can easily select the active location from the source code). The locations are:
 
-This example showcases all supported file system locations and file access methods for image sources: the locations embedded to the app distribution packages, the app's private locations that become available after installation, and the locations that are more or less external to the app. To keep the example simple, only one location is active at a time and the others are commented out (you can easily select the active location from the source code). The supported locations are:
+1. Application installation package's _/assets_ folder
 
-1. Application's private path on device's internal memory
+   Private assets folder allows playing content embedded to the apps's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds image files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery), or contains only a few images.
+
+2. Application installation package's _/res/raw_ folder
+
+   Private raw resource folder allows playing content embedded to the app's own installation package (.apk). Notice 100MB .apk size limit in Google Play. Must use lowercase characters in filenames and access them without filename extension. This location is generally not recommended; use _/assets_ folder instead. **This location is currently not supported for images!**
+
+3. Application expansion packages
+
+   Private expansion package allows playing content embedded to the app's extra installation package (.obb). Up to 2 GB per package, max 2 packages. This is the recommended location when the application embeds lots of large image files to the installation package and _is_ distributed via Google Play store. Fairly complex but very useful solution. For more information, see https://developer.android.com/google/play/expansion-files.html **This location is currently not supported for images!**
+
+4. Application's private path on device's internal memory
 
    Private internal folder is useful mainly when the app _downloads_ an image file for offline mode or to be cached, as only the app itself can access that location (exception: rooted devices). This location is recommended only if downloaded content files need to be protected from ordinary users - although the protection is easy to circumvent with a rooted device.
 
@@ -290,10 +297,14 @@ This example showcases all supported file system locations and file access metho
 > 
 > Typically one-shot apps that are intended for a particular event, product campaign, or offline use have embedded content. However, also apps that mostly use streamed content may include a few embedded items that are frequently needed and rarely updated, such as brand introduction, user tutorials, and menu backgrounds.
 
-> *Current version of Orion360 SDK (Basic) for Android does not support playing 360 images directly from the application installation package or expansion package. This feature will be added later in an update to the SDK. However, it is possible to embed content to these locations, and copy the image file before it is used, for example to application's private path on external memory.*
+> *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
-Example: Buffering Indicator
-----------------------------
+Examples: Streaming
+-------------------
+
+This category contains examples that discuss about streaming video files over a network connection.
+
+### Buffering Indicator
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/19034193/d91729aa-896a-11e6-8150-ed986d9483e3.jpg)
 
