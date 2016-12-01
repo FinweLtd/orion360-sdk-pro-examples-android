@@ -4,7 +4,7 @@
 
 This repository contains a set of examples for creating a 360 photo/video player using Orion360 SDK (Pro) for Android and Android Studio IDE.
 
-> This document is still under construction. Much more examples will be added.
+> This project is still under construction. Much more examples will be added.
 
 Preface
 -------
