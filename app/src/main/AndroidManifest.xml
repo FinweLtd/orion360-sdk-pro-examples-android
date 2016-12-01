@@ -85,72 +85,17 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
-            android:name=".common.MinimalActivity"
+            android:name=".appfw.CustomActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
-            android:name=".streaming.BufferingIndicator"
+            android:name=".appfw.CustomFragmentActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".audio.FB360TBEActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".camera.CameraActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".source.SourceActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".sharedvar.SharedVariableActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".sprite.SpriteActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".polygon.PolygonActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".keyboard.KeyboardActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".vr3d.VR3DActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".widget.SelectablePointerIconActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
-
         <!-- For playing videos from an (optional) expansion package (.obb) -->
         <provider
             android:name=".ExpansionContentProvider"
