@@ -38,7 +38,9 @@ Table of Contents
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
   7. [Minimal Image Download Player](#minimal-image-download-player)
   8. [Minimal Image File Player](#minimal-image-file-player)
-
+6. [Examples - Application Framework](#examples-application-framework)
+  1. [Custom Activity](#custom-activity)
+  2. [Custom Fragment Activity](#custom-fragment-activity)
 
 Prerequisities
 --------------
@@ -285,4 +287,15 @@ This example showcases all supported file system locations and file access metho
 > Typically one-shot apps that are intended for a particular event, product campaign, or offline use have embedded content. However, also apps that mostly use streamed content may include a few embedded items that are frequently needed and rarely updated, such as brand introduction, user tutorials, and menu backgrounds.
 
 > *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
+
+Examples: Application Framework
+-------------------------------
+
+### Custom Activity
+
+TODO
+
+### Custom Fragment Activity
+
+TODO
 
