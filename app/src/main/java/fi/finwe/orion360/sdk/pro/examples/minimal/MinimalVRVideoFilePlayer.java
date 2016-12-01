@@ -78,7 +78,7 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
-        // Initialize Orion360 video view with a URI to a local .mp4 video file.
+        // Initialize Orion360 view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Configure video view for VR mode. This will split the screen horizontally,

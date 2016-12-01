@@ -56,7 +56,7 @@ import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_INTERNAL_FILES
  * An example of a minimal Orion360 image player, for downloading an image file before playback.
  * <p>
  * This example uses custom code for downloading a file. See MinimalVideoDownloadPlayer for an
- * example of using Android's DownloadManager service instead (recommended).
+ * example of using Android's DownloadManager service instead (recommended for large files).
  * <p>
  * Features:
  * <ul>

@@ -73,6 +73,16 @@ import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
  * have both normal and VR mode indicators configured in the layout, and select which one
  * to use by toggling their visibilities. Remember to update the indicators when user
  * toggles between normal and VR mode.
+ * <p/>
+ * When viewing a stereo 360 video (separate equirectangular image for left and right eyes
+ * either in side-by-side or over-and-under configuration) the buffering indicators need to
+ * be adjusted: since they will be drawn on top of the video content, they also need to appear
+ * closer than the closest thing on the video! Hence, the video producer should be aware of
+ * depth budget and ensure nothing comes closer than agreed limit, say 30cm, from camera -
+ * then you can adjust the buffering indicators to 20-25cm distance simply by putting the left
+ * and right eye indicators slightly closer to each other by modifying the XML layout.
+ * If this is not possible, you can temporarily fall back to mono rendering i.e use only left
+ * or right eye image for both eyes when buffering indicator must be shown.
  *
  * Features:
  * <ul>
@@ -130,7 +140,7 @@ public class BufferingIndicator extends SimpleOrionActivity {
         mBufferingIndicatorVR = (LinearLayout) findViewById(R.id.buffering_indicator_vr);
         mBufferingIndicatorHandler = new Handler();
 
-        // Initialize Orion360 video view with a URI to an .mp4 video-on-demand stream.
+        // Initialize Orion360 view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.TEST_VIDEO_URI_1280x640);
 
         // Don't wait for 'buffering started' event; show buffering indicator right away.
@@ -176,7 +186,7 @@ public class BufferingIndicator extends SimpleOrionActivity {
                             setVRMode(false);
                         }
 
-                        // Update buffering indicator type (normal or VR mode).
+                        // Update buffering indicator type if visible (normal or VR mode).
                         if (mBufferingIndicator.getVisibility() == View.VISIBLE ||
                                 mBufferingIndicatorVR.getVisibility() == View.VISIBLE) {
                             showBufferingIndicator();

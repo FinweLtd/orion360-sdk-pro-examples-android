@@ -30,7 +30,6 @@
 package fi.finwe.orion360.sdk.pro.examples.minimal;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -125,7 +124,8 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
         // Private raw resource folder allows playing content embedded to the app's own
         // installation package (.apk) (notice 100MB apk size limit in Google Play).
         // Use lowercase characters in filename, and access it without extension!
-        // NOTE: Playing images from R.raw is currently NOT supported!
+        // NOTE: Playing images from R.raw is currently NOT supported - without filename
+        // extension we assume URI points to a video file, and MediaPlayer does not decode images.
         //image = PRIVATE_R_RAW_IMAGE_PATH;
 
         // Private internal folder is useful mainly when the app downloads an image file,
@@ -144,7 +144,8 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
 
         // Private expansion package allows playing content embedded to the app's
         // extra installation package (.obb) (up to 2 GB per package, max 2 packages).
-        // NOTE: Playing images from expansion package is currently NOT supported!
+        // NOTE: Playing images from expansion package is currently NOT supported! This feature
+        // will be added later.
         //image = PRIVATE_EXPANSION_IMAGE_PATH;
 
         // Show the selected image file.
@@ -165,7 +166,7 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
         // mounted or not (though, it is often built-in non-removable memory nowadays).
         if (path.equalsIgnoreCase(PRIVATE_EXTERNAL_IMAGE_PATH)
                 || path.equalsIgnoreCase(PUBLIC_EXTERNAL_IMAGE_PATH)
-                /*|| path.equalsIgnoreCase(PRIVATE_EXPANSION_IMAGE_PATH)*/) {
+                || path.equalsIgnoreCase(PRIVATE_EXPANSION_IMAGE_PATH)) {
 
             if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 Toast.makeText(this, R.string.player_media_not_mounted,
