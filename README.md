@@ -398,13 +398,18 @@ In this example, a slightly rare (but still important) Orion360 VR video player 
 
 ### Stereo Panorama VR
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20812172/44d7a48a-b819-11e6-9a97-9bf22da648ba.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20851410/f286c2ee-b8e8-11e6-8ed3-dff4751fc2b1.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/appfw/CustomActivity.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/StereoPanoramaVR.java)
 
-An example of a minimal Orion360 image player, implemented as a custom activity.
+An example of bindings for creating a VR player for stereoscopic full spherical videos.
 
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create two _OrionViewports_ in Java code. This will split the layout of the _OrionView_ horizontally. Bind them to _OrionView_. Map first viewport to left eye and second viewport to right eye.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_ using a method variant that allows configuring half of the texture to left eye and the other half to the right eye.
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 
-
-
-
+> It is **very** important that left and right eye images do not get swapped! There are many opportunities for human error in content creation, writing code, and even when placing the device into a VR frame. Two errors may cancel each other out. Pay attention and do test with VR glasses.
