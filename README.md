@@ -334,8 +334,8 @@ The following topics are covered:
 
 > Notice that inheriting from SimpleOrionFragment provides you all of these, and more.
 
-Examples - Binding
-------------------
+Examples: Binding
+-----------------
 
 This category contains examples that show how Orion360 player can be configured for different purposes by creating a set of Orion objects and binding them together. The binding mechanism allows great flexibility while it still maintains ease of use - many complex tasks can be solved with only a few lines of code.
 
