@@ -38,7 +38,9 @@ Table of Contents
   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
   7. [Minimal Image Download Player](#minimal-image-download-player)
   8. [Minimal Image File Player](#minimal-image-file-player)
-
+6. [Examples - Application Framework](#examples-application-framework)
+  1. [Custom Activity](#custom-activity)
+  2. [Custom Fragment Activity](#custom-fragment-activity)
 
 Prerequisities
 --------------
@@ -286,3 +288,43 @@ This example showcases all supported file system locations and file access metho
 
 > *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
+Examples: Application Framework
+-------------------------------
+
+This category contains examples that show how Orion360 player can be configured into your own Activity or Fragment, instead of using provided _SimpleOrionActivity_ or _SimpleOrionFragment_ as a parent. These examples are also useful for understanding how exactly everything works under the hood, as the main Orion360 components are visible in the code examples and explained in the code comments.
+
+### Custom Activity
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20812172/44d7a48a-b819-11e6-9a97-9bf22da648ba.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/appfw/CustomActivity.java)
+
+An example of a minimal Orion360 image player, implemented as a custom activity.
+
+The following topics are covered:
+- Propagating Activity lifecycle events to Orion360
+- Verifying that Orion360 license file is present and valid (mandatory for rendering to work)
+- What are _OrionView_, _OrionViewport_, _OrionScene_, _OrionPanorama_, _OrionTexture_, and _OrionCamera_
+- How a typical mono spherical player is configured
+- How sensor fusion and touch gestures can be used for controlling the camera
+- Binding components together
+
+> Notice that inheriting from SimpleOrionActivity provides you all of these, and more.
+
+### Custom Fragment Activity
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20812688/35a0092e-b81b-11e6-8bd4-60cb4989dcfe.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/appfw/CustomFragmentActivity.java)
+
+An example of a minimal Orion360 image player, implemented as a custom fragment.
+
+The following topics are covered:
+- Propagating Fragment lifecycle events to Orion360
+- Verifying that Orion360 license file is present and valid (mandatory for rendering to work)
+- What are _OrionView_, _OrionViewport_, _OrionScene_, _OrionPanorama_, _OrionTexture_, and _OrionCamera_
+- How a typical mono spherical player is configured
+- How sensor fusion and touch gestures can be used for controlling the camera
+- Binding components together
+
+> Notice that inheriting from SimpleOrionFragment provides you all of these, and more.
