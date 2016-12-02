@@ -378,12 +378,23 @@ In this example, the most typical Orion360 VR video player is configured: a full
 
 ### Stereo Panorama
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20812172/44d7a48a-b819-11e6-9a97-9bf22da648ba.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20851231/d4457934-b8e7-11e6-98ce-93ae02985e6f.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/appfw/CustomActivity.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/StereoPanorama.java)
 
-An example of a minimal Orion360 image player, implemented as a custom activity.
+An example of bindings for creating a player for stereoscopic full spherical videos.
 
+In this example, a slightly rare (but still important) Orion360 VR video player is configured: a full spherical equirectangular stereo panorama player (without VR mode, i.e. content is viewed in mono). In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_ using a method variant that allows configuring half of the texture to left eye and the other half to the right eye.
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
+
+> Here the purpose is to view stereo panorama video on phone/tablet screen (without VR glasses). The stereo effect is lost; only left eye image is used.
 
 ### Stereo Panorama VR
 
