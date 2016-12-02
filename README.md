@@ -348,6 +348,7 @@ This category contains examples that show how Orion360 player can be configured 
 An example of bindings for creating a player for monoscopic full spherical videos.
 
 In this example, the most typical Orion360 video player is configured: a full spherical equirectangular mono panorama player. In short, this configuration requires the following steps:
+
 1. Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
 2. Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
 3. Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
