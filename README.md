@@ -360,12 +360,21 @@ In this example, the most typical Orion360 video player is configured: a full sp
 
 ### Mono Panorama VR
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20812172/44d7a48a-b819-11e6-9a97-9bf22da648ba.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20851127/247a2da6-b8e7-11e6-8198-063d4e81dba6.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/appfw/CustomActivity.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/MonoPanoramaVR.java)
 
-An example of a minimal Orion360 image player, implemented as a custom activity.
+An example of bindings for creating a VR player for monoscopic full spherical videos.
 
+In this example, the most typical Orion360 VR video player is configured: a full spherical equirectangular mono panorama player. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create two _OrionViewports_ in Java code. This will split the layout of the _OrionView_ horizontally. Bind them to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 
 ### Stereo Panorama
 
