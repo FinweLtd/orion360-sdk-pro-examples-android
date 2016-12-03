@@ -453,5 +453,5 @@ In this example, two panoramas and two textures are used for blending a 360 imag
 - Create one _OrionCamera_ in Java code. This will project the 3D world onto 2D surface. Bind it to _OrionView_.
 - Create two _OrionPanoramas_ in Java code. These will represent the spherical image surface and spherical video surface in the 3D world. Bind them to _OrionScene_.
 - Create two _OrionTextures_ in Java code. These will contain the decoded image and the latest decoded video frame. Bind them to _OrionPanoramas_.
-- Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND _OrionCamera_.
