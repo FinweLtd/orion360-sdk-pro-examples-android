@@ -46,6 +46,7 @@ Table of Contents
   2. [Mono Panorama VR](#mono-panorama-vr)
   3. [Stereo Panorama](#stereo-panorama)
   4. [Stereo Panorama VR](#stereo-panorama-vr)
+  5. [Rear-view Mirror](#rear-view-mirror)
 
 Prerequisities
 --------------
@@ -404,6 +405,8 @@ In this example, a slightly rare (but still important) Orion360 VR video player 
 
 An example of bindings for creating a VR player for stereoscopic full spherical videos.
 
+In this example, a fairly typical Orion360 VR video player is configured: a full spherical equirectangular stereo panorama player. In short, this configuration requires the following steps:
+
 - Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
 - Create two _OrionViewports_ in Java code. This will split the layout of the _OrionView_ horizontally. Bind them to _OrionView_. Map first viewport to left eye and second viewport to right eye.
 - Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
@@ -413,3 +416,22 @@ An example of bindings for creating a VR player for stereoscopic full spherical 
 - Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 
 > It is **very** important that left and right eye images do not get swapped! There are many opportunities for human error in content creation, writing code, and even when placing the device into a VR frame. Two errors may cancel each other out. Pay attention and do test with VR glasses.
+
+### Rear-view Mirror
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20859836/14f57a5c-b973-11e6-95db-ff6ba8e68121.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/RearviewMirror.java)
+
+An example of bindings for creating a player with a rear-view mirror.
+
+In this example, two viewports and two cameras are used for simultanouesly showing two different views to the same equirectangular mono panorama video. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create two _OrionViewports_ in Java code. This will define the internal layout of the _OrionView_ so that one viewport covers the whole _OrionView_ and another smaller one is put on top of it. Bind them to _OrionView_. Map the first viewport to the main camera and the second viewport to the rear-view camera.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create two _OrionCameras_ in Java code. These will project the 3D world onto 2D surfaces so that one camera looks ahead and the other camera to the opposite direction. Bind them to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
+- Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND both _OrionCameras_.
+- Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND both _OrionCameras_. Notice that zooming feature is disabled from rear-view camera.
