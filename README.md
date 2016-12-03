@@ -47,6 +47,7 @@ Table of Contents
   3. [Stereo Panorama](#stereo-panorama)
   4. [Stereo Panorama VR](#stereo-panorama-vr)
   5. [Rear-view Mirror](#rear-view-mirror)
+  6. [Blending](#blending)
 
 Prerequisities
 --------------
@@ -435,3 +436,22 @@ In this example, two viewports and two cameras are used for simultanouesly showi
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND both _OrionCameras_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND both _OrionCameras_. Notice that zooming feature is disabled from rear-view camera.
+
+### Blending
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20861365/f2fb9df4-b996-11e6-8a1b-66461636e223.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Blending.java)
+
+An example of bindings for creating a player that blends two panoramas together.
+
+In this example, two panoramas and two textures are used for blending a 360 image and a 360 video together by making one of them partially translucent and slightly smaller so that the larger one can be seen through it. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto 2D surface. Bind it to _OrionView_.
+- Create two _OrionPanoramas_ in Java code. These will represent the spherical image surface and spherical video surface in the 3D world. Bind them to _OrionScene_.
+- Create two _OrionTextures_ in Java code. These will contain the decoded image and the latest decoded video frame. Bind them to _OrionPanoramas_.
+- Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
+- Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND _OrionCamera_.
