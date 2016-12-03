@@ -127,6 +127,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
         <activity
+            android:name=".binding.Overview"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"></activity>
+        <activity
             android:name=".binding.MultipleProjections"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
