@@ -438,6 +438,8 @@ In this example, two viewports and two cameras are used for simultanouesly showi
 - Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND both _OrionCameras_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND both _OrionCameras_. Notice that zooming feature is disabled from rear-view camera.
 
+> Here the focus is in the use of the binding mechanism, hence a couple of details have been obmitted compared to how a real mirror works: in reality when the user looks up the rear-view image should reflect bottom direction (here: top direction), and the actual mirror effect is also missing i.e. texts should show up backwards in the mirror-view (here: not mirrored).
+
 ### Overview
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20865503/48680d78-ba1d-11e6-93b3-60aeee88271b.png)
