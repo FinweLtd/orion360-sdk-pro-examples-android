@@ -46,9 +46,10 @@ Table of Contents
   2. [Mono Panorama VR](#mono-panorama-vr)
   3. [Stereo Panorama](#stereo-panorama)
   4. [Stereo Panorama VR](#stereo-panorama-vr)
-  5. [Rear-view Mirror](#rear-view-mirror)
-  6. [Overview](#overview)
-  7. [Blending](#blending)
+  5. [Doughnut](#doughnut)
+  6. [Rear-view Mirror](#rear-view-mirror)
+  7. [Overview](#overview)
+  8. [Blending](#blending)
 
 Prerequisities
 --------------
@@ -418,6 +419,27 @@ In this example, a fairly typical Orion360 VR video player is configured: a full
 - Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 
 > It is **very** important that left and right eye images do not get swapped! There are many opportunities for human error in content creation, writing code, and even when placing the device into a VR frame. Two errors may cancel each other out. Pay attention and do test with VR glasses.
+
+### Doughnut
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20868798/f7a8ab40-ba6c-11e6-9b24-b49c6b932592.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Doughnut.java)
+
+An example of bindings for creating a player for monoscopic doughnut videos.
+
+In this example, the video player is otherwise typical but configured for doughnut shape video, which does not reach down to nadir nor up to zenith - there are round holes at the bottom and at the top (some cameras do not produce full spherical panoramas). In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_ so that you give two _Rects_ as parameters that define 1) the horizontal and vertical span of your camera (and thus the shape of the required panorama model) and 2) the part of the texture that you want to map on the doughnut surface (typically the full texture).
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
+- Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND _OrionCamera_.
+
+> Since the aspect ratio of a doughnut shape video is exceptionally wide, the maximum video resolution or the maximum texture size can become a limiting factor. One solution is to horizontally split the doughnut video to left and right halfs, and stack these into the video frame on top of each other (left=top, right=bottom). It is easy to re-combine the parts in the app by using Orion360 to map them onto the doughnut surface. A tiny seam may appear as a result.
 
 ### Rear-view Mirror
 
