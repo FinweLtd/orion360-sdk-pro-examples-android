@@ -73,25 +73,25 @@ public class Overview extends OrionActivity {
     /** The Android view where our 3D scenes will be rendered to. */
     protected OrionView mView;
 
-    /** The 3D scene where our (rectilinear) panorama sphere will be added to. */
+    /** The 3D scene where our rectilinear panorama sphere will be added to. */
     protected OrionScene mSceneRectilinear;
 
-    /** The 3D scene where our (equirectangular) panorama sphere will be added to. */
+    /** The 3D scene where our equirectangular panorama plane will be added to. */
     protected OrionScene mSceneEquirectangular;
 
-    /** The panorama sphere where our video texture will be mapped to (rectilinear). */
+    /** The rectilinear panorama sphere where our video texture will be mapped to. */
     protected OrionPanorama mPanoramaRectilinear;
 
-    /** The panorama sphere where our video texture will be mapped to (equirectangular). */
+    /** The equirectangular panorama plane where our video texture will be mapped to. */
     protected OrionPanorama mPanoramaEquirectangular;
 
     /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mPanoramaTexture;
 
-    /** The camera which will project our 3D scene to a 2D (main view) surface. */
+    /** The camera which will project our 3D scene to a 2D main viewport surface. */
     protected OrionCamera mMainViewCamera;
 
-    /** The camera which will project our 3D scene to a 2D (overview) surface. */
+    /** The camera which will project our 3D scene to a 2D overview viewport surface. */
     protected OrionCamera mOverviewCamera;
 
     /** The widget that will handle our touch gestures. */
@@ -111,7 +111,7 @@ public class Overview extends OrionActivity {
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mSceneRectilinear.bindController(OrionContext.getSensorFusion());
 
-        // Create a new panorama for rectilinear and equirectangular projections.
+        // Create new panoramas for rectilinear sphere and equirectangular plane projections.
         mPanoramaRectilinear = new OrionPanorama();
         mPanoramaRectilinear.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
         mPanoramaEquirectangular = new OrionPanorama();
@@ -122,19 +122,19 @@ public class Overview extends OrionActivity {
                 MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama objects. Here we assume full spherical
-        // equirectangular monoscopic source, and wrap the complete texture around the sphere.
-        // If you have stereoscopic content or doughnut shape video, use other method variants.
+        // equirectangular monoscopic source, and wrap the complete texture around the sphere /
+        // onto the plane.
         mPanoramaRectilinear.bindTextureFull(0, mPanoramaTexture);
         mPanoramaEquirectangular.bindTextureFull(0, mPanoramaTexture);
 
-        // Bind the panoramas to the scenes. This will make them part of our 3D worlds.
+        // Bind the panoramas to the scenes. This will make them part of our two separate 3D worlds.
         mSceneRectilinear.bindSceneItem(mPanoramaRectilinear);
         mSceneEquirectangular.bindSceneItem(mPanoramaEquirectangular);
 
         // Next we will create a separate camera for both viewports, because we want the
         // main viewport to respond to sensors and touch but overview camera stay still.
 
-        // Create a new camera (main view). This will become the end-user's eyes into the 3D world.
+        // Create a new camera for the main viewport.
         mMainViewCamera = new OrionCamera();
 
         // React to the camera getting bound to the SensorFusion for the first time.
@@ -154,7 +154,7 @@ public class Overview extends OrionActivity {
             }
         });
 
-        // Create a new camera (overview). This will become the end-user's eyes into the 3D world.
+        // Create a new camera for the overview viewport.
         mOverviewCamera = new OrionCamera();
 
         // React to the camera getting bound to the SensorFusion for the first time.
@@ -190,7 +190,7 @@ public class Overview extends OrionActivity {
         // viewport per eye. Here we fill the complete view with one (landscape) viewport, and
         // add another much smaller one on top of it to function as an overview image.
         mView.bindViewports(new RectF[] {
-                new RectF(0.0F, 1.0F, 1.0F, 0.0F),          // Main view covers the whole view
+                new RectF(0.0F, 1.0F, 1.0F, 0.0F),          // Main covers the whole view
                 new RectF(0.35F, 0.25F, 0.65F, 0.0F) },     // Overview covers small bottom area
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
 
@@ -209,10 +209,10 @@ public class Overview extends OrionActivity {
         // Bind the equirectangular scene to the overview viewport.
         mView.getViewports()[1].bindScene(mSceneEquirectangular);
 
-        // Bind the main viewport to the main view camera.
+        // Bind the main viewport to the main viewport camera.
         mView.getViewports()[0].bindCamera(mMainViewCamera);
 
-        // Bind the overview viewport to the overview camera.
+        // Bind the overview viewport to the overview viewport camera.
         mView.getViewports()[1].bindCamera(mOverviewCamera);
 	}
 

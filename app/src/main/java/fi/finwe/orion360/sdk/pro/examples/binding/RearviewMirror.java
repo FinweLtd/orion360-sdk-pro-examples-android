@@ -82,10 +82,10 @@ public class RearviewMirror extends OrionActivity {
     /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mPanoramaTexture;
 
-    /** The camera which will project our 3D scene to a 2D (main view) surface. */
+    /** The camera which will project our 3D scene to a 2D main viewport surface. */
     protected OrionCamera mMainViewCamera;
 
-    /** The camera which will project our 3D scene to a 2D (rear-view) surface. */
+    /** The camera which will project our 3D scene to a 2D rear-view viewport surface. */
     protected OrionCamera mRearViewCamera;
 
     /** The widget that will handle our touch gestures. */
