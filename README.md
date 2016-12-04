@@ -47,7 +47,8 @@ Table of Contents
   3. [Stereo Panorama](#stereo-panorama)
   4. [Stereo Panorama VR](#stereo-panorama-vr)
   5. [Rear-view Mirror](#rear-view-mirror)
-  6. [Blending](#blending)
+  6. [Overview](#overview)
+  7. [Blending](#blending)
 
 Prerequisities
 --------------
@@ -436,6 +437,27 @@ In this example, two viewports and two cameras are used for simultanouesly showi
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND both _OrionCameras_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND both _OrionCameras_. Notice that zooming feature is disabled from rear-view camera.
+
+> Here the focus is in the use of the binding mechanism, hence a couple of details have been obmitted compared to how a real mirror works: in reality when the user looks up the rear-view image should reflect bottom direction (here: top direction), and the actual mirror effect is also missing i.e. texts should show up backwards in the mirror-view (here: not mirrored).
+
+### Overview
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20865503/48680d78-ba1d-11e6-93b3-60aeee88271b.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Overview.java)
+
+An example of bindings for creating a player with an overview image on top.
+
+In this example, the view contains two viewports: the main viewport - which responds to sensors and touch - covers the whole view, and another smaller viewport is drawn on top of it for an overview image with original equirectangular projection. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create two _OrionViewports_ in Java code. These will define the internal layout of the _OrionView_ so that the main viewport covers the whole view and another smaller one for the overview image is drawn on top of it. Bind them to _OrionView_.
+- Create two _OrionScenes_ in Java code. These will contain our 3D worlds, one for the main viewport and another for the overview viewport. Bind them to _OrionView_.
+- Create two _OrionCameras_ in Java code. These will project the 3D worlds onto 2D surfaces, one for the main viewport and another for the overview viewport. Bind them to _OrionView_.
+- Create two _OrionPanoramas_ in Java code. These will represent the spherical spherical video surface for the main viewport and the plane video surface for the overview viewport. Bind them to _OrionScene_.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to both _OrionPanoramas_.
+- Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to main viewport _OrionScene_ AND main viewport _OrionCamera_.
+- Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to main viewport _OrionScene_ AND main viewport _OrionCamera_.
 
 ### Blending
 
