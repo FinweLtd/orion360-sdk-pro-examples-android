@@ -157,6 +157,9 @@ public class Overview extends OrionActivity {
         // Create a new camera for the overview viewport.
         mOverviewCamera = new OrionCamera();
 
+        // We don't need perspective camera for this projection, use orthographic instead.
+        mOverviewCamera.setCameraProjection(OrionCamera.CameraProjection.ORTHOGRAPHIC);
+
         // React to the camera getting bound to the SensorFusion for the first time.
         mOverviewCamera.setRotationBaseControllerListener(
                 new OrionSceneItem.RotationBaseControllerListenerBase() {

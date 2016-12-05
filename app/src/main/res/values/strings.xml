@@ -15,6 +15,7 @@
 
     <!-- Video Player -->
     <string name="player_read_permission_denied">Cannot play content (read permission not granted)</string>
+    <string name="player_camera_permission_denied">Cannot open camera (camera permission not granted)</string>
     <string name="player_media_not_mounted">Cannot play content (media not mounted)</string>
     <string name="player_file_download_title">Please wait&#8230;</string>
     <string name="player_file_download_message">Downloading file %s</string>
