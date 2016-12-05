@@ -524,6 +524,8 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 Streaming
 =========
 
+This category contains examples that focus on streaming 360/VR video and/or images over a network connection.
+
 ### Buffering Indicator
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/20885359/13921c06-baf9-11e6-9ebe-74347a5c504d.png)
