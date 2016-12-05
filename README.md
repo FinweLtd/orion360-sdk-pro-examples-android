@@ -46,11 +46,13 @@ Table of Contents
   2. [Mono Panorama VR](#mono-panorama-vr)
   3. [Stereo Panorama](#stereo-panorama)
   4. [Stereo Panorama VR](#stereo-panorama-vr)
-  5. [Doughnut](#doughnut)
-  6. [Rear-view Mirror](#rear-view-mirror)
-  7. [Overview](#overview)
-  8. [Blending](#blending)
-  9. [Video Ball](#video-ball)
+  5. [Camera Pass](#camera-pass)
+  6. [Camera Pass VR](#camera-pass-vr)
+  7. [Doughnut](#doughnut)
+  8. [Rear-view Mirror](#rear-view-mirror)
+  9. [Overview](#overview)
+  10. [Blending](#blending)
+  11. [Video Ball](#video-ball)
 8. [Streaming](#streaming)
   1. [Buffering Indicator](#buffering-indicator)
 
@@ -422,6 +424,40 @@ In this example, a fairly typical Orion360 VR video player is configured: a full
 - Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 
 > It is **very** important that left and right eye images do not get swapped! There are many opportunities for human error in content creation, writing code, and even when placing the device into a VR frame. Two errors may cancel each other out. Pay attention and do test with VR glasses.
+
+### Camera Pass
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20894133/f1038156-bb1c-11e6-81dd-bb38d5fa5aaf.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/CameraPass.java)
+
+An example of bindings for creating a camera pass-through with device's back camera.
+
+In this example, device's hardware camera is used as a video source. The camera preview frames are mapped into an _OrionSprite_ object, which can be placed anywhere in the 3D world. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionSprite_ in Java code. This will represent a 2D surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionCameraTexture_ in Java code. This will contain the latest camera preview frame. Bind it to _OrionSprite_ and set _OrionSprite_ rotation offset to be the same as the camera texture's rotation so that upside is up.
+
+### Camera Pass VR
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20894604/c8e97e08-bb1e-11e6-92bd-f6334baf149f.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/CameraPassVR.java)
+
+An example of bindings for creating a camera pass-through with device's back camera for VR mode.
+
+In this example, device's hardware camera is used as a video source. The camera preview frames are mapped into an _OrionSprite_ object, which can be placed anywhere in the 3D world. The viewport is split for VR mode. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create two _OrionViewports_ in Java code. This will split the layout of the _OrionView_ horizontally. Bind them to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionSprite_ in Java code. This will represent a 2D surface in the 3D world. Bind it to _OrionScene_.
+- Create one _OrionCameraTexture_ in Java code. This will contain the latest camera preview frame. Bind it to _OrionSprite_ and set _OrionSprite_ rotation offset to be the same as the camera texture's rotation so that upside is up.
 
 ### Doughnut
 
