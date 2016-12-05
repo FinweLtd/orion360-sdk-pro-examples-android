@@ -83,6 +83,7 @@ import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
  * have both normal and VR mode indicators configured in the layout, and select which one
  * to use by toggling their visibilities. Remember to update the indicators when user
  * toggles between normal and VR mode.
+ * <p/>
  * Features:
  * <ul>
  * <li>Plays one hard-coded full spherical (360x180) equirectangular video
@@ -116,7 +117,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     protected OrionCamera mCamera;
 
     /** Buffering indicator for normal mode. */
-    private ProgressBar mBufferingIndicator;
+    private ProgressBar mBufferingIndicatorNormal;
 
     /** Buffering indicator for VR mode. */
     private LinearLayout mBufferingIndicatorVR;
@@ -127,7 +128,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     /** Polling interval for buffering indicator handler, in ms. */
     int mBufferingIndicatorIntervalMs = 500;
 
-    /** Gesture detector for tapping events. */
+    /** Gesture detector for tapping events (used for toggling between normal and VR modes). */
     private GestureDetector mGestureDetector;
 
     /** Flag for indicating if VR mode is currently enabled, or not. */
@@ -140,13 +141,13 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
 
         // Use an XML layout where you can stack components on top of each other, such as
         // a FrameLayout. Add OrionView, and then put a centered ProgressBar on top of it
-        // to act as a buffering indicator for normal viewing mode. For VR mode you can
+        // to act as a buffering indicator for normal mode. For VR mode you can simply
         // use two ProgressBars; first divide the layout horizontally to left and right
         // eye parts, then center the ProgressBars within their own halves.
 		setContentView(R.layout.activity_video_player);
 
         // Get buffering indicators and setup a handler for them.
-        mBufferingIndicator = (ProgressBar) findViewById(R.id.buffering_indicator);
+        mBufferingIndicatorNormal = (ProgressBar) findViewById(R.id.buffering_indicator);
         mBufferingIndicatorVR = (LinearLayout) findViewById(R.id.buffering_indicator_vr);
         mBufferingIndicatorHandler = new Handler();
 
@@ -321,7 +322,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
 
         if (enabled) {
 
-            // Bind the complete texture for both left and right eyes. Assume full spherical mono.
+            // Bind the complete texture to both left and right eyes. Assume full spherical mono.
             mPanorama.bindTextureVR(0, mPanoramaTexture, new RectF(-180, 90, 180, -90),
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
@@ -341,13 +342,13 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
             mView.getViewports()[0].bindFX(barrelFx);
             mView.getViewports()[1].bindFX(barrelFx);
 
-            // Re-configure camera.
+            // Re-configure camera for VR mode.
             mCamera.setVRCameraDistance(0.035f);
             mCamera.setVRCameraFocalDistance(1.5f);
             mCamera.setZoom(1.0f);
             mCamera.setZoomMax(1.0f);
 
-            // We need to hide the navigation bar, else this will be visible for the right eye.
+            // Hide the navigation bar, else it will be visible for the right eye!
             hideNavigationBar();
 
             // VR is still new for many users, hence they should be educated what this feature is
@@ -376,7 +377,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         mIsVRModeEnabled = enabled;
 
         // Update buffering indicator type (normal or VR mode), if it is currently visible.
-        if (mBufferingIndicator.getVisibility() == View.VISIBLE ||
+        if (mBufferingIndicatorNormal.getVisibility() == View.VISIBLE ||
                 mBufferingIndicatorVR.getVisibility() == View.VISIBLE) {
             showBufferingIndicator();
         }
@@ -389,10 +390,10 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
      */
     protected void showBufferingIndicator() {
         if (mIsVRModeEnabled) {
-            mBufferingIndicator.setVisibility(View.GONE);
+            mBufferingIndicatorNormal.setVisibility(View.GONE);
             mBufferingIndicatorVR.setVisibility(View.VISIBLE);
         } else {
-            mBufferingIndicator.setVisibility(View.VISIBLE);
+            mBufferingIndicatorNormal.setVisibility(View.VISIBLE);
             mBufferingIndicatorVR.setVisibility(View.GONE);
         }
     }
@@ -401,7 +402,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
      * Hide buffering indicator.
      */
     protected void hideBufferingIndicator() {
-        mBufferingIndicator.setVisibility(View.GONE);
+        mBufferingIndicatorNormal.setVisibility(View.GONE);
         mBufferingIndicatorVR.setVisibility(View.GONE);
     }
 
