@@ -50,6 +50,7 @@ Table of Contents
   6. [Rear-view Mirror](#rear-view-mirror)
   7. [Overview](#overview)
   8. [Blending](#blending)
+  9. [Video Ball](#video-ball)
 
 Prerequisities
 --------------
@@ -499,3 +500,21 @@ In this example, two panoramas and two textures are used for blending a 360 imag
 - Create two _OrionTextures_ in Java code. These will contain the decoded image and the latest decoded video frame. Bind them to _OrionPanoramas_.
 - Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND _OrionCamera_.
+
+### Video Ball
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20869241/de48066e-ba76-11e6-9b6a-33f9f991025a.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/VideoBall.java)
+
+An example of bindings for creating a player that looks panorama sphere from outside.
+
+In this example, the viewer is taken outside of the panorama sphere, creating an illusion of a video ball. In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_. Move it far enough forward to look at it from outside, compensate mirroring effect from inward texture normals with a negative scale, apply sensor fusion and touch control and rotate 180 degrees to bring front side in view.
+- Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
+- Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
