@@ -51,6 +51,8 @@ Table of Contents
   7. [Overview](#overview)
   8. [Blending](#blending)
   9. [Video Ball](#video-ball)
+8. [Streaming](#streaming)
+  1. [Buffering Indicator](#buffering-indicator)
 
 Prerequisities
 --------------
@@ -518,3 +520,27 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 - Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_. Move it far enough forward to look at it from outside, compensate mirroring effect from inward texture normals with a negative scale, apply sensor fusion and touch control and rotate 180 degrees to bring front side in view.
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+Streaming
+=========
+
+This category contains examples that focus on streaming 360/VR video and/or images over a network connection.
+
+### Buffering Indicator
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20885359/13921c06-baf9-11e6-9ebe-74347a5c504d.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/streaming/BufferingIndicator.java)
+
+An example of a buffering indicator for a streaming Orion360 video player.
+
+A buffering indicator tells user that the video player is currently loading or preparing content, and playback will start/continue soon. This way user does not assume that she is supposed to do something more. It also shows that the application is working although nothing else seems to be happening on screen, which is quite important.
+
+While the MinimalVideoStreamPlayer example shows how to listen to buffering events and show/hide the buffering indicator accordingly, this example goes further to implement a buffering indicator that is shown also when the video view itself is being initialized, and that supports switching to VR mode where both left and right eye need their own copy of the indicator widget.
+
+The buffering indicator can be easily realized with an Android progress bar widget. Take a look at the activity_video_player.xml file, which uses a FrameLayout to add an indeterminate progress bar widget on top of the Orion360 view, centered on screen. For VR mode, there is a slightly more complex setup: a horizontal LinearLayout contains two RelativeLayout containers, which each take 50% of the width and set up a centered progress bar widget for left and right eye, respectively. When the buffering indicator needs to be shown, we choose whether to make VR mode or normal indicator visible. Finally, when user toggles between normal and VR mode, we must remember to update the buffering indicator if it is currently visible.
+
+When video is being prepared for playback over the network, it can take a long time before Android MediaPlayer reports that buffering has started. Hence, it is a good idea to show the buffering indicator immediately after changing video URI to _OrionTexture_ - without waiting for the callback that tells that buffering has started. Since the activity can get paused and resumed at any time, and the video playback is usually auto-started when the player activity is resumed, it is often simplest to show the buffering indicator in onResume() and hide it when the playback begins.
+
+Unfortunately, some Android devices have a buggy implementation of video buffering events and the event that tells that buffering has stopped might never come! We have noticed this behavior occasionally when the player is buffering the very beginning of the video. To prevent the buffering indicator for staying on screen forever, you can for example use a simple handler that polls when the video playback has progressed, and thus ensure that the buffering indicator gets always removed when playback begins/continues.
+
