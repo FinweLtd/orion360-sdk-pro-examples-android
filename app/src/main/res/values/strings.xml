@@ -32,8 +32,9 @@
     <string name="controller_duration">-:--</string>
 
     <!-- Tag/Hotspot image files -->
-    <string name="asset_nadir_patch">Orion360_nadir_patch_1024x1024.png</string>
-    <string name="asset_hotspot_reticle">Orion360_hotspot_reticle_256x256.png</string>
-    <string name="asset_hotspot_start">Orion360_hotspot_start_256x256.png</string>
+    <string name="asset_nadir_patch">asset://Orion360_nadir_patch_1024x1024.png</string>
+    <string name="asset_hotspot_reticle">asset://Orion360_hotspot_reticle_256x256.png</string>
+    <string name="asset_hotspot_start">asset://Orion360_hotspot_start_256x256.png</string>
+    <string name="asset_hotspot_pie">asset://Orion360_hotspot_pie_256x256.png</string>
 
 </resources>
