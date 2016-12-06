@@ -36,5 +36,6 @@
     <string name="asset_hotspot_reticle">asset://Orion360_hotspot_reticle_256x256.png</string>
     <string name="asset_hotspot_start">asset://Orion360_hotspot_start_256x256.png</string>
     <string name="asset_hotspot_pie">asset://Orion360_hotspot_pie_256x256.png</string>
+    <string name="asset_polygon_cube">"asset://cube/cube.obj"</string>
 
 </resources>

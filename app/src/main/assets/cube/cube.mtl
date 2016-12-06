@@ -1,7 +1,6 @@
-# Blender MTL File: 'tekstuurikuutio_2.blend'
-# Material Count: 6
+# cube.mtl
 
-newmtl 1
+newmtl Material_Orion360_test_image_top.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -9,10 +8,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\1.png
+illum 0
+map_Kd Orion360_test_image_top.png
 
-newmtl 2
+newmtl Material_Orion360_test_image_back.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -20,10 +19,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\2.png
+illum 0
+map_Kd Orion360_test_image_back.png
 
-newmtl 3
+newmtl Material_Orion360_test_image_bottom.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -31,10 +30,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\3.png
+illum 0
+map_Kd Orion360_test_image_bottom.png
 
-newmtl 4
+newmtl Material_Orion360_test_image_left.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -42,10 +41,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\4.png
+illum 0
+map_Kd Orion360_test_image_left.png
 
-newmtl 5
+newmtl Material_Orion360_test_image_right.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -53,10 +52,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\5.png
+illum 0
+map_Kd Orion360_test_image_right.png
 
-newmtl 6
+newmtl Material_Orion360_test_image_front.png
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -64,5 +63,5 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd kuutio\\6.png
+illum 0
+map_Kd Orion360_test_image_front.png
