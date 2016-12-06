@@ -57,6 +57,9 @@ Table of Contents
   1. [Buffering Indicator](#buffering-indicator)
 9. [Widget](#widget)
   1. [Interactive Hotspots](#interactive-hotspots)
+10. [Polygon](#polygon)
+  1. [TexturedCube](#textured-cube)
+
 
 Prerequisities
 --------------
@@ -600,3 +603,20 @@ This example initializes 4 hotspots ("Start" buttons) at front, back, left & rig
 When user looks (moves the center point of the display) close enough to one of the "Start" hotspots, a pre-selection animation begins (enlarge + red line growing to a circle). If the user keeps looking at the "Start" button long enough, it is triggered, video dimming is removed, and playback starts. However, if the user moves away from the "Start" button before the pre-selection animation ends, selection is canceled.
 
 With Orion360 SDK Basic this is a fairly complex example as hotspots need to be created in the application side, but with Orion360 SDK Pro there is a build-in support for hotspots and the example becomes very simple. Performance is also much better.
+
+Polygon
+=======
+
+This category contains examples for loading and rendering various 3D polygon objects.
+
+### Textured Cube
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20941156/ec96d050-bbfd-11e6-8971-fcc336345a7c.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/polygon/TexturedCube.java)
+
+An example of loading a textured 3D polygon model and rendering it with Orion360.
+
+Orion360 supports not only spherical images/videos and planar images/videos, but also 3D polygons that can be textured. You can, for example, create a 3D model with the free Blender tool (or any other 3D modeling tool), export your textured model in Wavefront .obj format, add the resulting .obj, .mtl and texture image files to your project's /assets folder, and import the model using _OrionPolygon_ object by simply referencing your .obj file. Just like _OrionPanorama_, you can bind _OrionPolygon_ to _OrionScene_ and make it part of your 3D world.
+
+This example loads a cube model whose each side is textured with Orion360 test image, and animates it on screen by rotating it around its own axis. The end-user can pan, zoom and rotate the camera as usual.
