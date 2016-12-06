@@ -55,6 +55,8 @@ Table of Contents
   11. [Video Ball](#video-ball)
 8. [Streaming](#streaming)
   1. [Buffering Indicator](#buffering-indicator)
+9. [Widget](#widget)
+  1. [Interactive Hotspots](#interactive-hotspots)
 
 Prerequisities
 --------------
@@ -580,3 +582,21 @@ When video is being prepared for playback over the network, it can take a long t
 
 Unfortunately, some Android devices have a buggy implementation of video buffering events and the event that tells that buffering has stopped might never come! We have noticed this behavior occasionally when the player is buffering the very beginning of the video. To prevent the buffering indicator for staying on screen forever, you can for example use a simple handler that polls when the video playback has progressed, and thus ensure that the buffering indicator gets always removed when playback begins/continues.
 
+Widget
+======
+
+This category contains examples that demonstrate the various built-in and custom widgets for user interaction.
+
+### Interactive Hotspots
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20923170/f2006ad2-bbb3-11e6-80ea-82284e3306fa.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/widget/InteractiveHotspots.java)
+
+An example of a hotspot, an icon that can be selected simply by pointing / looking at it.
+
+This example initializes 4 hotspots ("Start" buttons) at front, back, left & right directions. It dims and pauses the video, and waits for user to trigger start event by interacting with one of the hotspots.
+
+When user looks (moves the center point of the display) close enough to one of the "Start" hotspots, a pre-selection animation begins (enlarge + red line growing to a circle). If the user keeps looking at the "Start" button long enough, it is triggered, video dimming is removed, and playback starts. However, if the user moves away from the "Start" button before the pre-selection animation ends, selection is canceled.
+
+With Orion360 SDK Basic this is a fairly complex example as hotspots need to be created in the application side, but with Orion360 SDK Pro there is a build-in support for hotspots and the example becomes very simple. Performance is also much better.
