@@ -55,9 +55,13 @@ Table of Contents
   11. [Video Ball](#video-ball)
 8. [Streaming](#streaming)
   1. [Buffering Indicator](#buffering-indicator)
-9. [Widget](#widget)
+9. [Sprite](#sprite)
+  1. [Image Sprite](#image-sprite)
+  2. [Video Sprite](#video-sprite)
+  3. [Sprite Layout](#sprite-layout)
+10. [Widget](#widget)
   1. [Interactive Hotspots](#interactive-hotspots)
-10. [Polygon](#polygon)
+11. [Polygon](#polygon)
   1. [Textured Cube](#textured-cube)
   2. [Orion Figure](#orion-figure)
 
@@ -585,6 +589,64 @@ The buffering indicator can be easily realized with an Android progress bar widg
 When video is being prepared for playback over the network, it can take a long time before Android MediaPlayer reports that buffering has started. Hence, it is a good idea to show the buffering indicator immediately after changing video URI to _OrionTexture_ - without waiting for the callback that tells that buffering has started. Since the activity can get paused and resumed at any time, and the video playback is usually auto-started when the player activity is resumed, it is often simplest to show the buffering indicator in onResume() and hide it when the playback begins.
 
 Unfortunately, some Android devices have a buggy implementation of video buffering events and the event that tells that buffering has stopped might never come! We have noticed this behavior occasionally when the player is buffering the very beginning of the video. To prevent the buffering indicator for staying on screen forever, you can for example use a simple handler that polls when the video playback has progressed, and thus ensure that the buffering indicator gets always removed when playback begins/continues.
+
+Sprite
+======
+
+This category contains examples that show how sprites can be used. A sprite is a planar surface that can be added anywhere in the 3D world and bind to a a texture, for example to show an image or a video.
+
+### Image Sprite
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20981303/c2ede990-bcbc-11e6-83e5-b5c7217ee345.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/sprite/ImageSprite.java)
+
+An example of using a sprite (a planar surface) for placing an image into a 3D scene.
+
+In this example, a partially transparent PNG image is loaded from file system into a texture, and bound to an _OrionSprite_ object. The sprite can be then bound to an _OrionScene_ to make it part of a 3D world. Sprites can be manipulated by translation, scaling, and rotation operations.
+
+Sprites are very useful as generic image placeholders in a 3D scene, especially when combined with animations.
+
+### Video Sprite
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20981416/55013328-bcbd-11e6-9a5a-6000a81665d5.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/sprite/VideoSprite.java)
+
+An example of a video sprite within a 360 panorama background.
+
+In this example, an MP4 video stream is played over a network connection into a texture that is bound to an _OrionSprite_ object. The sprite can be then bound to an _OrionScene_ to make it part of a 3D world. Sprites can be manipulated by translation, scaling, and rotation operations.
+
+Sprites are particularly interesting when combined together with 360 panoramas. Here a 360 image is used as a background to create an illusion of a cosy livingroom, and a video sprite is applied for projecting a movie onto the white screen that is part of the 360 background image.
+
+### Sprite Layout
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20981653/42b0cde0-bcbe-11e6-89cc-529e1c5b7345.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/sprite/SpriteLayout.java)
+
+An example demonstrating various sprite layout and scaling options.
+
+In this example, different sprite layout options are covered:
+
+- Top Left (TL)
+- Top Center (TC)
+- Top Right (TR)
+- Center Left (CL)
+- Center Center (CC)
+- Center Right (CR)
+- Bottom Left (BL)
+- Bottom Center (BC)
+- Bottom Right (BR)
+
+In addition, the scaling modes are presented:
+
+- Long side
+- Short side
+- Width
+- Height
+
+Finally, cropping can be enabled or disabled. To experiment with the settings, a test sprite with a set of swappable textures are provided with control buttons for altering layout, scale mode and cropping.
 
 Widget
 ======
