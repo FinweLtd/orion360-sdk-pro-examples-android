@@ -624,10 +624,16 @@ This example loads a cube model whose each side is textured with Orion360 test i
 
 ### Orion Figure
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20964734/640e0586-bc7b-11e6-9fa0-ba94f580bc9b.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20967950/8074359c-bc8a-11e6-99b2-1d4b6e345321.png)
 
 [View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/polygon/OrionFigure.java)
 
-An example of loading an untextured 3D polygon model and rendering it with Orion360.
+An example of loading an untextured 3D polygon model and rendering it with Orion360 inside a 360 panorama background that also contains a planar video sprite.
 
-This example loads a complex (untextured) 3D model, and animates it on screen by rotating it around its own axis. The end-user can pan, zoom and rotate the camera as usual.
+This example loads a monoscopic full spherical panorama image that is used only as a background - the image illustrates a situation where user is sitting on a sofa in a cosy livingroom. Creating an environment like this is computationally cheap - the background can be a photograph of a real environment, or a very complex computer generated model that is rendered once with a powerful PC, and then applied to the app simply as a 360 image.
+
+The example also loads a fairly complex (untextured) 3D model, and animates it on screen by rotating it around its own axis. It is placed into the 3D world inside the spherical background image, in a position where it appears to be swinging on top of a footstool. 3D models can be used for making otherwise static backgrounds more lively by creating some movement to the scene.
+
+Finally, the example uses _OrionSprite_ as a planar surface for streaming a planar rectilinear video. The sprite is also placed inside the spherical background image, in a position where the video appears to be projected onto a white screen.
+
+The end-user can pan, zoom and rotate the camera as usual.
