@@ -31,6 +31,20 @@
     <string name="controller_position">-:--</string>
     <string name="controller_duration">-:--</string>
 
+    <!-- Sprite layout tool -->
+    <string name="sprite_layout_alignment_position">Sprite alignment rule:</string>
+    <string name="sprite_layout_alignment_rule">Sprite scale mode:</string>
+    <string name="sprite_layout_reticle">asset://align/reticle.png</string>
+    <string name="sprite_layout_bounds">asset://align/bounds.png</string>
+    <string-array name="sprite_layout_rects">
+        <item>asset://align/rect_1.png</item>
+        <item>asset://align/rect_2.png</item>
+        <item>asset://align/rect_3.png</item>
+        <item>asset://align/rect_4.png</item>
+        <item>asset://align/rect_5.png</item>
+        <item>asset://align/rect_6.png</item>
+    </string-array>
+
     <!-- Tag/Hotspot image files -->
     <string name="asset_nadir_patch">asset://Orion360_nadir_patch_1024x1024.png</string>
     <string name="asset_hotspot_reticle">asset://Orion360_hotspot_reticle_256x256.png</string>

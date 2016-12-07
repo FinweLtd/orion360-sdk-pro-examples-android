@@ -12,212 +12,196 @@
 	    android:layout_height="match_parent" />
 
 	<LinearLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:orientation="horizontal"
-	    android:layout_alignParentTop="true" >
-	    
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignTopLeftClicked"
-	        android:text="TL"
-	        android:textSize="10sp" />
+		android:id="@+id/layout_buttons"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+        android:layout_margin="20dp"
+        android:layout_alignParentLeft="true"
+		android:layout_alignParentTop="true" >
 
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignTopCenterClicked"
-	        android:text="TC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:minHeight="1px"
-	        android:onClick="onAlignTopRightClicked"
-	        android:text="TR"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterLeftClicked"
-	        android:text="CL"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterClicked"
-	        android:text="CC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterRightClicked"
-	        android:text="CR"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignBottomLeftClicked"
-	        android:text="BL"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignBottomCenterClicked"
-	        android:text="BC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:includeFontPadding="false"
-	        android:onClick="onAlignBottomRightClicked"
-	        android:text="BR"
-	        android:textSize="10sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pure_white"
+            android:layout_marginBottom="10dp"
+            android:text="@string/sprite_layout_alignment_position"/>
 
-	</LinearLayout>
-	
-	<LinearLayout
-	    android:id="@+id/button_row_1"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:orientation="horizontal"
-	    android:layout_alignParentTop="true" >
-	    
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignTopLeftClicked"
-	        android:text="TL"
-	        android:textSize="10sp" />
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
 
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignTopCenterClicked"
-	        android:text="TC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignTopRightClicked"
-	        android:text="TR"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterLeftClicked"
-	        android:text="CL"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterClicked"
-	        android:text="CC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignCenterRightClicked"
-	        android:text="CR"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignBottomLeftClicked"
-	        android:text="BL"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onAlignBottomCenterClicked"
-	        android:text="BC"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:includeFontPadding="false"
-	        android:onClick="onAlignBottomRightClicked"
-	        android:text="BR"
-	        android:textSize="10sp" />
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignTopLeftClicked"
+				android:text="TL"
+				android:textSize="10sp" />
 
-	</LinearLayout>
-	
-	<LinearLayout
-	    android:id="@+id/button_row_2"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:orientation="horizontal"
-	    android:layout_below="@id/button_row_1" >
-	    
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_marginRight="10dp"
-	        android:minHeight="1px"
-	        android:onClick="onToggleTextureClicked"
-	        android:text="Switch texture"
-	        android:textSize="10sp" />
-	    
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onFitLongClicked"
-	        android:text="Long"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onFitShortClicked"
-	        android:text="Short"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onFitWidthClicked"
-	        android:text="Width"
-	        android:textSize="10sp" />
-	    <Button
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:onClick="onFitHeightClicked"
-	        android:text="Height"
-	        android:textSize="10sp" />
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignTopCenterClicked"
+				android:text="TC"
+				android:textSize="10sp" />
 
-	    <ToggleButton
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_gravity="center"
-	        android:layout_marginLeft="10dp"
-	        android:onClick="onToggleCropClicked"
-	        android:textOff="Crop"
-	        android:textOn="Crop"
-	        android:textSize="10sp" />
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignTopRightClicked"
+				android:text="TR"
+				android:textSize="10sp" />
 
-	</LinearLayout>
+		</LinearLayout>
 
-	
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignCenterLeftClicked"
+				android:text="CL"
+				android:textSize="10sp" />
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignCenterClicked"
+				android:text="CC"
+				android:textSize="10sp" />
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignCenterRightClicked"
+				android:text="CR"
+				android:textSize="10sp" />
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignBottomLeftClicked"
+				android:text="BL"
+				android:textSize="10sp" />
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignBottomCenterClicked"
+				android:text="BC"
+				android:textSize="10sp" />
+
+			<Button
+				style="?android:attr/buttonStyleSmall"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:onClick="onAlignBottomRightClicked"
+				android:text="BR"
+				android:textSize="10sp" />
+
+		</LinearLayout>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:onClick="onSwapTextureClicked"
+            android:text="Swap texture"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_radiogroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pure_white"
+            android:layout_marginBottom="10dp"
+            android:text="@string/sprite_layout_alignment_rule"/>
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:checkedButton="@+id/radio_long_side">
+
+            <RadioButton
+                android:id="@+id/radio_long_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onFitLongClicked"
+                android:textColor="@color/light_gray"
+                android:text="Long side"
+                android:textSize="10sp"/>
+
+            <RadioButton
+                android:id="@+id/radio_short_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onFitShortClicked"
+                android:textColor="@color/light_gray"
+                android:text="Short side"
+                android:textSize="10sp" />
+
+            <RadioButton
+                android:id="@+id/radio_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onFitWidthClicked"
+                android:textColor="@color/light_gray"
+                android:text="Width"
+                android:textSize="10sp" />
+
+            <RadioButton
+                android:id="@+id/radio_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onFitHeightClicked"
+                android:textColor="@color/light_gray"
+                android:text="Height"
+                android:textSize="10sp" />
+
+        </RadioGroup>
+
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:onClick="onToggleCropClicked"
+            android:textOff="Crop"
+            android:textOn="Crop"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
 </RelativeLayout>

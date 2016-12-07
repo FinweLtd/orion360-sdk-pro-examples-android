@@ -42,6 +42,7 @@ import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -49,13 +50,14 @@ import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
 
 /**
- * An example of using a sprite (a planar surface) for placing an image into a 3D scene.
+ * An example of a video sprite within a 360 panorama background.
  * <p/>
  * Features:
  * <ul>
- * <li>Loads one hard-coded rectilinear image in .png format from file system
+ * <li>Loads one hard-coded 360 panorama image in .jpg format from file system
+ * <li>Player one hard-coded planar rectilinear video</li>
  * <li>Creates a fullscreen view locked to landscape orientation
- * <li>Renders the image using standard rectilinear projection
+ * <li>Renders the panorama and the model using standard rectilinear projection
  * <li>Allows navigation with touch & movement sensors (if supported by HW) as follows:
  * <ul>
  * <li>Panning (gyro or swipe)
@@ -65,18 +67,24 @@ import fi.finwe.util.ContextUtil;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class ImageSprite extends OrionActivity {
+public class VideoSprite extends OrionActivity {
 
     /** The Android view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
-    /** The 3D scene where our planar sprite will be added to. */
+    /** The 3D scene where our panorama and sprite will be added to. */
     protected OrionScene mScene;
 
-    /** The sprite where our image texture will be mapped to. */
+    /** The panorama sphere where our image texture will be mapped to. */
+    protected OrionPanorama mPanorama;
+
+    /** The image texture where our decoded image will be updated to. */
+    protected OrionTexture mPanoramaTexture;
+
+    /** The sprite where our video texture will be mapped to. */
     protected OrionSprite mSprite;
 
-    /** The image texture where our decoded image will be added to. */
+    /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mSpriteTexture;
 
     /** The camera which will project our 3D scene to a 2D (view) surface. */
@@ -85,8 +93,8 @@ public class ImageSprite extends OrionActivity {
     /** The widget that will handle our touch gestures. */
     protected TouchControllerWidget mTouchController;
 
-	
-	@Override
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
@@ -97,18 +105,33 @@ public class ImageSprite extends OrionActivity {
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mScene.bindController(OrionContext.getSensorFusion());
 
-        // Create a new sprite. This is a 2D plane in the 3D world for our planar image.
+        // Create a new panorama. This is a 3D object that will represent a spherical video/image.
+        mPanorama = new OrionPanorama();
+
+        // Create a new video (or image) texture from a video (or image) source URI.
+        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
+
+        // Bind the panorama texture to the panorama object. Here we assume full spherical
+        // equirectangular monoscopic source, and wrap the complete texture around the sphere.
+        // If you have stereoscopic content or doughnut shape video, use other method variants.
+        mPanorama.bindTextureFull(0, mPanoramaTexture);
+
+        // Bind the panorama to the scene. This will make it part of our 3D world.
+        mScene.bindSceneItem(mPanorama);
+
+        // Create a new sprite. This is a 2D plane in the 3D world for our planar video.
         mSprite = new OrionSprite();
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mSpriteTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_TAG_IMAGE_FILE_HQ);
+                "http://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4");
 
-        // Set sprite location in the 3D world. Here we place it slightly ahead in front direction.
-        mSprite.setWorldTranslation(new Vec3F(0.0f, 0.0f, -1.0f));
+        // Set sprite location in the 3D world. Here we place the video on the white screen.
+        mSprite.setWorldTranslation(new Vec3F(0.03f, 0.19f, -0.77f));
 
-        // Set sprite size in the 3D world.
-        mSprite.setScale(1.0f);
+        // Set sprite size in the 3D world. Here we make it fit on the white screen.
+        mSprite.setScale(0.42f);
 
         // Bind the sprite texture to the sprite object. Here we assume planar rectilinear source.
         mSprite.bindTexture(mSpriteTexture);
