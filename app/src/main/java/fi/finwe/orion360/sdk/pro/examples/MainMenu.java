@@ -141,6 +141,9 @@ public class MainMenu extends ListActivity {
 	/** Test image name for medium quality image that is bundled with the app in /assets. */
 	public static final String TEST_IMAGE_FILE_MQ = "Orion360_test_image_1920x960.jpg";
 
+	/** Test image name for high quality mono living room image in app /assets. */
+	public static final String TEST_IMAGE_FILE_LIVINGROOM_HQ = "Orion360_livingroom_3840x1920.jpg";
+
 	/** Test image name for medium quality stereo over-and-under living room image in app /assets. */
 	public static final String TEST_IMAGE_FILE_LIVINGROOM_OU_MQ = "Orion360_livingroom_ou_2048x2048.jpg";
 

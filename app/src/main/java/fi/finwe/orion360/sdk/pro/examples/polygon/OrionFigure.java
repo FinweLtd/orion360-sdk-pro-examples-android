@@ -40,28 +40,38 @@ import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
 import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
+import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.OrionPolygon;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
+import fi.finwe.util.ContextUtil;
 
 /**
- * An example of loading an untextured 3D model and rendering it with Orion360.
+ * An example of a 3D model within a 360 panorama background and planar video background.
  * <p/>
  * Features:
  * <ul>
  * <li>Loads one hard-coded untextured model in Wavefront .obj format from file system
+ * <li>Loads one hard-coded 360 panorama image in .jpg format from file system
+ * <li>Player one hard-coded planar rectilinear video</li>
  * <li>Creates a fullscreen view locked to landscape orientation
- * <li>Renders the model using standard rectilinear projection
+ * <li>Renders the panorama and the model using standard rectilinear projection
  * <li>Allows navigation with touch & movement sensors (if supported by HW) as follows:
  * <ul>
  * <li>Panning (gyro or swipe)
  * <li>Zooming (pinch)
  * <li>Tilting (pinch rotate)
+ * </ul>
+ * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
 public class OrionFigure extends OrionActivity {
@@ -71,6 +81,18 @@ public class OrionFigure extends OrionActivity {
 
     /** The 3D scene where our 3D polygon model will be added to. */
     protected OrionScene mScene;
+
+    /** The panorama sphere where our image texture will be mapped to. */
+    protected OrionPanorama mPanorama;
+
+    /** The image texture where our decoded image will be updated to. */
+    protected OrionTexture mPanoramaTexture;
+
+    /** The sprite where our video texture will be mapped to. */
+    protected OrionSprite mSprite;
+
+    /** The video texture where our decoded video frames will be updated to. */
+    protected OrionTexture mSpriteTexture;
 
     /** The 3D polygon model loaded from Wavefront .obj file. */
     protected OrionPolygon mPolygon;
@@ -99,6 +121,40 @@ public class OrionFigure extends OrionActivity {
         // To prevent rendering garbage, hide the scene until we have initialized everything.
         mScene.setVisible(false);
 
+        // Create a new panorama. This is a 3D object that will represent a spherical video/image.
+        mPanorama = new OrionPanorama();
+
+        // Create a new video (or image) texture from a video (or image) source URI.
+        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
+
+        // Bind the panorama texture to the panorama object. Here we assume full spherical
+        // equirectangular monoscopic source, and wrap the complete texture around the sphere.
+        // If you have stereoscopic content or doughnut shape video, use other method variants.
+        mPanorama.bindTextureFull(0, mPanoramaTexture);
+
+        // Bind the panorama to the scene. This will make it part of our 3D world.
+        mScene.bindSceneItem(mPanorama);
+
+        // Create a new sprite. This is a 2D plane in the 3D world for our planar video.
+        mSprite = new OrionSprite();
+
+        // Create a new video (or image) texture from a video (or image) source URI.
+        mSpriteTexture = OrionTexture.createTextureFromURI(this,
+                "http://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4");
+
+        // Set sprite location in the 3D world. Here we place the video on the white screen.
+        mSprite.setWorldTranslation(new Vec3F(0.03f, 0.19f, -0.77f));
+
+        // Set sprite size in the 3D world. Here we make it fit on the white screen.
+        mSprite.setScale(0.42f);
+
+        // Bind the sprite texture to the sprite object. Here we assume planar rectilinear source.
+        mSprite.bindTexture(mSpriteTexture);
+
+        // Bind the sprite to the scene. This will make it part of our 3D world.
+        mScene.bindSceneItem(mSprite);
+
         // Create a new polygon. This is where our 3D model will be loaded to.
         mPolygon = new OrionPolygon();
 
@@ -106,11 +162,12 @@ public class OrionFigure extends OrionActivity {
         // set the filter pattern for selecting what to load from the file.
         mPolygon.setSourceURI(getString(R.string.asset_polygon_orion_plain), "*");
 
-        // Set the location where the polygon will be rendered to in the 3D world.
-        mPolygon.setWorldTranslation(new Vec3F(0, -1.0f, -1.0f));
+        // Set the location where the Orion360 figure polygon will be rendered to in the 3D world.
+        // Here we put it balancing on top of the footstool to give some tension to the scene.
+        mPolygon.setWorldTranslation(new Vec3F(-0.25f, -0.4f, -0.6f));
 
         // Set the size of the polygon as a scale factor relative to its size in the .obj model. */
-        mPolygon.setScale(0.3f);
+        mPolygon.setScale(0.1f);
 
         // Bind the polygon to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mPolygon);
@@ -174,6 +231,9 @@ public class OrionFigure extends OrionActivity {
         /** Touch drag-to-pan gesture handler. */
         private TouchRotater mTouchRotater;
 
+        /** Rotation aligner keeps the horizon straight at all times. */
+        private RotationAligner mRotationAligner;
+
 
         /**
          * Constructs the widget.
@@ -194,6 +254,15 @@ public class OrionFigure extends OrionActivity {
             mTouchRotater = new TouchRotater();
             mTouchRotater.bindControllable(mCamera);
 
+            // Create the rotation aligner, responsible for rotating the view so that the horizon
+            // aligns with the user's real-life horizon when the user is not looking up or down.
+            mRotationAligner = new RotationAligner();
+            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
+                    OrionContext.getActivity()));
+            mRotationAligner.bindControllable(mCamera);
+
+            // Rotation aligner needs sensor fusion data in order to do its job.
+            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
         }
 
         @Override
@@ -201,6 +270,7 @@ public class OrionFigure extends OrionActivity {
             // When widget is bound to scene, bind the controllers to it to make them functional.
             scene.bindController(mTouchPincher);
             scene.bindController(mTouchRotater);
+            scene.bindController(mRotationAligner);
         }
 
         @Override
@@ -208,6 +278,7 @@ public class OrionFigure extends OrionActivity {
             // When widget is released from scene, release the controllers as well.
             scene.releaseController(mTouchPincher);
             scene.releaseController(mTouchRotater);
+            scene.releaseController(mRotationAligner);
         }
     }
 
