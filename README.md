@@ -58,7 +58,8 @@ Table of Contents
 9. [Widget](#widget)
   1. [Interactive Hotspots](#interactive-hotspots)
 10. [Polygon](#polygon)
-  1. [TexturedCube](#textured-cube)
+  1. [Textured Cube](#textured-cube)
+  2. [Orion Figure](#orion-figure)
 
 
 Prerequisities
@@ -620,3 +621,13 @@ An example of loading a textured 3D polygon model and rendering it with Orion360
 Orion360 supports not only spherical images/videos and planar images/videos, but also 3D polygons that can be textured. You can, for example, create a 3D model with the free Blender tool (or any other 3D modeling tool), export your textured model in Wavefront .obj format, add the resulting .obj, .mtl and texture image files to your project's /assets folder, and import the model using _OrionPolygon_ object by simply referencing your .obj file. Just like _OrionPanorama_, you can bind _OrionPolygon_ to _OrionScene_ and make it part of your 3D world.
 
 This example loads a cube model whose each side is textured with Orion360 test image, and animates it on screen by rotating it around its own axis. The end-user can pan, zoom and rotate the camera as usual.
+
+### Orion Figure
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20964734/640e0586-bc7b-11e6-9fa0-ba94f580bc9b.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/polygon/OrionFigure.java)
+
+An example of loading an untextured 3D polygon model and rendering it with Orion360.
+
+This example loads a complex (untextured) 3D model, and animates it on screen by rotating it around its own axis. The end-user can pan, zoom and rotate the camera as usual.
