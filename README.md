@@ -593,7 +593,7 @@ Unfortunately, some Android devices have a buggy implementation of video bufferi
 Sprite
 ======
 
-This category contains examples that show how sprites can be used. A sprite is a planar surface that can be added anywhere in the 3D world and bind to a a texture, for example to show an image or a video.
+This category contains examples that show how sprites can be used. A sprite is a planar surface that can be added anywhere in the 3D world and bound to a a texture, for example to show an image or a video.
 
 ### Image Sprite
 
