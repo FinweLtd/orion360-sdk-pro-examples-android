@@ -33,11 +33,15 @@ import android.Manifest;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -59,6 +63,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +75,8 @@ import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import fi.finwe.orion360.sdk.pro.examples.gallery.ThumbnailPager;
 
 /**
  * Provides application's main menu: a list of selectable examples, each implemented as an activity.
@@ -836,4 +843,100 @@ public class MainMenu extends ListActivity {
 		return grouped;
 	}
 
+    /**
+     * Create a JPEG thumbnail image for a video file.
+     *
+     * @param context Android Context, such as an Activity.
+     * @param videoUri The URI of the video file who to create a thumbnail image.
+     * @param positionMs The video position in time (milliseconds) where to extract a frame.
+     * @param heightPx The thumbnail height in pixels (scaling maintains aspect ratio).
+     * @param thumbnailUri The absolute file path in the local file system where to save the image.
+     * @param jpgQuality The JPEG algorithm compression quality in range [0-100], 100 = best.
+     */
+    public static void createThumbnailForVideo(Context context, String videoUri, int positionMs,
+                                                 int heightPx, String thumbnailUri, int jpgQuality) {
+        if (!new File(thumbnailUri).exists()) {
+            Bitmap videoFrame = extractFrameFromVideo(context, videoUri, positionMs);
+            Bitmap scaledFrame = scaleBitmapToHeight(videoFrame, heightPx);
+            saveBitmapAsJpg(scaledFrame, thumbnailUri, jpgQuality);
+        }
+    }
+
+    /**
+     * Extract a frame from given video URI at given position in time.
+     *
+     * Note: Uses MediaMetadataRetriever, which is fairly slow in extracting frames.
+     * Consider caching the frame for its next usage, and try to avoid extracting frames
+     * from video files over a network connection (create a downloadable thumbnail instead).
+     *
+     * @param context Android Context, such as an Activity.
+     * @param videoUri The URI of the video file whose frames to extract.
+     * @param positionMs The video position in time (milliseconds) where to extract a frame.
+     * @return A video frame as a bitmap image, or null if failed to extract a frame.
+     */
+    public static Bitmap extractFrameFromVideo(Context context, String videoUri, long positionMs) {
+        if (null == videoUri || videoUri.length() == 0|| positionMs < 0) return null;
+        Bitmap bitmap = null;
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        try {
+            mmr.setDataSource(context, Uri.parse(videoUri));
+            bitmap = mmr.getFrameAtTime(positionMs * 1000); // convert to microseconds
+        } catch (IllegalArgumentException iae) {
+            iae.printStackTrace();
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+        } finally {
+            try { mmr.release(); } catch (RuntimeException re) { Log.e(TAG, "MMR release failed.");}
+        }
+        return bitmap;
+    }
+
+    /**
+     * Scale given bitmap image to given target height in pixels, if not already that high.
+     *
+     * Maintains aspect ratio by scaling the width with the same scaling factor, if necessary.
+     *
+     * @param bitmap The bitmap image to scale.
+     * @param targetHeightPx The target height in pixels.
+     * @return The original bitmap, or a new scaled bitmap if scaling was performed.
+     */
+    public static Bitmap scaleBitmapToHeight(Bitmap bitmap, int targetHeightPx) {
+        if (null == bitmap) return null;
+        int currentHeightPx = bitmap.getHeight();
+        if (currentHeightPx != targetHeightPx) {
+            float scalingFactor = ((float)targetHeightPx) / bitmap.getHeight();
+            int w = Math.round(scalingFactor * bitmap.getWidth());
+            int h = Math.round(scalingFactor * bitmap.getHeight());
+            bitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        }
+        return bitmap;
+    }
+
+    /**
+     * Save given bitmap image to given file path in JPEG format using given compression quality.
+     *
+     * @param bitmap The bitmap image to save.
+     * @param filePath The absolute file path in the local file system where to save the image.
+     * @param quality The JPEG algorithm compression quality in range [0-100], 100 = best quality.
+     */
+	public static void saveBitmapAsJpg(Bitmap bitmap, String filePath, int quality) {
+		if (null == bitmap || null == filePath || filePath.length() == 0) return;
+		OutputStream out = null;
+		try {
+			out = new FileOutputStream(filePath);
+			bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out);
+			out.flush();
+			out.close();
+		} catch (FileNotFoundException fnfe) {
+            if (null != out) {
+                try { out.close(); } catch (IOException e) { Log.e(TAG, "Failed to close stream.");}
+            }
+            fnfe.printStackTrace();
+		} catch (IOException ioe) {
+            if (null != out) {
+                try { out.close(); } catch (IOException e) { Log.e(TAG, "Failed to close stream.");}
+            }
+			ioe.printStackTrace();
+		}
+	}
 }
