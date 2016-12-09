@@ -127,10 +127,9 @@ public class MainMenu extends ListActivity {
 	public static final String EXAMPLE_IMAGE_1_URI_4096x2048 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_example_image_1_4096x2048.jpg";
 
-	/** Example image 1 URI for 8k image that can be found from the network. */
-	public static final String EXAMPLE_IMAGE_1_URI_8129x4096 =
-			"https://s3.amazonaws.com/orion360-us/Orion360_example_image_1_8192x4096.jpg";
-
+    /** Example image 1 URI for 8k image that can be found from the network. */
+    public static final String EXAMPLE_IMAGE_1_URI_8129x4096 =
+            "https://s3.amazonaws.com/orion360-us/Orion360_example_image_1_8192x4096.jpg";
 
 	/** Test video name for low quality video that is bundled with the app in /res/raw. */
 	// Notice: As this file is located in the R.raw folder, we must access it without the
@@ -145,6 +144,9 @@ public class MainMenu extends ListActivity {
 	/** Test video name for medium quality video that is bundled with the app in /assets. */
 	public static final String TEST_VIDEO_FILE_MQ = "Orion360_test_video_1920x960.mp4";
 
+    /** Test video name for high quality video that is bundled with the app in /assets. */
+    public static final String TEST_VIDEO_FILE_HQ = "Orion360_test_video_2_3840x2160.mp4";
+
 	/** Test image name for medium quality image that is bundled with the app in /assets. */
 	public static final String TEST_IMAGE_FILE_MQ = "Orion360_test_image_1920x960.jpg";
 
@@ -154,7 +156,10 @@ public class MainMenu extends ListActivity {
 	/** Test image name for medium quality stereo over-and-under living room image in app /assets. */
 	public static final String TEST_IMAGE_FILE_LIVINGROOM_OU_MQ = "Orion360_livingroom_ou_2048x2048.jpg";
 
-	/** Test image name for medium quality preview image that is bundled with the app in /assets. */
+    /** Test image name for medium quality example image in app /assets. */
+    public static final String TEST_IMAGE_FILE_EXAMPLE2_MQ = "Orion360_example_image_2048x1024.jpg";
+
+    /** Test image name for medium quality preview image that is bundled with the app in /assets. */
 	public static final String TEST_PREVIEW_IMAGE_FILE_MQ = "Orion360_preview_image_1920x960.jpg";
 
 	/** Test image name for high quality tag image that is bundled with the app in /assets. */
@@ -488,6 +493,8 @@ public class MainMenu extends ListActivity {
 		if (hasWritePermission) {
 			copyFiles.add(new FilePathPair(TEST_VIDEO_FILE_MQ,
 					PUBLIC_EXTERNAL_MOVIES_ORION_PATH + TEST_VIDEO_FILE_MQ));
+            copyFiles.add(new FilePathPair(TEST_VIDEO_FILE_HQ,
+                    PUBLIC_EXTERNAL_MOVIES_ORION_PATH + TEST_VIDEO_FILE_HQ));
 			copyFiles.add(new FilePathPair(TEST_IMAGE_FILE_MQ,
 					PUBLIC_EXTERNAL_PICTURES_ORION_PATH + TEST_IMAGE_FILE_MQ));
 			copyFiles.add(new FilePathPair(TEST_TAG_IMAGE_FILE_HQ,

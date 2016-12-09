@@ -45,7 +45,7 @@
         <item>asset://align/rect_6.png</item>
     </string-array>
 
-    <!-- Tag/Hotspot image files -->
+    <!-- Button/hotspot image files -->
     <string name="asset_nadir_patch">asset://Orion360_nadir_patch_1024x1024.png</string>
     <string name="asset_hotspot_reticle">asset://Orion360_hotspot_reticle_256x256.png</string>
     <string name="asset_hotspot_start">asset://Orion360_hotspot_start_256x256.png</string>
@@ -53,5 +53,9 @@
     <string name="asset_polygon_cube">asset://cube/cube.obj</string>
     <string name="asset_polygon_orion_plain">asset://orion/orion_plain.obj</string>
     <string name="asset_polygon_keyboard">asset://keyboard_3d_tekstuurit_3_1_1.obj</string>
+    <string name="asset_icon_play">asset://icon/play.png</string>
+    <string name="asset_icon_home">asset://icon/home.png</string>
+    <string name="asset_icon_arrow_left">asset://icon/arrow_left.png</string>
+    <string name="asset_icon_arrow_right">asset://icon/arrow_right.png</string>
 
 </resources>
