@@ -719,7 +719,7 @@ An example of cross-fading between a panorama image and a panorama video.
 
 In this example, two panoramas are created: one for video and another for a preview image. Initially the video is covered by the image, but gets revealed via cross-fading from image to video. In practice, the cross-fade FX is implemented by adjusting the preview image alpha value from fully opaque to transparent, hence allowing the slightly larger video panorama sphere to become visible.
 
-> Orion360 SDK Pro has a powerful animation framework that handles value editing based animations efficiently in the GL thread. The developer needs to select one of supported parameters to be animated, the value range, easing curve, and direction. Optionally a callback can be added to get notified when the animation is finished (and perhaps to clean up or start another animation or action). Notice that with Orion360 SDK Basic, animations need to performed using Android's animation framework or custom solution from the UI thread, which often results to jerky animation.
+> Orion360 SDK Pro has a powerful animation framework that handles value editing based animations efficiently in the GL thread. The developer needs to select one of supported parameters to be animated, the value range, easing curve, and direction. Optionally a callback can be added to get notified when the animation is finished (and perhaps to clean up or start another animation or action). Notice that with Orion360 SDK Basic, animations need to be performed using Android's animation framework or custom solution from the UI thread, which often results to jerky animation.
 
 Gallery
 =======
