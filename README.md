@@ -64,6 +64,8 @@ Table of Contents
 11. [Polygon](#polygon)
   1. [Textured Cube](#textured-cube)
   2. [Orion Figure](#orion-figure)
+12. [Gallery](#gallery)
+  1. [Thumbnail Pager](#thumbnail-pager)
 
 
 Prerequisities
@@ -699,3 +701,31 @@ The example also loads a fairly complex (untextured) 3D model, and animates it o
 Finally, the example uses _OrionSprite_ as a planar surface for streaming a planar rectilinear video. The sprite is also placed inside the spherical background image, in a position where the video appears to be projected onto a white screen.
 
 The end-user can pan, zoom and rotate the camera as usual.
+
+Gallery
+=======
+
+This category contains examples that demonstrate different types of media gallery implementations. The common goal is to present to the end-user what kind of content is available, allow browsing and selecting a content item, switching to player scene for viewing, and returning back to the gallery. These examples are a bit more complex, almost like mini apps.
+
+### Thumbnail Pager
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/21048177/94440ed4-be16-11e6-8303-93b878313fc4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/gallery/ThumbnailPager.java)
+
+An example of a simple video gallery using a thumbnail pager style.
+
+This example creates a gallery of video items by scanning a specific directory in the file system, creates a thumbnail for each video item, and then presents them in a cosy living-room like environment using pager style navigation: one thumbnail is visible at a time, and end-user can either select it for playback or navigate to next/previous item.
+
+Pros:
+
+- Scalability: pager style navigation scales in theory indefinetly
+- Efficiency: runs well on low-end devices with weak CPU and small amount of memory
+- Usability: end-user does not need to turn around to browse the gallery
+- Visuality: looks good even if there is only a few items; allows using large size thumbnails
+
+Cons:
+
+- Scalability: not really suitable for multi-level (hierarchical) navitation 
+- Efficiency: Slow to navigate; practical for only a small amount of content (1-10 items)
+- Usability: Only one item is in view at a time; difficult to get an overview of available content
