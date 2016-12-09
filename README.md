@@ -713,7 +713,7 @@ This category contains examples where Orion360's animation framework is used for
 
 ![alt tag](https://cloud.githubusercontent.com/assets/12032146/21055304/a2adfba6-be39-11e6-885a-5d66df2f09b2.png)
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/animation/Crossfade.java)
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/animation/CrossFade.java)
 
 An example of cross-fading between a panorama image and a panorama video.
 
