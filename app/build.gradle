@@ -7,8 +7,8 @@ android {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
         minSdkVersion 19
         targetSdkVersion 24
-        versionCode 1000001
-        versionName "1.0.00.001"
+        versionCode 1001001
+        versionName "1.0.01.001"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
