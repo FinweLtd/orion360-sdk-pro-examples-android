@@ -110,8 +110,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * This feature requires hardware movement sensors that are built-in to phones and
          * tablets - most importantly, a gyroscope. Unfortunately, not all Android devices
          * have one. The feature is automatically disabled on devices that do not have the
-         * necessary sensor hardware, with a fallback to touch-only control. Hence, the
-         * application developer does not need to handle the case of missing sensors.
+         * necessary sensor hardware, with a fallback to touch-only control.
          * <p/>
          * To make sensor fusion available for items in your 3D scene, get it from OrionContext
          * and bind it as a controller to the scene. Notice that you do not need to create
@@ -155,7 +154,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * or strong electrical currents (USB cable connected for charging, for instance).
          * <p/>
          * As a conclusion, it is often better to disable the magnetometer. The recommended
-         * place to do that is here when Orion360 environment is being configured.
+         * place to do that is here when Orion360 environment is being initially configured.
          * <p/>
          * If you wonder why it isn't disabled by default, the reason is that the sensor fusion
          * stabilizes more quickly when it is using data from all three sensors. In addition,
@@ -175,9 +174,9 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * sensor samples.
          *
          * This process takes a (short) moment to complete: the estimated orientation quickly
-         * reaches and stabilizes to the actual device orientation. To prevent rendering
+         * reaches and stabilizes to the actual device orientation. However, to prevent rendering
          * a few frames during initialization phase it is recommended to initially hide the
-         * scene - we will make it visible after sensor fusion has stabilized.
+         * scene - and make it visible after sensor fusion has stabilized.
          */
         mScene.setVisible(false);
 
@@ -204,8 +203,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * respond to device orientation changes - we haven't yet told which object it is
          * supposed to control. To reach this goal, we need to let sensor fusion control our
          * camera in the 3D world. This can be accomplished simply by binding the camera to
-         * the sensor fusion as a controllable. If you have multiple cameras, you can choose
-         * one by one if you want sensor fusion to control them or not.
+         * the sensor fusion as a controllable. If you have multiple cameras, bind all of
+         * them that you wish to be controlled by sensors.
          */
         OrionContext.getSensorFusion().bindControllable(mCamera);
 
@@ -222,10 +221,10 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
                  * If you want to ensure that viewing begins from the horizontal center point
                  * of the equirectangular panoramic content ('front' direction appears when
                  * device is lifted up to reveal the horizon level), set item yaw rotation
-                 * to 0 using this convenience method.
+                 * to 0 degrees using this convenience method.
                  *
-                 * You can also set it to any other yaw angle in degrees, for example value
-                 * 90 makes the panorama start from 'left' and -90 from 'right'.
+                 * You can also set it to any other yaw angle, for example value 90 makes the
+                 * panorama start from 'left' and -90 from 'right'.
                  *
                  * Notice that in VR mode it is important to use this method variant for
                  * configuring the initial viewing angle as this only sets the yaw angle
@@ -251,8 +250,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
 
                 /**
                  * When this event is fired the sensor fusion should have stabilized already.
-                 * This is a good place to make the scene visible again, if you decided to
-                 * hide it initially.
+                 * Hence, this is a good place to make the scene visible again, if you decided
+                 * to hide it initially.
                  */
                 mScene.setVisible(true);
             }
@@ -314,9 +313,11 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              * and zenith directions, thus creating an artificial limit in navigation. This
              * is annoying to users especially when viewing drone shots where most of the
              * action occurs down below and panning to different directions near the nadir
-             * is very common. Also the basic principle of panning with touch - keeping the
-             * image position where user initially touched under the finger all the time -
-             * is broken near nadir and zenith directions in most of the algorithms.
+             * is very common. Watching fireworks is an example of similar situation at the
+             * opposite direction; panning occurs near the zenith. Moreover, the basic
+             * principle of panning with touch - keeping the image position where user
+             * initially touched under the finger all the time - is broken near nadir and
+             * zenith directions in most of the algorithms.
              * <p/>
              * The underlying reason is their failure to solve the problem of tilted horizon
              * properly. Consider a case where user is looking straight ahead towards the
@@ -340,8 +341,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              * camera as a controllable to it.
              * <p/>
              * To enable auto-horizon aligner, create a RotationAligner object, tell the
-             * direction for alignment (taking into account device's display rotation!),
-             * and bind the camera as a controllable to it. Finally, bind the RotationAligner
+             * primary direction for alignment (taking into account device's display rotation!),
+             * and bind the camera as a controllable to it. Also bind the RotationAligner
              * as a controllable to sensor fusion, as it needs sensor data for alignment.
              */
 
@@ -382,15 +383,16 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              * In order to prevent zooming altogether, simply do not bind (or release binding)
              * between touch pincher and camera zoom variable.
              * <p/>
-             * The two-finger rotate gesture is mapped to rotating the content along the roll
-             * axis. This is handy especially when viewing content at the nadir direction
-             * and if applied temporarily. However, it can be confusing if applied elsewhere
-             * or left in use - for example, to tilt the horizon permanently.
+             * The two-finger rotate gesture is mapped to rotating the content along the
+             * camera roll axis. This is handy especially when viewing content at the nadir
+             * direction. However, it can be confusing if applied elsewhere or left in use
+             * - for example, to tilt the horizon permanently.
              * <p/>
              * For consistency, the feature works everywhere within the 360 content, not just
              * near nadir or zenith. The reasoning is that if user has found the gesture and
              * rolled the view to one direction, she has already learned to operate it and
-             * can easily roll the view back and forth as she pleases.
+             * can easily roll the view back and forth as she pleases. Furthermore, if
+             * auto-horizon aligner is enabled, it will fix tilted horizon automatically.
              */
 
             // Set default camera zoom level and maximum zoom level.
@@ -443,17 +445,18 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     public void onDeviceOrientationChanged(QuatF orientation) {
 
         /**
-         * It is possible to listen for sensor fusion data (device orientation changes) given
-         * as a quaternion rotation.
+         * It is possible to listen to sensor fusion data (device orientation changes)
+         * that are given as a quaternion rotation.
          * <p/>
-         * A reasonable place to register a listener is at onResume(). Remember to
+         * A reasonable place to register a listener is at onResume(). Remember to also
          * unregister your listener at onPause(), and ensure that your implementation
          * of the callbacks return quickly, as sensor fusion runs at a high data rate,
          * typically about 200 Hz (depends on hardware).
          * <p/>
-         * In this example, we simply print the orientation change values to logcat.
+         * In this example, we simply print the latest orientation angles to logcat.
+         * <p/>
          * Notice that the quaternion tells device's orientation, not the 3D camera
-         * orientation where also touch and various compensations are taken into account.
+         * orientation where also touch and various compensations are included.
          */
 
         // Rotate front vector to the direction where the user is currently looking at.
