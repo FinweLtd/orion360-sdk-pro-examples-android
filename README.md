@@ -53,20 +53,22 @@ Table of Contents
   9. [Overview](#overview)
   10. [Blending](#blending)
   11. [Video Ball](#video-ball)
-8. [Streaming](#streaming)
+8. [Input](#input)
+  1. [Sensors](#sensors)
+9. [Streaming](#streaming)
   1. [Buffering Indicator](#buffering-indicator)
-9. [Sprite](#sprite)
+10. [Sprite](#sprite)
   1. [Image Sprite](#image-sprite)
   2. [Video Sprite](#video-sprite)
   3. [Sprite Layout](#sprite-layout)
-10. [Widget](#widget)
+11. [Widget](#widget)
   1. [Interactive Hotspots](#interactive-hotspots)
-11. [Polygon](#polygon)
+12. [Polygon](#polygon)
   1. [Textured Cube](#textured-cube)
   2. [Orion Figure](#orion-figure)
-12. [Animation](#animation)
+13. [Animation](#animation)
   1. [Cross-fade](#cross-fade)
-13. [Gallery](#gallery)
+14. [Gallery](#gallery)
   1. [Thumbnail Pager](#thumbnail-pager)
 
 
@@ -570,6 +572,25 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 - Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_. Move it far enough forward to look at it from outside, compensate mirroring effect from inward texture normals with a negative scale, apply sensor fusion and touch control and rotate 180 degrees to bring front side in view.
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+Input
+=====
+
+This category contains examples that focus on various end-user input methods for controlling the 3D world, such as sensors and touch.
+
+### Sensors
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/21073897/4b5a1ec8-bef4-11e6-87ac-3358a805d52f.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/input/Sensors.java)
+
+An example that focuses on sensor fusion input.
+
+In this example, the recommended configuration for sensor fusion is presented with code comments that explain each step thoroughly. The roles of different movement sensors, their necessity for sensor fusion, bindings between different components, configuration values etc. are all covered.
+
+Since the sensor fusion is resonposible for fusing data from movement sensors and touch screen when it comes to panning, rotations and zooming, also this part of touch control is covered here (handling tapping events is discussed in a separate example).
+
+The example also shows how to listen to device rotation changes, if you'd like perform some actions or control based on device orientation.
 
 Streaming
 =========
