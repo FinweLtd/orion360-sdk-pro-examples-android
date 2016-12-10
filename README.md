@@ -588,7 +588,7 @@ An example that focuses on sensor fusion input.
 
 In this example, the recommended configuration for sensor fusion is presented with code comments that explain each step thoroughly. The roles of different movement sensors, their necessity for sensor fusion, bindings between different components, configuration values etc. are all covered.
 
-Since the sensor fusion is resonposible for fusing data from movement sensors and touch screen when it comes to panning, rotations and zooming, also this part of touch control is covered here (handling tapping events is discussed in a separate example).
+Since the sensor fusion is responsible for fusing data from movement sensors and touch screen when it comes to panning, rotating and zooming the view, also this part of touch control is covered here (handling tapping events is discussed in a separate example).
 
 The example also shows how to listen to device rotation changes, if you'd like perform some actions or control based on device orientation.
 
