@@ -169,6 +169,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <activity
+            android:name=".input.Touch"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
             android:name=".streaming.BufferingIndicator"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
