@@ -4,8 +4,6 @@
 
 This repository contains a set of examples for creating a 360 photo/video player using Orion360 SDK (Pro) for Android and Android Studio IDE.
 
-> This project is still under construction. Much more examples will be added.
-
 Preface
 -------
 
@@ -55,6 +53,7 @@ Table of Contents
   11. [Video Ball](#video-ball)
 8. [Input](#input)
   1. [Sensors](#sensors)
+  2. [Touch](#touch)
 9. [Streaming](#streaming)
   1. [Buffering Indicator](#buffering-indicator)
 10. [Sprite](#sprite)
@@ -111,7 +110,7 @@ Next, connect an Android device to your computer via a USB cable, and then compi
 
 When the app starts on your device, a menu of topics similar to the image below will be shown. Tap any topic to move to its submenu that contains one or more examples. Tap an example from the list to run it, and return to the examples menu by tapping the *Back* button from your device's Navigation Bar, and again to return to main menu (topics). In order to really understand what each example is about, you should always read the source code and comments.
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20263452/66561464-aa6f-11e6-898c-f6329015dad6.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/21079967/49f2742e-bfab-11e6-9627-20a29e0dbff0.png)
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
@@ -586,11 +585,51 @@ This category contains examples that focus on various end-user input methods for
 
 An example that focuses on sensor fusion input.
 
-In this example, the recommended configuration for sensor fusion is presented with code comments that explain each step thoroughly. The roles of different movement sensors, their necessity for sensor fusion, bindings between different components, configuration values etc. are all covered.
+By default, the 360 view is automatically panned based on device orientation changes. Hence, to look at a desired direction, user can turn the device towards that direction, or when viewing through a VR frame, simply turn her head.
 
-Since the sensor fusion is responsible for fusing data from movement sensors and touch screen when it comes to panning, rotating and zooming the view, also this part of touch control is covered here (handling tapping events is discussed in a separate example).
+This feature requires movement sensors to operate - most importantly, a gyroscope. Unfortunately, not all Android devices have one. The feature is automatically disabled on devices that do not have the necessary sensor hardware, with a fallback to touch-only control.
+The supported movement sensors include
 
-The example also shows how to listen to device rotation changes, if you'd like perform some actions or control based on device orientation.
+- Accelerometer, which tells where is Down direction, and linear acceleration
+- Magnetometer, which tells where is North direction, and the rotation about the device's own axis (slowly)
+- Gyroscope, which tells rotation changes about the device's own axis (very rapidly)
+
+Using data from all the three sensors, a sophisticated in-house developed sensor fusion algorithm calculates device orientation several hundreds of times per second. Considering the complexity of the topic, this works surprisingly well. Beware that there are hardware specific differences on the data rate, data accuracy, and calibration quality, as well as local magnetic interference that may change significantly when the device is moved just a few inches.
+
+If you experience issues with sensor fusion, it is usually because 1) one of the mandatory sensors is not present on the target device and sensor fusion is automatically disabled, or 2) magnetometer sensor is poorly calibrated; disable it or calibrate it by drawing 8-figures in the air with the device, rotating along its three axis.
+
+The sensor fusion algorithm is also responsible for merging user's touch input drag events with the orientation calculated from movement sensor data (touch tapping events are handled separately elsewhere). Touch drag events are interpreted here as panning (drag), zooming (pinch), and rolling (pinch rotate). In practice, touch drag events update an offset that is applied to the calculated device orientation.
+
+In short, the example shows how to:
+
+- Manually enable/disable sensor control
+- Manually disable magnetometer input, to prevent issues with nearby magnetic objects and bad calibration
+- Manually configure pinch zoom gesture limit, or disable pinch zoom feature altogether
+- Listen for device orientation changes (sensor fusion events), to implement custom features
+
+> In mathematics, there are multiple alternatives for describing rotations. Probably the most well-known is Euler angles (yaw, pitch, roll). Unfortunately, Euler angle representation has severe issues, and thus professionally written algorithms typically use quaternions or rotation matrixes instead. Also the rotation order is very significant. Hence, it is quite common to get more than confused when trying to figure out rotations! As a developer, you don't need to worry about these much as Orion360 SDK handles all the complexity on behalf of you. In addition, this example shows how to convert a quaternion representation of the current device rotation to angle degrees, which can be understood much more easily.
+
+### Touch
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/21079923/87207ed8-bfa9-11e6-90ff-3960dee2a074.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/input/Touch.java)
+
+An example that focuses on touch input.
+
+Touch screen is the primary interaction mechanism of modern smartphones and tablets. Orion360 views are typically configured to use touch drag gestures for panning, zooming and rolling the view (see Sensors example for details). In addition, apps can utilize single tapping, double tapping, and long tapping events.
+
+This example uses single tapping for toggling between normal and full screen view, double tapping for toggling between video playback and pause states, and long tapping for toggling between normal and VR mode rendering. These are tried-and-true mappings that are recommended for all 360/VR video apps, and explained in detail next.
+
+In most video player applications, user is offered an option to toggle between a normal view with controls and another, occlusion-free view where all widgets are hidden. Some applications implement this with a maximize-button and a notification telling how to return from the full-screen view. That is all good, but it is easy to miss or forget the instructions, and what users tend to try first is tapping the screen. Thus, it is a good idea to map single tapping for toggling between normal and full-screen view. On Android, this means showing and hiding together 1) video controls, 2) system navigation bar, 3) system title bar, 4) system action bar, 5) custom application title bar. Of course, most applications use only some of these elements. The complexity increases when video controls are hidden with a timer, and some elements use transition animation. Notice that this example focuses on demonstrating the feature, not on user experience.
+
+When something doesn't seem to work, users tend to try again with an amplified manner and multiple times. Since toggling between play and pause states are the most common control operation in a video player application, we recommend mapping double tapping events for this purpose. This allows controlling play/pause state even in full-screen mode (without bringing the controls in view), is easy to learn, and quicly becomes very natural. However, it is crucial to add a short animation that indicates the state change when the double tapping event has been recognized. A professionally made application also shows a hint about this hidden feature when user is learning to use the app.
+
+When user enters VR mode, all standard controls must be hidden and the whole screen reserved for split screen rendering. But when it is time to exit VR mode, it is not at all obvious to user how to do that! She will probably try to tap the screen, but we recommend not to exit VR mode from single tapping event, as it is very easy to accidentally tap the screen already when sliding the smartphone inside a VR frame. Instead, use single tapping event for showing a short-lived notification that hints about using long tapping for exiting VR mode - this prevents exiting VR mode accidentally, but allows users to find the way to exit VR mode with ease. Additional benefit is that long tapping can be used as a shortcut also for enabling VR mode (same gesture should always work both ways).
+
+To showcase tapping something within the 3D scene, a hotspot is added to the view. Tapping the hotspot will "collect" it. Notice that with Orion360 SDK Basic, the developer must manually combine hotspot and tapping near to its location, whereas Orion360 SDK Pro has built-in 3D objects and callbacks for their tapping as well as gaze selection events.
+
+To keep the example simple, all tapping features work simultaneously. In a real application the tapping events must be filtered to prevent multiple actions occurring from one tapping event. For example, tapping a hotspot should not trigger toggling between normal and full-screen mode (unless you have created a hotspot just for that purpose!)
 
 Streaming
 =========
