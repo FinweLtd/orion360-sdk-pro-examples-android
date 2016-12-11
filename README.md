@@ -61,7 +61,8 @@ Table of Contents
   2. [Video Sprite](#video-sprite)
   3. [Sprite Layout](#sprite-layout)
 11. [Widget](#widget)
-  1. [Interactive Hotspots](#interactive-hotspots)
+  1. [Video Controls](#video-controls)
+  2. [Interactive Hotspots](#interactive-hotspots)
 12. [Polygon](#polygon)
   1. [Textured Cube](#textured-cube)
   2. [Orion Figure](#orion-figure)
@@ -716,6 +717,20 @@ Widget
 ======
 
 This category contains examples that demonstrate the various built-in and custom widgets for user interaction.
+
+### Video Controls
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/21081619/85c2d642-bfd3-11e6-849a-e1d479603c3f.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/widget/VideoControls.java)
+
+An example of creating custom video controls.
+
+The MinimalVideoControls example already showed how easy it is to add video controls to Orion360 view with just a couple of lines of code. However, the app developer frequently wants to customize the controls, for example to add a button for toggling video looping, full-screen view, VR mode, or projection. Also the buttons and seekbar look & feel are usually customized to reflect brand colors and style. This example showcases how a custom controller class can be written from scratch.
+
+Typically the custom controls class would be in its own source code file, but here it is placed as an inner class to the player activity to keep the whole example code in one place. The custom controls class uses the same principles for integrating with the video view than Android's own MediaController class: controllable media player is given as a parameter (here _OrionVideoTexture_), as well as an anchor view for positioniong the controls (container viewgroup from XML layout).
+
+The implementation contains a play/pause button, a seekbar, elapsed and total time labels, an audio mute on/off button, and VR mode button. In addition, a separate title bar is created. All graphical elements are custom made, and interaction is built on top of the available APIs. You will find it easy to further customize and develop this controller for your own needs.
 
 ### Interactive Hotspots
 
