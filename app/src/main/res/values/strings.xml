@@ -25,11 +25,17 @@
     <string name="player_controls_play_overlay_desc">Play</string>
     <string name="player_controls_pause_overlay_desc">Pause</string>
 
-    <!-- Custom Controls -->
-    <string name="controller_playbutton_desc">Play/pause</string>
-    <string name="controller_audiobutton_desc">Toggle mute on/off</string>
-    <string name="controller_position">-:--</string>
-    <string name="controller_duration">-:--</string>
+    <!-- Video controls -->
+    <string name="player_title_panel_logo_button_desc">Logo</string>
+    <string name="player_title_panel_title_text">Orion360 SDK Pro</string>
+    <string name="player_title_panel_close_button_desc">Close</string>
+    <string name="player_controls_play_button_desc">Play/pause</string>
+    <string name="player_controls_audio_button_desc">Toggle mute on/off</string>
+    <string name="player_controls_player_position">-:--</string>
+    <string name="player_controls_duration">-:--</string>
+    <string name="player_controls_remaining">-:--</string>
+    <string name="player_controls_vr_button_desc">Toggle VR on/off</string>
+    <string name="player_hud_progressbar_image_desc">Progress</string>
 
     <!-- Sprite layout tool -->
     <string name="sprite_layout_alignment_position">Sprite alignment rule:</string>

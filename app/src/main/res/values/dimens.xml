@@ -3,10 +3,31 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <!-- Player controls (HUD) -->
+    <!-- Video controls -->
+    <dimen name="player_title_panel_height">42dp</dimen>
+    <dimen name="player_title_panel_button_width">36dp</dimen>
+    <dimen name="player_title_panel_button_height">36dp</dimen>
+    <dimen name="player_title_panel_title_text">24sp</dimen>
+    <dimen name="player_title_panel_button_margin_start">8dp</dimen>
+    <dimen name="player_title_panel_button_margin_end">8dp</dimen>
+    <dimen name="player_title_panel_padding_start">0dp</dimen>
+    <dimen name="player_title_panel_padding_end">0dp</dimen>
+    <dimen name="player_controls_panel_height">40dp</dimen>
+    <dimen name="player_controls_panel_padding_start">10dp</dimen>
+    <dimen name="player_controls_panel_padding_end">10dp</dimen>
+    <dimen name="player_controls_panel_button_width">32dp</dimen>
+    <dimen name="player_controls_panel_button_height">32dp</dimen>
+    <dimen name="player_controls_panel_item_margin_start">6dp</dimen>
+    <dimen name="player_controls_panel_item_margin_end">6dp</dimen>
+    <dimen name="player_controls_seekbar_padding_top">8dp</dimen>
+    <dimen name="player_controls_seekbar_padding_bottom">8dp</dimen>
+    <dimen name="player_controls_seekbar_padding_start">16dp</dimen>
+    <dimen name="player_controls_seekbar_padding_end">16dp</dimen>
     <dimen name="player_controls_play_overlay_width">200dp</dimen>
     <dimen name="player_controls_play_overlay_height">200dp</dimen>
     <dimen name="player_controls_pause_overlay_width">200dp</dimen>
     <dimen name="player_controls_pause_overlay_height">200dp</dimen>
+    <dimen name="player_hud_progressbar_width">60dp</dimen>
+    <dimen name="player_hud_progressbar_height">60dp</dimen>
 
 </resources>

@@ -9,11 +9,15 @@
     <!-- Color definitions by name -->
     <color name="black_overlay">#66000000</color>
     <color name="pure_white">#FFFFFFFF</color>
+    <color name="white_80pc_opacity">#CCFFFFFF</color>
 
-    <!-- Custom Controls -->
-    <color name="controller_background">@color/black_overlay</color>
-    <color name="controller_position_label">@color/pure_white</color>
-    <color name="controller_duration_label">@color/pure_white</color>
+    <!-- Video controls -->
+    <color name="player_title_panel_background">@color/black_overlay</color>
+    <color name="player_title_panel_title_text">@color/white_80pc_opacity</color>
+    <color name="player_controls_panel_background">@color/black_overlay</color>
+    <color name="player_controls_player_position_text">@color/pure_white</color>
+    <color name="player_controls_duration_text">@color/pure_white</color>
+    <color name="player_controls_remaining_text">@color/pure_white</color>
 
     <color name="pure_black">#FF000000</color>
     <color name="pure_transparent">#00000000</color>

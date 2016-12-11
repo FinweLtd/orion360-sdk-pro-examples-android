@@ -2,10 +2,10 @@
 
     <item
         android:id="@android:id/background"
-        android:drawable="@drawable/progress_background">
+        android:drawable="@drawable/player_controls_seekbar_background">
     </item>
     <item android:id="@android:id/progress">
-        <clip android:drawable="@drawable/progress_progress" />
+        <clip android:drawable="@drawable/player_controls_seekbar_progress" />
     </item>
 
 </layer-list>
