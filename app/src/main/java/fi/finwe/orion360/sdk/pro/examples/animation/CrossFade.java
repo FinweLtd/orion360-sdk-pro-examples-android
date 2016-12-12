@@ -181,8 +181,10 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
 
         // Create a new timed variable for alpha animation. Here we want to adjust alpha
         // in the range [0.0-1.0] to cross-fade between two panoramas using linear interpolation.
+        mAlphaAnimator = TimedFloatFunction.fromRange(0.0f, 1.0f, FloatFunction.Function.LINEAR);
+
         // We start from opaque (1.0).
-        mAlphaAnimator = TimedFloatFunction.fromRange(1.0f, 0.0f, FloatFunction.Function.LINEAR);
+        mAlphaAnimator.setInputValue(1.0f);
 
         // The duration for cross-fade, milliseconds.
         mAlphaAnimator.setDurationMs(3000);
@@ -283,7 +285,7 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
     public void onVideoStarted(OrionVideoTexture orionVideoTexture) {
 
         // Animate image from opaque to transparent.
-        mAlphaAnimator.animateToInputValue(1.0f);
+        mAlphaAnimator.animateToInputValue(0.0f);
 
     }
 
@@ -297,7 +299,7 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
     public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
 
         // Animate image from transparent to opaque.
-        mAlphaAnimator.animateToInputValue(0.0f);
+        mAlphaAnimator.animateToInputValue(1.0f);
 
     }
 
