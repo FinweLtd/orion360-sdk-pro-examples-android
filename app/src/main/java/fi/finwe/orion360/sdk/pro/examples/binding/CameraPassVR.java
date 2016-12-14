@@ -44,6 +44,7 @@ import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
 import fi.finwe.orion360.sdk.pro.source.OrionCameraTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -170,23 +171,20 @@ public class CameraPassVR extends OrionActivity {
         // Create a new sprite. This is a 3D object with a flat 2D surface for an image/video.
         mCameraSprite = new OrionSprite();
 
+        // We don't need perspective camera for viewing camera sprite.
+        mCameraSprite.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+
         // Create a new texture where frames will be captured from device's hardware camera.
         mCameraTexture = new OrionCameraTexture(OrionCameraTexture.CameraFacing.BACK);
 
         // Bind the camera texture to the camera sprite.
         mCameraSprite.bindTexture(mCameraTexture);
 
-        // Align camera sprite rotation with camera texture rotation so that upside is up.
-        mCameraSprite.setRotationOffset(mCameraTexture.getTextureRotation());
-
         // Bind the sprite to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mCameraSprite);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
-
-        // We don't need perspective camera for viewing camera sprite, use orthographic instead.
-        mCamera.setCameraProjection(OrionCamera.CameraProjection.ORTHOGRAPHIC);
 
         // Find Orion360 view from the XML layout. This is an Android view where we render content.
         mView = (OrionView)findViewById(R.id.orion_view);

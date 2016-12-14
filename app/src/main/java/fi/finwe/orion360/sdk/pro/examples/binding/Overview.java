@@ -117,6 +117,9 @@ public class Overview extends OrionActivity {
         mPanoramaEquirectangular = new OrionPanorama();
         mPanoramaEquirectangular.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
 
+        // We don't need perspective camera for viewing original equirectangular projection.
+        mPanoramaEquirectangular.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
                 MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
@@ -156,9 +159,6 @@ public class Overview extends OrionActivity {
 
         // Create a new camera for the overview viewport.
         mOverviewCamera = new OrionCamera();
-
-        // We don't need perspective camera for this projection, use orthographic instead.
-        mOverviewCamera.setCameraProjection(OrionCamera.CameraProjection.ORTHOGRAPHIC);
 
         // React to the camera getting bound to the SensorFusion for the first time.
         mOverviewCamera.setRotationBaseControllerListener(

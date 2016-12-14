@@ -33,6 +33,7 @@ import android.graphics.RectF;
 import android.os.Bundle;
 
 import fi.finwe.math.QuatF;
+import fi.finwe.math.Vec3F;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -76,8 +77,12 @@ public class RearviewMirror extends OrionActivity {
     /** The 3D scene where our panorama sphere will be added to. */
     protected OrionScene mScene;
 
+    protected OrionScene mSceneRearview;
+
     /** The panorama sphere where our video texture will be mapped to. */
     protected OrionPanorama mPanorama;
+
+    protected OrionPanorama mPanoramaRearview;
 
     /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mPanoramaTexture;
@@ -106,11 +111,15 @@ public class RearviewMirror extends OrionActivity {
         // Create a new scene. This represents a 3D world where various objects can be placed.
         mScene = new OrionScene();
 
+        mSceneRearview = new OrionScene();
+
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mScene.bindController(OrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
+
+        mPanoramaRearview = new OrionPanorama();
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
@@ -120,9 +129,11 @@ public class RearviewMirror extends OrionActivity {
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
         // If you have stereoscopic content or doughnut shape video, use other method variants.
         mPanorama.bindTextureFull(0, mPanoramaTexture);
+        mPanoramaRearview.bindTextureFull(0, mPanoramaTexture);
 
         // Bind the panorama to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mPanorama);
+        mSceneRearview.bindSceneItem(mPanoramaRearview);
 
         // Create a new camera (main view). This will become the end-user's eyes into the 3D world.
         mMainViewCamera = new OrionCamera();
@@ -161,7 +172,8 @@ public class RearviewMirror extends OrionActivity {
                 // Set yaw angle to -180. Now the camera will always point to the same yaw angle
                 // (to the horizontal left edge of the equirectangular video/image source)
                 // when starting the app, regardless of the orientation of the device.
-                item.setRotation(QuatF.fromRotationAxisY(-180.0 / QuatF.RAD));
+                item.setRotation(QuatF.fromRotationAxisY(180.0f / QuatF.RAD));
+
 
                 // Notice that we create a 180 degree offset when compared to the main camera.
                 // This way the rear-view camera will be looking at the opposite direction (back).
@@ -174,6 +186,8 @@ public class RearviewMirror extends OrionActivity {
                 }
             }
         });
+
+        mPanoramaRearview.setScale(new Vec3F(1.0f, 1.0f, 1.0f));
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         OrionContext.getSensorFusion().bindControllable(mMainViewCamera);
@@ -191,7 +205,7 @@ public class RearviewMirror extends OrionActivity {
         mView = (OrionView)findViewById(R.id.orion_view);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
-        mView.bindDefaultScene(mScene);
+        //mView.bindDefaultScene(mGalleryScene);
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport, and
@@ -212,9 +226,11 @@ public class RearviewMirror extends OrionActivity {
 
         // Bind the main viewport to the main view camera.
         mView.getViewports()[0].bindCamera(mMainViewCamera);
+        mView.getViewports()[0].bindScene(mScene);
 
         // Bind the rear-view viewport to the rear-view camera.
         mView.getViewports()[1].bindCamera(mRearViewCamera);
+        mView.getViewports()[1].bindScene(mSceneRearview);
 	}
 
     /**

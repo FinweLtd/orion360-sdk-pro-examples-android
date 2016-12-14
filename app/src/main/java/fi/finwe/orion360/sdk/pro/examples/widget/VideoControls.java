@@ -29,6 +29,7 @@
 
 package fi.finwe.orion360.sdk.pro.examples.widget;
 
+import android.app.Activity;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
@@ -129,7 +130,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         ((OrionVideoTexture)mPanoramaTexture).addTextureListener(this);
 
         // Create an instance of our custom control panel.
-        mControlPanel = new MyControlPanel();
+        mControlPanel = new MyControlPanel(this);
 
         // Get the placeholder for our control panel from the XML layout.
         mControlPanelContainer = (ViewGroup) findViewById(R.id.control_panel_container);
@@ -337,6 +338,15 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         /** Listener for component events. */
         private PlayerControlsListener mListener;
 
+
+        /**
+         * Constructor with activity.
+         *
+         * @param activity The activity.
+         */
+        MyControlPanel(Activity activity) {
+            super(activity);
+        }
 
         @Override
         public View createLayout(LayoutInflater inflater, ViewGroup anchorView) {
