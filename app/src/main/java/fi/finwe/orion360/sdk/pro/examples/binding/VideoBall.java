@@ -31,8 +31,8 @@ package fi.finwe.orion360.sdk.pro.examples.binding;
 
 import android.os.Bundle;
 
-import fi.finwe.math.QuatF;
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Quatf;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -104,30 +104,20 @@ public class VideoBall extends OrionActivity {
         // By default, the panorama sphere has a radius of 1.0 and the camera is at the origin.
         // If we move the sphere far enough forward (along the negative Z-axis), our camera will
         // go through the back of the sphere and starts to see the sphere from outside.
-        mPanorama.setWorldTranslation(new Vec3F(0.0f, 0.0f, -2.0f));
+        mPanorama.setWorldTranslation(new Vec3f(0.0f, 0.0f, -2.0f));
 
         // Since the texture is mapped to the inside of the sphere, when looking at it from
         // outside it appears mirrored. This can be easily solved by using a negative scale.
-        mPanorama.setScale(new Vec3F(-1.0f, 1.0f, 1.0f));
+        mPanorama.setScale(new Vec3f(-1.0f, 1.0f, 1.0f));
 
         // To look around the sphere, we can map sensor fusion directly to the panorama.
         // Thus, instead of rotating the camera (as usual), we rotate the panorama sphere.
         OrionContext.getSensorFusion().bindControllable(mPanorama);
 
-        // React to the panorama getting bound to the SensorFusion for the first time.
-        mPanorama.setRotationBaseControllerListener(
-                new OrionSceneItem.RotationBaseControllerListenerBase() {
-                    @Override
-                    public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                        super.onRotationBaseControllerBound(item, rotationBase);
-
-                        // Set yaw angle to 180 degrees when starting the app. Since we moved the
-                        // panorama forward, we are now looking at it from behind and need to
-                        // rotate it 180 degrees to see its front side again.
-                        mPanorama.setRotation(QuatF.fromRotationAxisY(180.0 / QuatF.RAD));
-
-                    }
-                });
+        // Set yaw angle to 180 degrees when starting the app. Since we moved the
+        // panorama forward, we are now looking at it from behind and need to
+        // rotate it 180 degrees to see its front side again.
+        mPanorama.setRotation(Quatf.fromRotationAxisY(180.0 / Quatf.RAD));
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,

@@ -33,7 +33,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ToggleButton;
 
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
@@ -103,7 +103,7 @@ public class SpriteLayout extends OrionActivity {
         }
 
         // Set sprite location in the 3D world. Here we place it slightly ahead in front direction.
-        mSprite.setWorldTranslation(new Vec3F(0.0f, 0.0f, -1.0f));
+        mSprite.setWorldTranslation(new Vec3f(0.0f, 0.0f, -1.0f));
 
         // We don't need a perspective camera in this example.
         mSprite.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
@@ -119,7 +119,7 @@ public class SpriteLayout extends OrionActivity {
 
         // Create a sprite for marking the center point of the screen.
         mCenter = new OrionSprite();
-        mCenter.setWorldTranslation(new Vec3F(0.0f, 0.0f, -0.95f));
+        mCenter.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.95f));
         mCenter.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
         mCenter.setScale(0.1f);
         mCenter.bindTexture(OrionTexture.createTextureFromURI(this,
@@ -128,7 +128,7 @@ public class SpriteLayout extends OrionActivity {
 
         // Create a sprite for marking the scaling bounds.
         mBounds = new OrionSprite();
-        mBounds.setWorldTranslation(new Vec3F(0.0f, 0.0f, -0.95f));
+        mBounds.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.95f));
         mBounds.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
         mBounds.setScale(0.2f);
         mBounds.bindTexture(OrionTexture.createTextureFromURI(this,

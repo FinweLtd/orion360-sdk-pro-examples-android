@@ -44,7 +44,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -342,7 +342,7 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryThumbnail = new OrionSprite();
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mGalleryThumbnail.setWorldTranslation(new Vec3F(0.03f, 0.19f, -0.77f));
+        mGalleryThumbnail.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
         mGalleryThumbnail.setScale(0.42f);

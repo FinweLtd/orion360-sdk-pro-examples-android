@@ -32,7 +32,7 @@ package fi.finwe.orion360.sdk.pro.examples.binding;
 import android.graphics.RectF;
 import android.os.Bundle;
 
-import fi.finwe.math.QuatF;
+import fi.finwe.math.Quatf;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -140,42 +140,18 @@ public class Overview extends OrionActivity {
         // Create a new camera for the main viewport.
         mMainViewCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mMainViewCamera.setRotationBaseControllerListener(
-                new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to 0. Now the camera will always point to the same angle
-                // (to the center point of the equirectangular video/image source)
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotation(QuatF.fromRotationAxisY(0.0 / QuatF.RAD));
-
-                // Ready to start rendering the main viewport.
-                mSceneRectilinear.setVisible(true);
-            }
-        });
+        // Set yaw angle to 0. Now the camera will always point to the same angle
+        // (to the center point of the equirectangular video/image source)
+        // when starting the app, regardless of the orientation of the device.
+        mMainViewCamera.setRotationYaw(0.0f);
 
         // Create a new camera for the overview viewport.
         mOverviewCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mOverviewCamera.setRotationBaseControllerListener(
-                new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to 0. Now the camera will always point to the same angle
-                // (to the center point of the equirectangular video/image source)
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotation(QuatF.fromRotationAxisY(0.0 / QuatF.RAD));
-
-                // Ready to start rendering the overview viewport.
-                mSceneEquirectangular.setVisible(true);
-            }
-        });
+        // Set yaw angle to 0. Now the camera will always point to the same angle
+        // (to the center point of the equirectangular video/image source)
+        // when starting the app, regardless of the orientation of the device.
+        mOverviewCamera.setRotationYaw(0.0f);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         OrionContext.getSensorFusion().bindControllable(mMainViewCamera);

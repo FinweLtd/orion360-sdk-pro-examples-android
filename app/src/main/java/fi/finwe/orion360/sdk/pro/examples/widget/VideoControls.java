@@ -44,7 +44,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import fi.finwe.math.Vec2F;
+import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -175,7 +175,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         listener.bindClickable(null, new TouchDisplayClickListener.Listener() {
 
             @Override
-            public void onDisplayClick(DisplayClickable clickable, Vec2F displayCoords) {
+            public void onDisplayClick(DisplayClickable clickable, Vec2f displayCoords) {
                 runOnUiThread (new Thread(new Runnable() {
                     public void run() {
 
@@ -193,7 +193,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             }
 
             @Override
-            public void onDisplayDoubleClick(DisplayClickable clickable, Vec2F displayCoords) {
+            public void onDisplayDoubleClick(DisplayClickable clickable, Vec2f displayCoords) {
                 runOnUiThread (new Thread(new Runnable() {
                     public void run() {
 
@@ -214,7 +214,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             }
 
             @Override
-            public void onDisplayLongClick(DisplayClickable clickable, Vec2F displayCoords) {
+            public void onDisplayLongClick(DisplayClickable clickable, Vec2f displayCoords) {
 
                 runOnUiThread (new Thread(new Runnable() {
                     public void run() {

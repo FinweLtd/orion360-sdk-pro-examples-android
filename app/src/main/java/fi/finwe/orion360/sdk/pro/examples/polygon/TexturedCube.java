@@ -34,8 +34,8 @@ import android.os.Bundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import fi.finwe.math.QuatF;
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Quatf;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -96,9 +96,6 @@ public class TexturedCube extends OrionActivity {
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mScene.bindController(OrionContext.getSensorFusion());
 
-        // To prevent rendering garbage, hide the scene until we have initialized everything.
-        mScene.setVisible(false);
-
         // Create a new polygon. This is where our 3D model will be loaded to.
         mPolygon = new OrionPolygon();
 
@@ -107,7 +104,7 @@ public class TexturedCube extends OrionActivity {
         mPolygon.setSourceURI(getString(R.string.asset_polygon_cube), "*");
 
         // Set the location where the polygon will be rendered to in the 3D world.
-        mPolygon.setWorldTranslation(new Vec3F(0, 0, -1.0f));
+        mPolygon.setWorldTranslation(new Vec3f(0, 0, -1.0f));
 
         // Set the size of the polygon as a scale factor relative to its size in the .obj model. */
         mPolygon.setScale(0.3f);
@@ -121,20 +118,9 @@ public class TexturedCube extends OrionActivity {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mCamera.setRotationBaseControllerListener(new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to 0. Now the camera will always point to the same yaw angle
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotationYaw(0);
-
-                // The camera is now properly initialized, and we can start rendering the scene.
-                mScene.setVisible(true);
-            }
-        });
+        // Set yaw angle to 0. Now the camera will always point to the same yaw angle
+        // when starting the app, regardless of the orientation of the device.
+        mCamera.setRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         OrionContext.getSensorFusion().bindControllable(mCamera);
@@ -222,9 +208,9 @@ public class TexturedCube extends OrionActivity {
             @Override
             public void run() {
                 mRotation++;
-                QuatF rotY = QuatF.fromRotationAxisY(
+                Quatf rotY = Quatf.fromRotationAxisY(
                         (float)((Math.PI) * Math.sin(mRotation / 60.f)));
-                QuatF rotX = QuatF.fromRotationAxisX(
+                Quatf rotX = Quatf.fromRotationAxisX(
                         (float)((0.80f * Math.PI/2.0f) * Math.sin(0.33f * mRotation / 60.f)));
                 mPolygon.setRotation(rotX.multiply(rotY));
             }

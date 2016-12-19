@@ -31,7 +31,7 @@ package fi.finwe.orion360.sdk.pro.examples.sprite;
 
 import android.os.Bundle;
 
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -105,7 +105,7 @@ public class ImageSprite extends OrionActivity {
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_TAG_IMAGE_FILE_HQ);
 
         // Set sprite location in the 3D world. Here we place it slightly ahead in front direction.
-        mSprite.setWorldTranslation(new Vec3F(0.0f, 0.0f, -1.0f));
+        mSprite.setWorldTranslation(new Vec3f(0.0f, 0.0f, -1.0f));
 
         // Set sprite size in the 3D world.
         mSprite.setScale(1.0f);

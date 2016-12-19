@@ -34,8 +34,8 @@ import android.os.Bundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import fi.finwe.math.QuatF;
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Quatf;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -118,9 +118,6 @@ public class OrionFigure extends OrionActivity {
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mScene.bindController(OrionContext.getSensorFusion());
 
-        // To prevent rendering garbage, hide the scene until we have initialized everything.
-        mScene.setVisible(false);
-
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
 
@@ -144,7 +141,7 @@ public class OrionFigure extends OrionActivity {
                 "http://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4");
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mSprite.setWorldTranslation(new Vec3F(0.03f, 0.19f, -0.77f));
+        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
         mSprite.setScale(0.42f);
@@ -164,7 +161,7 @@ public class OrionFigure extends OrionActivity {
 
         // Set the location where the Orion360 figure polygon will be rendered to in the 3D world.
         // Here we put it balancing on top of the footstool to give some tension to the scene.
-        mPolygon.setWorldTranslation(new Vec3F(-0.25f, -0.4f, -0.6f));
+        mPolygon.setWorldTranslation(new Vec3f(-0.25f, -0.4f, -0.6f));
 
         // Set the size of the polygon as a scale factor relative to its size in the .obj model. */
         mPolygon.setScale(0.1f);
@@ -178,20 +175,9 @@ public class OrionFigure extends OrionActivity {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mCamera.setRotationBaseControllerListener(new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to 0. Now the camera will always point to the same yaw angle
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotationYaw(0);
-
-                // The camera is now properly initialized, and we can start rendering the scene.
-                mScene.setVisible(true);
-            }
-        });
+        // Set yaw angle to 0. Now the camera will always point to the same yaw angle
+        // when starting the app, regardless of the orientation of the device.
+        mCamera.setRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         OrionContext.getSensorFusion().bindControllable(mCamera);
@@ -293,9 +279,9 @@ public class OrionFigure extends OrionActivity {
             @Override
             public void run() {
                 mRotation++;
-                QuatF rotY = QuatF.fromRotationAxisY(
+                Quatf rotY = Quatf.fromRotationAxisY(
                         (float)((Math.PI) * Math.sin(mRotation / 60.f)));
-                QuatF rotX = QuatF.fromRotationAxisX(
+                Quatf rotX = Quatf.fromRotationAxisX(
                         (float)((0.80f * Math.PI/2.0f) * Math.sin(0.33f * mRotation / 60.f)));
                 mPolygon.setRotation(rotX.multiply(rotY));
             }

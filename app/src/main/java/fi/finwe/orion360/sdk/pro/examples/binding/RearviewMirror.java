@@ -32,8 +32,8 @@ package fi.finwe.orion360.sdk.pro.examples.binding;
 import android.graphics.RectF;
 import android.os.Bundle;
 
-import fi.finwe.math.QuatF;
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Quatf;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -138,56 +138,18 @@ public class RearviewMirror extends OrionActivity {
         // Create a new camera (main view). This will become the end-user's eyes into the 3D world.
         mMainViewCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mMainViewCamera.setRotationBaseControllerListener(
-                new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to 0. Now the camera will always point to the same angle
-                // (to the center point of the equirectangular video/image source)
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotation(QuatF.fromRotationAxisY(0.0 / QuatF.RAD));
-
-                // We don't know which one of the cameras will be initialized first, hence we
-                // use flags to ensure that both are initialized before starting rendering.
-                mainCameraInitialized = true;
-                if (rearViewCameraInitialized) {
-                    mScene.setVisible(true);
-                }
-            }
-        });
+        // Set yaw angle to 0. Now the camera will always point to the same angle
+        // (to the center point of the equirectangular video/image source)
+        // when starting the app, regardless of the orientation of the device.
+        mMainViewCamera.setRotation(Quatf.fromRotationAxisY(0.0 / Quatf.RAD));
 
         // Create a new camera (rear-view). This will become the end-user's eyes into the 3D world.
         mRearViewCamera = new OrionCamera();
 
-        // React to the camera getting bound to the SensorFusion for the first time.
-        mRearViewCamera.setRotationBaseControllerListener(
-                new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
-
-                // Set yaw angle to -180. Now the camera will always point to the same yaw angle
-                // (to the horizontal left edge of the equirectangular video/image source)
-                // when starting the app, regardless of the orientation of the device.
-                item.setRotation(QuatF.fromRotationAxisY(180.0f / QuatF.RAD));
-
-
-                // Notice that we create a 180 degree offset when compared to the main camera.
-                // This way the rear-view camera will be looking at the opposite direction (back).
-
-                // We don't know which one of the cameras will be initialized first, hence we
-                // use flags to ensure that both are initialized before starting rendering.
-                rearViewCameraInitialized = true;
-                if (mainCameraInitialized) {
-                    mScene.setVisible(true);
-                }
-            }
-        });
-
-        mPanoramaRearview.setScale(new Vec3F(1.0f, 1.0f, 1.0f));
+        // Set yaw angle to -180. Now the camera will always point to the same yaw angle
+        // (to the horizontal left edge of the equirectangular video/image source)
+        // when starting the app, regardless of the orientation of the device.
+        mRearViewCamera.setRotation(Quatf.fromRotationAxisY(180.0f / Quatf.RAD));
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         OrionContext.getSensorFusion().bindControllable(mMainViewCamera);

@@ -46,12 +46,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import fi.finwe.math.Vec2F;
+import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
-import fi.finwe.orion360.sdk.pro.controllable.WorldClickable;
+import fi.finwe.orion360.sdk.pro.controllable.Raycast;
+import fi.finwe.orion360.sdk.pro.controllable.RaycastReceiver;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
 import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
@@ -283,7 +284,7 @@ public class Touch extends OrionActivity {
 //        listener.bindClickable(null, new TouchDisplayClickListener.Listener() {
 //
 //            @Override
-//            public void onDisplayClick(DisplayClickable clickable, Vec2F displayCoords) {
+//            public void onDisplayClick(DisplayClickable clickable, Vec2f displayCoords) {
 //                Log.d(TAG, "onDisplayClick() from thread " + Thread.currentThread().getId());
 //
 //                runOnUiThread (new Thread(new Runnable() {
@@ -294,12 +295,12 @@ public class Touch extends OrionActivity {
 //            }
 //
 //            @Override
-//            public void onDisplayDoubleClick(DisplayClickable clickable, Vec2F displayCoords) {
+//            public void onDisplayDoubleClick(DisplayClickable clickable, Vec2f displayCoords) {
 //                Log.d(TAG, "onDisplayDoubleClick() from thread " + Thread.currentThread().getId());
 //            }
 //
 //            @Override
-//            public void onDisplayLongClick(DisplayClickable clickable, Vec2F displayCoords) {
+//            public void onDisplayLongClick(DisplayClickable clickable, Vec2f displayCoords) {
 //                Log.d(TAG, "onDisplayLongClick() from thread " + Thread.currentThread().getId());
 //            }
 //
@@ -323,23 +324,27 @@ public class Touch extends OrionActivity {
 
             mWorldClickListener.bindClickable(hotspot.getIcon(),
                     new TouchWorldClickListener.Listener() {
+
+
+
+
                 @Override
-                public void onWorldClick(WorldClickable worldClickable, Vec2F vec2F,
-                                         TouchWorldClickListener.RayCast rayCast) {
-                    Log.d(TAG, "onWorldClick(): " + worldClickable.toString());
+                public void onWorldClick(RaycastReceiver receiver, Vec2f vec2F,
+                                         Raycast raycast) {
+                    Log.d(TAG, "onWorldClick(): " + receiver.toString());
                     hotspot.setEnabled(false);
                 }
 
                 @Override
-                public void onWorldDoubleClick(WorldClickable worldClickable, Vec2F vec2F,
-                                               TouchWorldClickListener.RayCast rayCast) {
-                    Log.d(TAG, "onWorldDoubleClick(): " + worldClickable.toString());
+                public void onWorldDoubleClick(RaycastReceiver receiver, Vec2f vec2F,
+                                               Raycast raycast) {
+                    Log.d(TAG, "onWorldDoubleClick(): " + receiver.toString());
                 }
 
                 @Override
-                public void onWorldLongClick(WorldClickable worldClickable, Vec2F vec2F,
-                                             TouchWorldClickListener.RayCast rayCast) {
-                    Log.d(TAG, "onWorldLongClick(): " + worldClickable.toString());
+                public void onWorldLongClick(RaycastReceiver receiver, Vec2f vec2F,
+                                             Raycast raycast) {
+                    Log.d(TAG, "onWorldLongClick(): " + receiver.toString());
                 }
             });
 

@@ -31,7 +31,7 @@ package fi.finwe.orion360.sdk.pro.examples.sprite;
 
 import android.os.Bundle;
 
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -128,7 +128,7 @@ public class VideoSprite extends OrionActivity {
                 "http://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4");
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mSprite.setWorldTranslation(new Vec3F(0.03f, 0.19f, -0.77f));
+        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
         mSprite.setScale(0.42f);

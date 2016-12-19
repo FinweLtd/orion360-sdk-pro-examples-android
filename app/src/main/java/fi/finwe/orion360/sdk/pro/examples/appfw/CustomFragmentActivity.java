@@ -40,7 +40,7 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-import fi.finwe.math.QuatF;
+import fi.finwe.math.Quatf;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
@@ -274,9 +274,6 @@ public class CustomFragmentActivity extends Activity {
             // Create a new scene. This represents a 3D world where various objects can be placed.
             mScene = new OrionScene();
 
-            // To prevent rendering garbage, hide the scene until we have initialized everything.
-            mScene.setVisible(false);
-
             // Bind sensor fusion as a controller. This will make it available for scene objects.
             mScene.bindController(OrionContext.getSensorFusion());
 
@@ -302,21 +299,10 @@ public class CustomFragmentActivity extends Activity {
             // disabled. At 3.0 (300%) camera will never reduce the FOV below 1/3 of the base FOV.
             mCamera.setZoomMax(3.0f);
 
-            // React to the camera getting bound to the SensorFusion for the first time.
-            mCamera.setRotationBaseControllerListener(new OrionSceneItem.RotationBaseControllerListenerBase() {
-                @Override
-                public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                    super.onRotationBaseControllerBound(item, rotationBase);
-
-                    // Set yaw angle to 0. Now the camera will always point to the same yaw angle
-                    // (to the horizontal center point of the equirectangular video/image source)
-                    // when starting the app, regardless of the orientation of the device.
-                    item.setRotationYaw(0);
-
-                    // The camera is now properly initialized, and we can start rendering the scene.
-                    mScene.setVisible(true);
-                }
-            });
+            // Set yaw angle to 0. Now the camera will always point to the same yaw angle
+            // (to the horizontal center point of the equirectangular video/image source)
+            // when starting the app, regardless of the orientation of the device.
+            mCamera.setRotationYaw(0);
 
             // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
             OrionContext.getSensorFusion().bindControllable(mCamera);

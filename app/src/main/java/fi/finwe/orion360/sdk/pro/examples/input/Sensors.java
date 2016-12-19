@@ -32,8 +32,8 @@ package fi.finwe.orion360.sdk.pro.examples.input;
 import android.os.Bundle;
 import android.util.Log;
 
-import fi.finwe.math.QuatF;
-import fi.finwe.math.Vec3F;
+import fi.finwe.math.Quatf;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -167,19 +167,6 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          */
         OrionContext.getSensorFusion().setMagnetometerEnabled(false);
 
-        /**
-         * When OrionContext is created and sensor fusion algorithm initialized and started,
-         * it begins to iterate from its default orientation towards the actual device
-         * orientation by calculating new orientation estimates based on received movement
-         * sensor samples.
-         *
-         * This process takes a (short) moment to complete: the estimated orientation quickly
-         * reaches and stabilizes to the actual device orientation. However, to prevent rendering
-         * a few frames during initialization phase it is recommended to initially hide the
-         * scene - and make it visible after sensor fusion has stabilized.
-         */
-        mScene.setVisible(false);
-
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
 
@@ -209,53 +196,35 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         OrionContext.getSensorFusion().bindControllable(mCamera);
 
         /**
-         * It is often useful to set a listener for receiving an event when the sensor fusion
-         * is actually bound to a camera.
+         * If you want to ensure that viewing begins from the horizontal center point
+         * of the equirectangular panoramic content ('front' direction appears when
+         * device is lifted up to reveal the horizon level), set item yaw rotation
+         * to 0 degrees using this convenience method.
+         *
+         * You can also set it to any other yaw angle, for example value 90 makes the
+         * panorama start from 'left' and -90 from 'right'.
+         *
+         * Notice that in VR mode it is important to use this method variant for
+         * configuring the initial viewing angle as this only sets the yaw angle
+         * and lets the sensor fusion algorithm determine proper compensation to
+         * keep the 3D scene upright (horizon appears in level with real world).
          */
-        mCamera.setRotationBaseControllerListener(new OrionSceneItem.RotationBaseControllerListenerBase() {
-            @Override
-            public void onRotationBaseControllerBound(OrionSceneItem item, QuatF rotationBase) {
-                super.onRotationBaseControllerBound(item, rotationBase);
+        mCamera.setRotationYaw(0);
 
-                /**
-                 * If you want to ensure that viewing begins from the horizontal center point
-                 * of the equirectangular panoramic content ('front' direction appears when
-                 * device is lifted up to reveal the horizon level), set item yaw rotation
-                 * to 0 degrees using this convenience method.
-                 *
-                 * You can also set it to any other yaw angle, for example value 90 makes the
-                 * panorama start from 'left' and -90 from 'right'.
-                 *
-                 * Notice that in VR mode it is important to use this method variant for
-                 * configuring the initial viewing angle as this only sets the yaw angle
-                 * and lets the sensor fusion algorithm determine proper compensation to
-                 * keep the 3D scene upright (horizon appears in level with real world).
-                 */
-                item.setRotationYaw(0);
-
-                /**
-                 * If you want to set the initial viewing angle freely (and override initial
-                 * upright compensation), you can use this method variant. In this example the
-                 * view starts from 'left' orientation: first we create a rotation quaternion
-                 * with 90 degree rotation about the Y axis, and then set this as the rotation
-                 * for the item. The 'left' direction will initially appear at the center of
-                 * the screen, no matter what is the orientation of the device.
-                 *
-                 * This approach is not suitable for VR mode, but can be useful for example
-                 * if user is lying on a sofa (looking up) or sitting in a bus (looking down)
-                 * and we'd still like to start from the 'front' direction (instead of top or
-                 * bottom direction, respectively).
-                 */
-                //item.setRotation(QuatF.fromRotationAxisY(90 * Math.PI / 180.0f));
-
-                /**
-                 * When this event is fired the sensor fusion should have stabilized already.
-                 * Hence, this is a good place to make the scene visible again, if you decided
-                 * to hide it initially.
-                 */
-                mScene.setVisible(true);
-            }
-        });
+        /**
+         * If you want to set the initial viewing angle freely (and override initial
+         * upright compensation), you can use this method variant. In this example the
+         * view starts from 'left' orientation: first we create a rotation quaternion
+         * with 90 degree rotation about the Y axis, and then set this as the rotation
+         * for the item. The 'left' direction will initially appear at the center of
+         * the screen, no matter what is the orientation of the device.
+         *
+         * This approach is not suitable for VR mode, but can be useful for example
+         * if user is lying on a sofa (looking up) or sitting in a bus (looking down)
+         * and we'd still like to start from the 'front' direction (instead of top or
+         * bottom direction, respectively).
+         */
+        //mCamera.setRotation(Quatf.fromRotationAxisY(90 * Math.PI / 180.0f));
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
         mTouchController = new TouchControllerWidget(mCamera);
@@ -442,7 +411,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     }
 
     @Override
-    public void onDeviceOrientationChanged(QuatF orientation) {
+    public void onDeviceOrientationChanged(Quatf orientation) {
 
         /**
          * It is possible to listen to sensor fusion data (device orientation changes)
@@ -460,7 +429,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          */
 
         // Rotate front vector to the direction where the user is currently looking at.
-        Vec3F lookAt = Vec3F.AXIS_FRONT.rotate(orientation);
+        Vec3f lookAt = Vec3f.AXIS_FRONT.rotate(orientation);
 
         // Get the yaw offset with respective to the 360 image center.
         float lookAtYaw = lookAt.getYaw();
