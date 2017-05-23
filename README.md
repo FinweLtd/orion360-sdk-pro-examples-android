@@ -29,7 +29,7 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
-5. [Minimal](#examples-minimal)
+5. [Minimal](#minimal)
    1. [Minimal Video Stream Player](#minimal-video-stream-player)
    2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
    3. [Minimal Video Download Player](#minimal-video-download-player)
@@ -38,10 +38,10 @@ Table of Contents
    6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
    7. [Minimal Image Download Player](#minimal-image-download-player)
    8. [Minimal Image File Player](#minimal-image-file-player)
-6. [Application Framework](#examples-application-framework)
+6. [Application Framework](#application-framework)
    1. [Custom Activity](#custom-activity)
    2. [Custom Fragment Activity](#custom-fragment-activity)
-7. [Binding](#examples-binding)
+7. [Binding](#binding)
    1. [Mono Panorama](#mono-panorama)
    2. [Mono Panorama VR](#mono-panorama-vr)
    3. [Stereo Panorama](#stereo-panorama)
@@ -119,8 +119,8 @@ When the app starts on your device, a menu of topics similar to the image below 
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
-Examples: Minimal
------------------
+Minimal
+-------
 
 This category contains examples that show a very minimal implementation for a particular topic, and thus provide a good starting point for studying Orion360.
 
@@ -322,8 +322,8 @@ This example showcases all supported file system locations and file access metho
 
 > *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
-Examples: Application Framework
--------------------------------
+Application Framework
+---------------------
 
 This category contains examples that show how Orion360 player can be configured into your own Activity or Fragment, instead of using provided _SimpleOrionActivity_ or _SimpleOrionFragment_ as a parent. These examples are also useful for understanding how exactly everything works under the hood, as the main Orion360 components are visible in the code examples and explained in the code comments.
 
@@ -363,8 +363,8 @@ The following topics are covered:
 
 > Notice that inheriting from SimpleOrionFragment provides you all of these, and more.
 
-Examples: Binding
------------------
+Binding
+-------
 
 This category contains examples that show how Orion360 player can be configured for different purposes by creating a set of Orion objects and binding them together. The binding mechanism allows great flexibility while it still maintains ease of use - many complex tasks can be solved with only a few lines of code.
 
