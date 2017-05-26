@@ -103,7 +103,7 @@ public class MainMenu extends ListActivity {
 
 	/** Test video URI for adaptive HLS video stream that can be found from the network. */
 	public static final String TEST_VIDEO_URI_HLS =
-			"https://player.vimeo.com/external/191954539.m3u8?s=3f816a71405cb0a2de32b6892929569f8ed1a099";
+			"https://player.vimeo.com/external/186333842.m3u8?s=93e42bd5d8ccff2817bb1e8fff7985d3abd83df1";
 
 	/** Test video URI for medium quality cropped video that can be found from the network. */
 	public static final String TEST_VIDEO_URI_1920x720 =
