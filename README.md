@@ -9,7 +9,7 @@ This repository contains a set of examples for creating a 360 photo/video player
 Preface
 -------
 
-Thank you for choosing Orion360, and welcome to learning Orion360 SDK (Pro) for Android! You have made a good choice: Orion360 is the leading purpose-built SDK for 360/VR video apps, with over 400 licensed apps and 10+ millions of downloads in total - and growing fast.
+Thank you for choosing Orion360, and welcome to learning Orion360 SDK (Pro) for Android! You have made a good choice: Orion360 is the leading purpose-built SDK for 360/VR video apps, with over 450 licensed apps and 22+ millions of downloads in total - and growing fast.
 
 We encourage you to begin studying from the _minimal_ examples. These are short and to-the-point; they will help you to create a simple 360 player in no-time. When you have mastered the basics, proceed to the more advanced examples that focus on a particular topic, such as touch input, VR mode, custom controls, and hotspots. The examples in this repository will become a valuable resource when you start adding features to your new 360 photo/video app, and will save you lots of development time!
 
@@ -29,49 +29,49 @@ Table of Contents
 2. [Table of Contents](#table-of-contents)
 3. [Prerequisities](#prerequisities)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
-5. [Examples - Minimal](#examples-minimal)
-  1. [Minimal Video Stream Player](#minimal-video-stream-player)
-  2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
-  3. [Minimal Video Download Player](#minimal-video-download-player)
-  4. [Minimal Video File Player](#minimal-video-file-player)
-  5. [Minimal Video Controls](#minimal-video-controls)
-  6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
-  7. [Minimal Image Download Player](#minimal-image-download-player)
-  8. [Minimal Image File Player](#minimal-image-file-player)
-6. [Examples - Application Framework](#examples-application-framework)
-  1. [Custom Activity](#custom-activity)
-  2. [Custom Fragment Activity](#custom-fragment-activity)
-7. [Examples - Binding](#examples-binding)
-  1. [Mono Panorama](#mono-panorama)
-  2. [Mono Panorama VR](#mono-panorama-vr)
-  3. [Stereo Panorama](#stereo-panorama)
-  4. [Stereo Panorama VR](#stereo-panorama-vr)
-  5. [Camera Pass](#camera-pass)
-  6. [Camera Pass VR](#camera-pass-vr)
-  7. [Doughnut](#doughnut)
-  8. [Rear-view Mirror](#rear-view-mirror)
-  9. [Overview](#overview)
-  10. [Blending](#blending)
-  11. [Video Ball](#video-ball)
+5. [Minimal](#minimal)
+   1. [Minimal Video Stream Player](#minimal-video-stream-player)
+   2. [Minimal Video Adaptive Stream Player](#minimal-video-adaptive-stream-player)
+   3. [Minimal Video Download Player](#minimal-video-download-player)
+   4. [Minimal Video File Player](#minimal-video-file-player)
+   5. [Minimal Video Controls](#minimal-video-controls)
+   6. [Minimal VR Video File Player](#minimal-vr-video-file-player)
+   7. [Minimal Image Download Player](#minimal-image-download-player)
+   8. [Minimal Image File Player](#minimal-image-file-player)
+6. [Application Framework](#application-framework)
+   1. [Custom Activity](#custom-activity)
+   2. [Custom Fragment Activity](#custom-fragment-activity)
+7. [Binding](#binding)
+   1. [Mono Panorama](#mono-panorama)
+   2. [Mono Panorama VR](#mono-panorama-vr)
+   3. [Stereo Panorama](#stereo-panorama)
+   4. [Stereo Panorama VR](#stereo-panorama-vr)
+   5. [Camera Pass](#camera-pass)
+   6. [Camera Pass VR](#camera-pass-vr)
+   7. [Doughnut](#doughnut)
+   8. [Rear-view Mirror](#rear-view-mirror)
+   9. [Overview](#overview)
+   10. [Blending](#blending)
+   11. [Video Ball](#video-ball)
 8. [Input](#input)
-  1. [Sensors](#sensors)
-  2. [Touch](#touch)
+   1. [Sensors](#sensors)
+   2. [Touch](#touch)
 9. [Streaming](#streaming)
-  1. [Buffering Indicator](#buffering-indicator)
+   1. [Buffering Indicator](#buffering-indicator)
 10. [Sprite](#sprite)
-  1. [Image Sprite](#image-sprite)
-  2. [Video Sprite](#video-sprite)
-  3. [Sprite Layout](#sprite-layout)
+    1. [Image Sprite](#image-sprite)
+    2. [Video Sprite](#video-sprite)
+    3. [Sprite Layout](#sprite-layout)
 11. [Widget](#widget)
-  1. [Video Controls](#video-controls)
-  2. [Interactive Hotspots](#interactive-hotspots)
+    1. [Video Controls](#video-controls)
+    2. [Interactive Hotspots](#interactive-hotspots)
 12. [Polygon](#polygon)
-  1. [Textured Cube](#textured-cube)
-  2. [Orion Figure](#orion-figure)
+    1. [Textured Cube](#textured-cube)
+    2. [Orion Figure](#orion-figure)
 13. [Animation](#animation)
-  1. [Cross-fade](#cross-fade)
+    1. [Cross-fade](#cross-fade)
 14. [Gallery](#gallery)
-  1. [Thumbnail Pager](#thumbnail-pager)
+    1. [Thumbnail Pager](#thumbnail-pager)
 
 
 Prerequisities
@@ -83,6 +83,8 @@ As a first step, you should install Android Studio IDE (recommended version is 2
 https://developer.android.com/studio/install.html
 
 Then, using the SDK Manager tool that comes with the IDE, install one or more Android SDKs. Notice that for Orion360 SDK Pro the minimum is **Android API level 19: Android 4.4 KitKat**.
+
+> Update: Starting from Orion360 SDK (Pro) for Android v. 3.1, the minimum API level is 18: Jelly Bean.
 
 Orion360 SDK is a commercial product and requires a license file to work. An evaluation license is provided with this example app. You can get a watermarked evaluation license file also for your own package name by creating an account to https://store.make360app.com, starting a new SDK project, providing your own package name, and selecting FREE Trial.
 
@@ -119,8 +121,8 @@ When the app starts on your device, a menu of topics similar to the image below 
 
 > Most examples use demo content that requires an Android device that can decode and play FullHD (1920x1080p) video, or less. However, a few examples may require UHD (3840x1920) resolution playback. If your development device does not support 4k UHD video, simply change the content URI to another one with smaller resolution (you can find plenty of demo content links from the *MainMenu* source code file).
 
-Examples: Minimal
------------------
+Minimal
+-------
 
 This category contains examples that show a very minimal implementation for a particular topic, and thus provide a good starting point for studying Orion360.
 
@@ -322,8 +324,8 @@ This example showcases all supported file system locations and file access metho
 
 > *Current version of Orion360 SDK (Pro) for Android does not support playing 360 images directly from expansion packages. This feature will be added later in an update to the SDK. However, it is possible to embed content to this location, and copy the image file before it is used, for example to application's private path on external memory.*
 
-Examples: Application Framework
--------------------------------
+Application Framework
+---------------------
 
 This category contains examples that show how Orion360 player can be configured into your own Activity or Fragment, instead of using provided _SimpleOrionActivity_ or _SimpleOrionFragment_ as a parent. These examples are also useful for understanding how exactly everything works under the hood, as the main Orion360 components are visible in the code examples and explained in the code comments.
 
@@ -363,8 +365,8 @@ The following topics are covered:
 
 > Notice that inheriting from SimpleOrionFragment provides you all of these, and more.
 
-Examples: Binding
------------------
+Binding
+-------
 
 This category contains examples that show how Orion360 player can be configured for different purposes by creating a set of Orion objects and binding them together. The binding mechanism allows great flexibility while it still maintains ease of use - many complex tasks can be solved with only a few lines of code.
 
