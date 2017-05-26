@@ -155,7 +155,9 @@ An example of a minimal Orion360 video player, for playing a HLS stream over the
 
 This example shows how to play adaptive HLS video streams. The principal idea is to encode a video multiple times with different parameters to create a set of different quality streams, and further divide these streams to short chunks at exactly the same timecodes so that video player can seamlessly switch between the streams by downloading the next chunk either at lower, same or better quality - depending on device capabilities and available network bandwidth.
 
-Playing adaptive HLS streams can be surprisingly easy with Orion360 - simply use a URI that ends with an _.m3u8_ filename extension as a content URI, and Orion360 will recognize it as a HLS stream. It will then use the built-in ExoPlayer instance for downloading the HLS playlist/manifest file that defines the available stream qualities, estimates network bandwidth and device capabilities, and switches between streams automatically. Describing how HLS stream files can be created goes beyond this simple example (there are free tools such as _ffmpeg_ that can be used for the task).
+Playing adaptive HLS streams can be surprisingly easy with Orion360 - simply use a URI that ends with an _.m3u8_ filename extension as a content URI, and Orion360 will recognize it as a HLS stream. It will then use the standard Android MediaPlayer instance for downloading the HLS playlist/manifest file that defines the available stream qualities, estimates network bandwidth and device capabilities, and switches between streams automatically. Describing how HLS stream files can be created goes beyond this simple example (there are free tools such as _ffmpeg_ that can be used for the task).
+
+> Android MediaPlayer's support for HLS streams depends heavily on device and Android OS version. Consider using ExoPlayer as a backend instead (see engine/ExoPlayer example).
 
 > More information about adaptive video streams: https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming
 
