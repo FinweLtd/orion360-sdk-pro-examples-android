@@ -41,7 +41,10 @@ Table of Contents
 6. [Application Framework](#application-framework)
    1. [Custom Activity](#custom-activity)
    2. [Custom Fragment Activity](#custom-fragment-activity)
-7. [Binding](#binding)
+7. [Engine](#engine)
+   1. [Android MediaPlayer](#android-mediaplayer)
+   2. [Google ExoPlayer](#google-exoplayer)
+8. [Binding](#binding)
    1. [Mono Panorama](#mono-panorama)
    2. [Mono Panorama VR](#mono-panorama-vr)
    3. [Stereo Panorama](#stereo-panorama)
@@ -53,24 +56,24 @@ Table of Contents
    9. [Overview](#overview)
    10. [Blending](#blending)
    11. [Video Ball](#video-ball)
-8. [Input](#input)
+9. [Input](#input)
    1. [Sensors](#sensors)
    2. [Touch](#touch)
-9. [Streaming](#streaming)
-   1. [Buffering Indicator](#buffering-indicator)
-10. [Sprite](#sprite)
+10. [Streaming](#streaming)
+    1. [Buffering Indicator](#buffering-indicator)
+11. [Sprite](#sprite)
     1. [Image Sprite](#image-sprite)
     2. [Video Sprite](#video-sprite)
     3. [Sprite Layout](#sprite-layout)
-11. [Widget](#widget)
+12. [Widget](#widget)
     1. [Video Controls](#video-controls)
     2. [Interactive Hotspots](#interactive-hotspots)
-12. [Polygon](#polygon)
+13. [Polygon](#polygon)
     1. [Textured Cube](#textured-cube)
     2. [Orion Figure](#orion-figure)
-13. [Animation](#animation)
+14. [Animation](#animation)
     1. [Cross-fade](#cross-fade)
-14. [Gallery](#gallery)
+15. [Gallery](#gallery)
     1. [Thumbnail Pager](#thumbnail-pager)
 
 
@@ -366,6 +369,31 @@ The following topics are covered:
 - Binding components together
 
 > Notice that inheriting from SimpleOrionFragment provides you all of these, and more.
+
+Engine
+------
+
+This category contains examples that show how to use different engines as audio/video player backends.
+
+### Android MediaPlayer
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/AndroidMediaPlayer.java)
+
+An example of using standard Android MediaPlayer as the audio/video player engine.
+
+Usually the developer does not need to select the engine, as Android MediaPlayer is used by default in Orion360.
+
+### Google ExoPlayer
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/GoogleExoPlayer.java)
+
+An example of using Google ExoPlayer (that is embedded to Orion360) as the audio/video player engine.
+
+> Currently, the embedded ExoPlayer has configuration only for HLS streams, which it plays much better than Android MediaPlayer on most devices. Normal .mp4 video files and streams should be played using Android MediaPlayer engine.
 
 Binding
 -------
