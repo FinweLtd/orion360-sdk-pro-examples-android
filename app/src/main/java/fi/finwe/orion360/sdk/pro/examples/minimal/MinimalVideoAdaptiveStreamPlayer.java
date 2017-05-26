@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -76,13 +76,17 @@ public class MinimalVideoAdaptiveStreamPlayer extends SimpleOrionActivity {
 
         // Get buffering indicator, and make it visible initially (buffering will be needed).
         mBufferingIndicator = (ProgressBar) findViewById(R.id.buffering_indicator);
-        mBufferingIndicator.setVisibility(View.VISIBLE);
+        mBufferingIndicator.setVisibility(View.INVISIBLE);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
         setOrionView(R.id.orion_view);
 
         // Set a URI that points to an .m3u8 adaptive HLS stream in the network.
         setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
+
+        // Notice that above call will use Android MediaPlayer as a backend. Its support
+        // for HLS streams depends heavily on device and Android OS version. Consider using
+        // ExoPlayer as a backend instead (see engine/ExoPlayer example).
 
         // Notice that accessing video streams over a network connection requires INTERNET
         // permission to be specified in the manifest file.

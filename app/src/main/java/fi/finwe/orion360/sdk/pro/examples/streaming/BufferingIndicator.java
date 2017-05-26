@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -42,7 +42,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;

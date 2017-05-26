@@ -33,7 +33,6 @@ import android.graphics.RectF;
 import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
