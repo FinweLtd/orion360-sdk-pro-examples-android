@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -35,7 +35,6 @@ import android.util.Log;
 
 import java.util.List;
 
-import fi.finwe.math.Quatf;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
@@ -51,8 +50,6 @@ import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem.RotationBaseControllerListenerBase;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
@@ -82,6 +79,12 @@ public class CustomActivity extends Activity {
 
     /** Tag for logging. */
     public static final String TAG = CustomActivity.class.getSimpleName();
+
+    /**
+     * OrionContext used to be a static class, but starting from Orion360 3.1.x it must
+     * be instantiated as a member.
+     */
+    protected OrionContext mOrionContext;
 
     /**
      * OrionView is an Android SurfaceView that Orion360 uses for presenting rendered content
@@ -159,7 +162,8 @@ public class CustomActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onCreate(this);
+        mOrionContext = new OrionContext();
+        mOrionContext.onCreate(this);
 
         // Perform Orion360 license check. A valid license file should be put to /assets folder!
         verifyOrionLicense();
@@ -176,7 +180,7 @@ public class CustomActivity extends Activity {
         super.onStart();
 
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onStart();
+        mOrionContext.onStart();
     }
 
     @Override
@@ -184,13 +188,13 @@ public class CustomActivity extends Activity {
         super.onResume();
 
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onResume();
+        mOrionContext.onResume();
     }
 
     @Override
     protected void onPause() {
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onPause();
+        mOrionContext.onPause();
 
         super.onPause();
     }
@@ -198,7 +202,7 @@ public class CustomActivity extends Activity {
     @Override
     protected void onStop() {
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onStop();
+        mOrionContext.onStop();
 
         super.onStop();
     }
@@ -206,7 +210,7 @@ public class CustomActivity extends Activity {
     @Override
     protected void onDestroy() {
         // Propagate activity lifecycle callbacks to the OrionContext object (singleton).
-        OrionContext.onDestroy();
+        mOrionContext.onDestroy();
 
         super.onDestroy();
     }
@@ -215,8 +219,8 @@ public class CustomActivity extends Activity {
      * Verify Orion360 license. This is the first thing to do after creating OrionContext.
      */
     protected void verifyOrionLicense() {
-        LicenseManager licenseManager = OrionContext.getLicenseManager();
-        List<LicenseSource> licenses = licenseManager.findLicensesFromAssets(this);
+        LicenseManager licenseManager = mOrionContext.getLicenseManager();
+        List<LicenseSource> licenses = LicenseManager.findLicensesFromAssets(this);
         for (LicenseSource license : licenses) {
             LicenseVerifier verifier = licenseManager.verifyLicense(this, license);
             Log.i(TAG, "Orion360 license " + verifier.getLicenseSource().uri + " verified: "
@@ -232,13 +236,13 @@ public class CustomActivity extends Activity {
 
         // For compatibility with Google Cardboard 1.0 with magnetic switch, disable magnetometer
         // from sensor fusion. Also recommended for devices with poorly calibrated magnetometer.
-        OrionContext.getSensorFusion().setMagnetometerEnabled(false);
+        mOrionContext.getSensorFusion().setMagnetometerEnabled(false);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -268,7 +272,7 @@ public class CustomActivity extends Activity {
         mCamera.setRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
         mTouchController = new TouchControllerWidget(mCamera);
@@ -321,7 +325,7 @@ public class CustomActivity extends Activity {
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
@@ -332,11 +336,11 @@ public class CustomActivity extends Activity {
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    OrionContext.getActivity()));
+                    mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
-            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
+            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
         }
 
         @Override

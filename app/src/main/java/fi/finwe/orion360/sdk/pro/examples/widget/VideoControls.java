@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -66,7 +66,6 @@ import fi.finwe.orion360.sdk.pro.widget.ControlPanel;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
 
-import static fi.finwe.orion360.sdk.pro.OrionContext.getActivity;
 
 /**
  * An example of creating custom video controls.
@@ -130,7 +129,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         ((OrionVideoTexture)mPanoramaTexture).addTextureListener(this);
 
         // Create an instance of our custom control panel.
-        mControlPanel = new MyControlPanel(this);
+        mControlPanel = new MyControlPanel(mOrionContext, this);
 
         // Get the placeholder for our control panel from the XML layout.
         mControlPanelContainer = (ViewGroup) findViewById(R.id.control_panel_container);
@@ -232,7 +231,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 	}
 
     /** Interface for listening component events. */
-    public interface PlayerControlsListener {
+    interface PlayerControlsListener {
 
         /** Called when logo button has been clicked. */
         void onLogoButtonClicked();
@@ -246,7 +245,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     }
 
     /** Custom Orion360 control panel implementation. */
-    public class MyControlPanel extends ControlPanel {
+    private class MyControlPanel extends ControlPanel {
 
         /** Layout root view. */
         private ViewGroup mRootView;
@@ -342,10 +341,11 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         /**
          * Constructor with activity.
          *
+         * @param context The Orion context.
          * @param activity The activity.
          */
-        MyControlPanel(Activity activity) {
-            super(activity);
+        MyControlPanel(OrionContext context, Activity activity) {
+            super(context, activity);
         }
 
         @Override
@@ -357,7 +357,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // Title panel.
             mTitlePanelView = mRootView.findViewById(R.id.player_title_panel);
             mTitlePanelAnimationIn = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.player_title_panel_enter);
+                    mOrionContext.getActivity(), R.anim.player_title_panel_enter);
             mTitlePanelAnimationIn.setFillAfter(true);
             mTitlePanelAnimationIn.setAnimationListener(new Animation.AnimationListener() {
 
@@ -380,7 +380,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             });
             mTitlePanelAnimationOut = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.player_title_panel_exit);
+                    mOrionContext.getActivity(), R.anim.player_title_panel_exit);
             mTitlePanelAnimationOut.setFillAfter(true);
             mTitlePanelAnimationOut.setAnimationListener(new Animation.AnimationListener() {
 
@@ -436,7 +436,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // Control panel.
             mControlPanelView = mRootView.findViewById(R.id.player_controls_panel);
             mControlPanelAnimationIn = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.player_control_panel_enter);
+                    mOrionContext.getActivity(), R.anim.player_control_panel_enter);
             mControlPanelAnimationIn.setFillAfter(true);
             mControlPanelAnimationIn.setAnimationListener(new Animation.AnimationListener() {
 
@@ -469,7 +469,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             });
             mControlPanelAnimationOut = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.player_control_panel_exit);
+                    mOrionContext.getActivity(), R.anim.player_control_panel_exit);
             mControlPanelAnimationOut.setFillAfter(true);
             mControlPanelAnimationOut.setAnimationListener(new Animation.AnimationListener() {
 
@@ -563,7 +563,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // Play overlay.
             mPlayOverlay = (ImageView) mRootView.findViewById(R.id.play_overlay);
             mPlayAnimation = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.fast_fadeinout_animation);
+                    mOrionContext.getActivity(), R.anim.fast_fadeinout_animation);
             mPlayAnimation.setAnimationListener(new Animation.AnimationListener() {
 
                 @Override
@@ -582,7 +582,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // Pause overlay.
             mPauseOverlay = (ImageView) mRootView.findViewById(R.id.pause_overlay);
             mPauseAnimation = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.fast_fadeinout_animation);
+                    mOrionContext.getActivity(), R.anim.fast_fadeinout_animation);
             mPauseAnimation.setAnimationListener(new Animation.AnimationListener() {
 
                 @Override
@@ -606,7 +606,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             mBufferingIndicatorVRRight = (ImageView) mRootView.findViewById(
                     R.id.player_hud_progressbar_vr_right_image);
             mBufferingIndicatorAnimation = AnimationUtils.loadAnimation(
-                    getActivity(), R.anim.rotate_around_center_point);
+                    mOrionContext.getActivity(), R.anim.rotate_around_center_point);
 
             return mRootView;
         }
@@ -818,7 +818,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
@@ -829,11 +829,11 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    OrionContext.getActivity()));
+                    mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
-            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
+            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
         }
 
         @Override
@@ -862,7 +862,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -883,7 +883,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         mCamera = new OrionCamera();
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
         mTouchController = new TouchControllerWidget(mCamera);

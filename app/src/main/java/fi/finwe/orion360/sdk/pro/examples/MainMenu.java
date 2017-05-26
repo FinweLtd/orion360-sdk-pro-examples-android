@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -75,8 +75,6 @@ import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import fi.finwe.orion360.sdk.pro.examples.gallery.ThumbnailPager;
 
 /**
  * Provides application's main menu: a list of selectable examples, each implemented as an activity.
@@ -288,9 +286,9 @@ public class MainMenu extends ListActivity {
         mGroupedActivities = createActivityGroups(activityDataList);
 
         // Setup an adapter for listing the activity groups in the UI.
-        ArrayList<String> groupNames = new ArrayList<String>(mGroupedActivities.keySet());
+        ArrayList<String> groupNames = new ArrayList<>(mGroupedActivities.keySet());
         Collections.sort(groupNames);
-        mGroupAdapter = new ArrayAdapter<String>(this,
+        mGroupAdapter = new ArrayAdapter<>(this,
                 R.layout.list_main_menu_row, R.id.textview_activity_name, groupNames);
 
         // Show groups.
@@ -650,7 +648,7 @@ public class MainMenu extends ListActivity {
 	 *
 	 * @param in The input stream where from to copy.
 	 * @param out The output stream where to to copy.
-	 * @throws IOException
+	 * @throws IOException The exception that occurred during copying a file.
 	 */
 	private void copyFile(InputStream in, OutputStream out) throws IOException {
 		byte [] buffer = new byte[1024];

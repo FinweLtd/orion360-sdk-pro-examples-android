@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,7 +32,6 @@ package fi.finwe.orion360.sdk.pro.examples.binding;
 import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
@@ -86,7 +85,7 @@ public class MonoPanoramaVR extends OrionActivity {
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -106,7 +105,7 @@ public class MonoPanoramaVR extends OrionActivity {
         mCamera = new OrionCamera();
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Find Orion360 view from the XML layout. This is an Android view where we render content.
         mView = (OrionView)findViewById(R.id.orion_view);

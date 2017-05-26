@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
-        minSdkVersion 19
-        targetSdkVersion 24
-        versionCode 1002400
-        versionName "1.0.02.400"
+        minSdkVersion 18
+        targetSdkVersion 25
+        versionCode 1100400
+        versionName "1.1.00.400"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -16,15 +16,27 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            debuggable true
+        }
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:24.0.0'
-    compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
     compile files('libs/google-play-zip-file_lib.jar')
-    compile 'fi.finwe.orion360:orion360-sdk-pro:3.0.13.001' // From Finwe maven repo at Bintray
+
+    // Orion360 SDK (Pro) library.
+    compile 'fi.finwe.orion360:orion360-sdk-pro:3.1.00.014' // From Finwe maven repo at Bintray
+
+    // Debug version of FinweUtil enables debug logs from Orion360.
+    debugCompile 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray
+
+    // Release version of FinweUtil should be used for all releases (no debug logs).
+    releaseCompile 'fi.finwe.util:finwe-util:1.0.04' // From Finwe maven repo at Bintray
+
     testCompile 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

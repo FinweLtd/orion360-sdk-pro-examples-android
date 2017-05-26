@@ -94,7 +94,7 @@ public class TexturedCube extends OrionActivity {
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new polygon. This is where our 3D model will be loaded to.
         mPolygon = new OrionPolygon();
@@ -123,7 +123,7 @@ public class TexturedCube extends OrionActivity {
         mCamera.setRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
         mTouchController = new TouchControllerWidget(mCamera);
@@ -173,7 +173,7 @@ public class TexturedCube extends OrionActivity {
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
@@ -222,7 +222,6 @@ public class TexturedCube extends OrionActivity {
         // Stop the timer task.
         mTimer.cancel();
 
-        super.onDestroy();
+        super.onPause();
     }
-
 }

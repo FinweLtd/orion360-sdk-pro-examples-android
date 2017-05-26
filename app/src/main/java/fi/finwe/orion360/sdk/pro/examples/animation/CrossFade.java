@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -33,7 +33,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
@@ -111,7 +110,7 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanoramaVideo = new OrionPanorama();
@@ -157,7 +156,7 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
         mCamera = new OrionCamera();
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
         mTouchController = new TouchControllerWidget(mCamera);
@@ -234,7 +233,7 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
@@ -245,11 +244,11 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    OrionContext.getActivity()));
+                    mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
-            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
+            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
         }
 
         @Override

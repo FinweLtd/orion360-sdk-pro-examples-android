@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -33,9 +33,7 @@ import android.graphics.RectF;
 import android.os.Bundle;
 
 import fi.finwe.math.Quatf;
-import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
@@ -45,7 +43,6 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
@@ -96,12 +93,6 @@ public class RearviewMirror extends OrionActivity {
     /** The widget that will handle our touch gestures. */
     protected TouchControllerWidget mTouchController;
 
-    /** Flag for indicating if main camera has been initialized yet, or not. */
-    protected boolean mainCameraInitialized = false;
-
-    /** Flag for indicating if rear-view camera has been initialized yet, or not. */
-    protected boolean rearViewCameraInitialized = false;
-
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -114,7 +105,7 @@ public class RearviewMirror extends OrionActivity {
         mSceneRearview = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -152,10 +143,10 @@ public class RearviewMirror extends OrionActivity {
         mRearViewCamera.setRotation(Quatf.fromRotationAxisY(180.0f / Quatf.RAD));
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mMainViewCamera);
+        mOrionContext.getSensorFusion().bindControllable(mMainViewCamera);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        OrionContext.getSensorFusion().bindControllable(mRearViewCamera);
+        mOrionContext.getSensorFusion().bindControllable(mRearViewCamera);
 
         // Create a new touch controller widget (convenience class) and let it control our cameras.
         mTouchController = new TouchControllerWidget(mMainViewCamera, mRearViewCamera);
@@ -231,7 +222,7 @@ public class RearviewMirror extends OrionActivity {
             // Create pinch-to-zoom/pinch-to-rotate handler for the main camera only.
             // Notice that we do not want zooming to rear-view mirror, hence no binding.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mMainCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
@@ -244,12 +235,12 @@ public class RearviewMirror extends OrionActivity {
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    OrionContext.getActivity()));
+                    mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mMainCamera);
             mRotationAligner.bindControllable(mRearViewCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
-            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
+            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
 
             // Notice that touch gestures will work when performed either on main viewport or
             // rear-view viewport, but if user has zoomed in the amount of panning applied is

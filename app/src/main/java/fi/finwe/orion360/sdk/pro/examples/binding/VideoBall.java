@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -34,7 +34,6 @@ import android.os.Bundle;
 import fi.finwe.math.Quatf;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
@@ -43,7 +42,6 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
@@ -96,7 +94,7 @@ public class VideoBall extends OrionActivity {
         mScene = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -112,7 +110,7 @@ public class VideoBall extends OrionActivity {
 
         // To look around the sphere, we can map sensor fusion directly to the panorama.
         // Thus, instead of rotating the camera (as usual), we rotate the panorama sphere.
-        OrionContext.getSensorFusion().bindControllable(mPanorama);
+        mOrionContext.getSensorFusion().bindControllable(mPanorama);
 
         // Set yaw angle to 180 degrees when starting the app. Since we moved the
         // panorama forward, we are now looking at it from behind and need to
@@ -179,7 +177,7 @@ public class VideoBall extends OrionActivity {
          * Constructs the widget.
          *
          * @param camera The camera to be controlled by this widget.
-         * @parama panorama The panorama to be controlled by this widget.
+         * @param panorama panorama The panorama to be controlled by this widget.
          */
         TouchControllerWidget(OrionCamera camera, OrionPanorama panorama) {
 
@@ -189,7 +187,7 @@ public class VideoBall extends OrionActivity {
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.

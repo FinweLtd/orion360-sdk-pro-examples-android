@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -35,7 +35,6 @@ import android.util.Log;
 import fi.finwe.math.Quatf;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
-import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
@@ -46,7 +45,6 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
@@ -102,7 +100,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         // Create a new scene. This represents a 3D world where various objects can be placed.
         mScene = new OrionScene();
 
-        /**
+        /*
          * 360/VR video applications automatically rotate the view based on device orientation.
          * Hence, to look at a desired direction, end-user can turn the device towards that
          * direction, or when viewing through a VR frame, simply turn her head.
@@ -117,9 +115,9 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * or initialize the sensor fusion algorithm; this is automatically done when
          * OrionContext is first created.
          */
-        mScene.bindController(OrionContext.getSensorFusion());
+        mScene.bindController(mOrionContext.getSensorFusion());
 
-        /**
+        /*
          * Sensor fusion makes use of a sophisticated mathematical algorithm to combine the
          * data from the hardware sensors so that device's current orientation can be deduced.
          * <p/>
@@ -165,7 +163,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * are received from it, the view can be much better oriented to make the 'front'
          * direction appear when the end-user lifts the phone up.
          */
-        OrionContext.getSensorFusion().setMagnetometerEnabled(false);
+        mOrionContext.getSensorFusion().setMagnetometerEnabled(false);
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
@@ -185,7 +183,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
-        /**
+        /*
          * Binding the sensor fusion as a controller to the scene does not yet make the view
          * respond to device orientation changes - we haven't yet told which object it is
          * supposed to control. To reach this goal, we need to let sensor fusion control our
@@ -193,9 +191,9 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * the sensor fusion as a controllable. If you have multiple cameras, bind all of
          * them that you wish to be controlled by sensors.
          */
-        OrionContext.getSensorFusion().bindControllable(mCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-        /**
+        /*
          * If you want to ensure that viewing begins from the horizontal center point
          * of the equirectangular panoramic content ('front' direction appears when
          * device is lifted up to reveal the horizon level), set item yaw rotation
@@ -211,7 +209,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          */
         mCamera.setRotationYaw(0);
 
-        /**
+        /*
          * If you want to set the initial viewing angle freely (and override initial
          * upright compensation), you can use this method variant. In this example the
          * view starts from 'left' orientation: first we create a rotation quaternion
@@ -272,7 +270,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          */
         TouchControllerWidget(OrionCamera camera) {
 
-            /**
+            /*
              * The sensor fusion algorithm is also responsible for merging end user's touch
              * input drag events with the orientation calculated from movement sensor data
              * (touch tapping events are handled separately, see Touch input example).
@@ -326,13 +324,13 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    OrionContext.getActivity()));
+                    mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
-            OrionContext.getSensorFusion().bindControllable(mRotationAligner);
+            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
 
-            /**
+            /*
              * Most of the touch screens are able to detect at least two fingers on screen
              * simultaneously, allowing two additional drag-type gestures to be recognized:
              * two-finger pinch, and two-finger rotate. Still following the basic principle
@@ -370,7 +368,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(OrionContext.getActivity(), 20);
+            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
         }
 
@@ -397,7 +395,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         super.onResume();
 
         // Start listening for sensor fusion events.
-        OrionContext.getSensorFusion().registerOrientationChangeListener(this);
+        mOrionContext.getSensorFusion().registerOrientationChangeListener(this);
 
     }
 
@@ -405,7 +403,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     public void onPause() {
 
         // Stop listening for sensor fusion events.
-        OrionContext.getSensorFusion().unregisterOrientationChangeListener(this);
+        mOrionContext.getSensorFusion().unregisterOrientationChangeListener(this);
 
         super.onPause();
     }
@@ -413,7 +411,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     @Override
     public void onDeviceOrientationChanged(Quatf orientation) {
 
-        /**
+        /*
          * It is possible to listen to sensor fusion data (device orientation changes)
          * that are given as a quaternion rotation.
          * <p/>
