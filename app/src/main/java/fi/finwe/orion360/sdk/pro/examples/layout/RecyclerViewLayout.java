@@ -34,16 +34,17 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import fi.finwe.log.Logger;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
@@ -92,7 +93,7 @@ public class RecyclerViewLayout extends Activity {
     private RecyclerView mRecyclerView;
     private MyRecyclerViewAdapter mAdapter;
 
-    /** Model class. */
+    /** Recycler view model class. */
     public class PanoramaItem {
         private String mTitle;
         private String mContentUri;
@@ -118,11 +119,11 @@ public class RecyclerViewLayout extends Activity {
     class MyRecyclerViewAdapter extends
             RecyclerView.Adapter<MyRecyclerViewAdapter.CustomViewHolder> {
         private Context mContext;
-        private List<PanoramaItem> mItemList;
+        private List<PanoramaItem> mItems;
 
         public MyRecyclerViewAdapter(Context context, List<PanoramaItem> itemList) {
             this.mContext = context;
-            this.mItemList = itemList;
+            this.mItems = itemList;
         }
 
         @Override
@@ -133,51 +134,63 @@ public class RecyclerViewLayout extends Activity {
         }
 
         @Override
-        public void onBindViewHolder(CustomViewHolder customViewHolder, int i) {
-            PanoramaItem item = mItemList.get(i);
-
-            customViewHolder.mTextView.setText(Html.fromHtml(item.getTitle()));
-
-            customViewHolder.mScene = new OrionScene();
-            customViewHolder.mScene.bindController(mOrionContext.getSensorFusion());
-
-            customViewHolder.mPanorama = new OrionPanorama();
-            customViewHolder.mPanoramaTexture = OrionTexture.createTextureFromURI(mContext,
-                    item.getContentUri());
-
-            customViewHolder.mPanorama.bindTextureFull(0, customViewHolder.mPanoramaTexture);
-            customViewHolder.mScene.bindSceneItem(customViewHolder.mPanorama);
-
-            customViewHolder.mCamera = new OrionCamera();
-            customViewHolder.mCamera.setZoomMax(3.0f);
-            customViewHolder.mCamera.setRotationYaw(0);
-
-            mOrionContext.getSensorFusion().bindControllable(customViewHolder.mCamera);
-
-            customViewHolder.mOrionView.bindDefaultScene(customViewHolder.mScene);
-            customViewHolder.mOrionView.bindDefaultCamera(customViewHolder.mCamera);
-            customViewHolder.mOrionView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        public void onBindViewHolder(final CustomViewHolder customViewHolder, int i) {
+            final PanoramaItem item = mItems.get(i);
+            customViewHolder.mTextView.setText(item.getTitle());
+            customViewHolder.mThumbnail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    customViewHolder.mThumbnail.setVisibility(View.INVISIBLE);
+                    customViewHolder.mPlayButton.setVisibility(View.INVISIBLE);
+                    customViewHolder.play(item.getContentUri());
+                }
+            });
         }
 
         @Override
         public int getItemCount() {
-            return (null != mItemList ? mItemList.size() : 0);
+            return (null != mItems ? mItems.size() : 0);
         }
 
         /** View holder class. */
         class CustomViewHolder extends RecyclerView.ViewHolder {
-            protected OrionView mOrionView;
-            protected TextView mTextView;
-            protected OrionScene mScene;
-            protected OrionPanorama mPanorama;
-            protected OrionTexture mPanoramaTexture;
-            protected OrionCamera mCamera;
+            ImageView mThumbnail;
+            ImageView mPlayButton;
+            TextView mTextView;
+            OrionView mOrionView;
+            OrionScene mScene;
+            OrionPanorama mPanorama;
+            OrionTexture mPanoramaTexture;
+            OrionCamera mCamera;
 
             public CustomViewHolder(View view) {
                 super(view);
-                this.mOrionView = (OrionView) view.findViewById(R.id.orion_view);
+                this.mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+                this.mPlayButton = (ImageView) view.findViewById(R.id.play_overlay);
                 this.mTextView = (TextView) view.findViewById(R.id.title);
+                this.mOrionView = (OrionView) view.findViewById(R.id.orion_view);
+            }
+
+            public void play(String contentUri) {
+                Logger.logF();
+
+                mScene = new OrionScene();
+                mScene.bindController(mOrionContext.getSensorFusion());
+
+                mPanorama = new OrionPanorama();
+                mPanoramaTexture = OrionTexture.createTextureFromURI(mContext, contentUri);
+                mPanorama.bindTextureFull(0, mPanoramaTexture);
+                mScene.bindSceneItem(mPanorama);
+
+                mCamera = new OrionCamera();
+                mCamera.setZoomMax(3.0f);
+                mCamera.setRotationYaw(0);
+                mOrionContext.getSensorFusion().bindControllable(mCamera);
+
+                mOrionView.bindDefaultScene(mScene);
+                mOrionView.bindDefaultCamera(mCamera);
+                mOrionView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
+                        OrionViewport.CoordinateType.FIXED_LANDSCAPE);
             }
         }
     }
@@ -196,19 +209,20 @@ public class RecyclerViewLayout extends Activity {
         // Set content view.
         setContentView(R.layout.activity_recyclerview);
 
-        // Instantiate RecyclerView.
+        // Instantiate the recycler view.
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create an item.
+        // Create a panorama item.
         PanoramaItem item = new PanoramaItem();
-        item.setTitle("Hello Orion");
+        item.setTitle("Hello Orion 1");
         item.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
+        // Add panorama item to the item list.
         mItems = new ArrayList<>();
         mItems.add(item);
 
-        // Set adapter.
+        // Create an adapter for the list and set it to be the recycler view's adapter.
         mAdapter = new MyRecyclerViewAdapter(this, mItems);
         mRecyclerView.setAdapter(mAdapter);
     }
