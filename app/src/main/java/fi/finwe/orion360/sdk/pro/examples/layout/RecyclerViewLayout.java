@@ -89,39 +89,40 @@ public class RecyclerViewLayout extends Activity {
      */
     protected OrionContext mOrionContext;
 
-    private List<PanoramaItem> mItems;
-    private RecyclerView mRecyclerView;
-    private MyRecyclerViewAdapter mAdapter;
+    /** A recycler view for listing a set of panorama items in the UI. */
+    RecyclerView mRecyclerView;
 
-    /** Recycler view model class. */
-    public class PanoramaItem {
+    /** The data adapter for the recycler view. */
+    MyRecyclerViewAdapter mAdapter;
+
+     /** A set of panorama items to be shown in the recycler view. */
+    List<PanoramaItem> mItems;
+
+    /** Recycler view data model class. */
+    private class PanoramaItem {
         private String mTitle;
         private String mContentUri;
 
-        public String getTitle() {
+        String getTitle() {
             return mTitle;
         }
-
-        public void setTitle(String title) {
+        void setTitle(String title) {
             this.mTitle = title;
         }
-
-        public String getContentUri() {
+        String getContentUri() {
             return mContentUri;
         }
-
-        public void setContentUri(String contentUri) {
+        void setContentUri(String contentUri) {
             this.mContentUri = contentUri;
         }
     }
 
-    /** Recycler view adapter class. */
-    class MyRecyclerViewAdapter extends
-            RecyclerView.Adapter<MyRecyclerViewAdapter.CustomViewHolder> {
+    /** Recycler view data adapter class. */
+    private class MyRecyclerViewAdapter extends RecyclerView.Adapter<CustomViewHolder> {
         private Context mContext;
         private List<PanoramaItem> mItems;
 
-        public MyRecyclerViewAdapter(Context context, List<PanoramaItem> itemList) {
+        MyRecyclerViewAdapter(Context context, List<PanoramaItem> itemList) {
             this.mContext = context;
             this.mItems = itemList;
         }
@@ -136,7 +137,7 @@ public class RecyclerViewLayout extends Activity {
         @Override
         public void onBindViewHolder(final CustomViewHolder customViewHolder, int i) {
             final PanoramaItem item = mItems.get(i);
-            customViewHolder.mTextView.setText(item.getTitle());
+            customViewHolder.mTitleText.setText(item.getTitle());
             customViewHolder.mThumbnail.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -151,47 +152,48 @@ public class RecyclerViewLayout extends Activity {
         public int getItemCount() {
             return (null != mItems ? mItems.size() : 0);
         }
+    }
 
-        /** View holder class. */
-        class CustomViewHolder extends RecyclerView.ViewHolder {
-            ImageView mThumbnail;
-            ImageView mPlayButton;
-            TextView mTextView;
-            OrionView mOrionView;
-            OrionScene mScene;
-            OrionPanorama mPanorama;
-            OrionTexture mPanoramaTexture;
-            OrionCamera mCamera;
+    /** Custom view holder class. */
+    class CustomViewHolder extends RecyclerView.ViewHolder {
+        ImageView mThumbnail;
+        ImageView mPlayButton;
+        TextView mTitleText;
+        OrionView mOrionView;
+        OrionScene mScene;
+        OrionPanorama mPanorama;
+        OrionTexture mPanoramaTexture;
+        OrionCamera mCamera;
 
-            public CustomViewHolder(View view) {
-                super(view);
-                this.mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-                this.mPlayButton = (ImageView) view.findViewById(R.id.play_overlay);
-                this.mTextView = (TextView) view.findViewById(R.id.title);
-                this.mOrionView = (OrionView) view.findViewById(R.id.orion_view);
-            }
+        CustomViewHolder(View view) {
+            super(view);
+            this.mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            this.mPlayButton = (ImageView) view.findViewById(R.id.play_overlay);
+            this.mTitleText = (TextView) view.findViewById(R.id.title);
+            this.mOrionView = (OrionView) view.findViewById(R.id.orion_view);
+        }
 
-            public void play(String contentUri) {
-                Logger.logF();
+        public void play(String contentUri) {
+            Logger.logF();
 
-                mScene = new OrionScene();
-                mScene.bindController(mOrionContext.getSensorFusion());
+            mScene = new OrionScene();
+            mScene.bindController(mOrionContext.getSensorFusion());
 
-                mPanorama = new OrionPanorama();
-                mPanoramaTexture = OrionTexture.createTextureFromURI(mContext, contentUri);
-                mPanorama.bindTextureFull(0, mPanoramaTexture);
-                mScene.bindSceneItem(mPanorama);
+            mPanorama = new OrionPanorama();
+            mPanoramaTexture = OrionTexture.createTextureFromURI(
+                    RecyclerViewLayout.this, contentUri);
+            mPanorama.bindTextureFull(0, mPanoramaTexture);
+            mScene.bindSceneItem(mPanorama);
 
-                mCamera = new OrionCamera();
-                mCamera.setZoomMax(3.0f);
-                mCamera.setRotationYaw(0);
-                mOrionContext.getSensorFusion().bindControllable(mCamera);
+            mCamera = new OrionCamera();
+            mCamera.setZoomMax(3.0f);
+            mCamera.setRotationYaw(0);
+            mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-                mOrionView.bindDefaultScene(mScene);
-                mOrionView.bindDefaultCamera(mCamera);
-                mOrionView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                        OrionViewport.CoordinateType.FIXED_LANDSCAPE);
-            }
+            mOrionView.bindDefaultScene(mScene);
+            mOrionView.bindDefaultCamera(mCamera);
+            mOrionView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
+                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
         }
     }
 
@@ -213,14 +215,32 @@ public class RecyclerViewLayout extends Activity {
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create a panorama item.
-        PanoramaItem item = new PanoramaItem();
-        item.setTitle("Hello Orion 1");
-        item.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        // Create a couple of panorama items.
+        PanoramaItem item1 = new PanoramaItem();
+        item1.setTitle("Hello Orion 1");
+        item1.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        PanoramaItem item2 = new PanoramaItem();
+        item2.setTitle("Hello Orion 2");
+        item2.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        PanoramaItem item3 = new PanoramaItem();
+        item3.setTitle("Hello Orion 3");
+        item3.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+
+        // IMPORTANT:
+        // Some Android devices can play back more than one video file at the same time,
+        // while some others only play one at a time. Those devices that do play multiple
+        // files at the same time typically manage only 2-3 simultaneous videos, no more.
+        // Therefore, you should design your user interface so that in general only one
+        // video can be played back at a time. The recommendation is to use a thumbnail
+        // image as a placeholder and activate only one OrionView at a time.
+        // However, multiple panorama images can be played back simultaneously and there
+        // is no strict limitation for the maximum number - it depends on device resources.
 
         // Add panorama item to the item list.
         mItems = new ArrayList<>();
-        mItems.add(item);
+        mItems.add(item1);
+        mItems.add(item2);
+        mItems.add(item3);
 
         // Create an adapter for the list and set it to be the recycler view's adapter.
         mAdapter = new MyRecyclerViewAdapter(this, mItems);

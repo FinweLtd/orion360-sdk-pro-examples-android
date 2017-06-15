@@ -71,7 +71,7 @@ import fi.finwe.util.ContextUtil;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class CrossFade extends OrionActivity implements OrionVideoTexture.Listener {
+public class CrossFade extends OrionActivity {
 
     /** The Android view where our 3D scene will be rendered to. */
     protected OrionView mView;
@@ -123,7 +123,19 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
                 MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Listen for video texture events.
-        ((OrionVideoTexture)mPanoramaVideoTexture).addTextureListener(this);
+        ((OrionVideoTexture)mPanoramaVideoTexture).addTextureListener(
+                new OrionVideoTexture.ListenerBase() {
+                    @Override
+                    public void onVideoStarted(OrionVideoTexture orionVideoTexture) {
+                        // Animate image from opaque to transparent.
+                        mAlphaAnimator.animateToInputValue(0.0f);
+                    }
+                    @Override
+                    public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
+                        // Animate image from transparent to opaque.
+                        mAlphaAnimator.animateToInputValue(1.0f);
+                    }
+                });
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -267,68 +279,4 @@ public class CrossFade extends OrionActivity implements OrionVideoTexture.Listen
             scene.releaseController(mRotationAligner);
         }
     }
-
-    @Override
-    public void onInvalidURI(OrionTexture orionTexture) {}
-
-    @Override
-    public void onSourceURIChanged(OrionTexture orionTexture) {}
-
-    @Override
-    public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoStarted(OrionVideoTexture orionVideoTexture) {
-
-        // Animate image from opaque to transparent.
-        mAlphaAnimator.animateToInputValue(0.0f);
-
-    }
-
-    @Override
-    public void onVideoPaused(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoStopped(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
-
-        // Animate image from transparent to opaque.
-        mAlphaAnimator.animateToInputValue(1.0f);
-
-    }
-
-    @Override
-    public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long l) {}
-
-    @Override
-    public void onVideoSeekCompleted(OrionVideoTexture orionVideoTexture, long l) {}
-
-    @Override
-    public void onVideoPositionChanged(OrionVideoTexture orionVideoTexture, long l) {}
-
-    @Override
-    public void onVideoDurationUpdate(OrionVideoTexture orionVideoTexture, long l) {}
-
-    @Override
-    public void onVideoSizeChanged(OrionVideoTexture orionVideoTexture, int i, int i1) {}
-
-    @Override
-    public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {}
-
-    @Override
-    public void onVideoBufferingUpdate(OrionVideoTexture orionVideoTexture, int i, int i1) {}
-
-    @Override
-    public void onVideoError(OrionVideoTexture orionVideoTexture, int i, int i1) {}
-
-    @Override
-    public void onVideoInfo(OrionVideoTexture orionVideoTexture, int i, String s) {}
 }

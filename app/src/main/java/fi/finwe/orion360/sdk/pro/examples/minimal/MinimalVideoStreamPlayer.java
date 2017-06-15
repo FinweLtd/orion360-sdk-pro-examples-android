@@ -92,26 +92,29 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         // W/MediaPlayer: Couldn't open []: java.io.FileNotFoundException: No content provider: []
         // Here Android MediaPlayer is using an exception for control flow; you can disregard it.
 
+        // Set content listener.
+        setVideoContentListener(new OrionVideoTexture.ListenerBase() {
+
+            @Override
+            public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
+
+                // Show buffering indicator whenever the player begins buffering video.
+                if (null != mBufferingIndicator) {
+                    mBufferingIndicator.setVisibility(View.VISIBLE);
+                }
+
+            }
+
+            @Override
+            public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
+
+                // Hide buffering indicator whenever the player ends buffering video.
+                if (null != mBufferingIndicator) {
+                    mBufferingIndicator.setVisibility(View.GONE);
+                }
+
+            }
+
+        });
     }
-
-    @Override
-    public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
-
-        // Show buffering indicator whenever the player begins buffering video.
-        if (null != mBufferingIndicator) {
-            mBufferingIndicator.setVisibility(View.VISIBLE);
-        }
-
-    }
-
-    @Override
-    public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
-
-        // Hide buffering indicator whenever the player ends buffering video.
-        if (null != mBufferingIndicator) {
-            mBufferingIndicator.setVisibility(View.GONE);
-        }
-
-    }
-
 }

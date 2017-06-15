@@ -435,18 +435,28 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     // From OrionVideoTexture.Listener:
 
     @Override
-    public void onSourceURIChanged(OrionTexture orionTexture) {
-
-        // Assume buffering is needed when a new video stream URI is set. Show indicator.
-        showBufferingIndicator();
-
-    }
-
-    @Override
     public void onInvalidURI(OrionTexture orionTexture) {
 
         // If the set video stream URI was invalid, we can't play it. Hide indicator.
         hideBufferingIndicator();
+
+    }
+
+    @Override
+    public void onException(OrionTexture orionTexture, Exception e) {
+
+    }
+
+    @Override
+    public void onVideoPlayerCreated(OrionVideoTexture orionVideoTexture) {
+
+    }
+
+    @Override
+    public void onVideoSourceURISet(OrionVideoTexture orionVideoTexture) {
+
+        // Assume buffering is needed when a new video stream URI is set. Show indicator.
+        showBufferingIndicator();
 
     }
 

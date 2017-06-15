@@ -31,7 +31,7 @@ dependencies {
     compile files('libs/google-play-zip-file_lib.jar')
 
     // Orion360 SDK (Pro) library.
-    compile 'fi.finwe.orion360:orion360-sdk-pro:3.1.00.014' // From Finwe maven repo at Bintray
+    compile 'fi.finwe.orion360:orion360-sdk-pro:3.1.01.000' // From Finwe maven repo at Bintray
 
     // Debug version of FinweUtil enables debug logs from Orion360.
     debugCompile 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray

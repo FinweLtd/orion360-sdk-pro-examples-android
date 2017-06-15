@@ -93,6 +93,19 @@ public class MinimalVideoControls extends SimpleOrionActivity {
         // Initialize Orion360 video view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
+        // Set content listener.
+        setVideoContentListener(new OrionVideoTexture.ListenerBase() {
+
+            @Override
+            public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
+
+                // Make the controls visible when a video has been prepared.
+                mMediaController.show();
+
+            }
+
+        });
+
         // Create a media controller.
         mMediaController = new MediaController(this);
 
@@ -132,13 +145,4 @@ public class MinimalVideoControls extends SimpleOrionActivity {
                 });
 
 	}
-
-    @Override
-    public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
-
-        // Make the controls visible when a video has been prepared.
-        mMediaController.show();
-
-    }
-
 }
