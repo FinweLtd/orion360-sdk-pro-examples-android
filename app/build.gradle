@@ -29,9 +29,13 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support:cardview-v7:25.3.1'
     compile files('libs/google-play-zip-file_lib.jar')
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 
     // Orion360 SDK (Pro) library.
-    compile 'fi.finwe.orion360:orion360-sdk-pro:3.1.01.000' // From Finwe maven repo at Bintray
+    compile 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.000' // From Finwe maven repo at Bintray
 
     // Debug version of FinweUtil enables debug logs from Orion360.
     debugCompile 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray
@@ -39,8 +43,7 @@ dependencies {
     // Release version of FinweUtil should be used for all releases (no debug logs).
     releaseCompile 'fi.finwe.util:finwe-util:1.0.04' // From Finwe maven repo at Bintray
 
-    testCompile 'junit:junit:4.12'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    // ExoPlayer as an alternative video engine.
+    compile 'com.google.android.exoplayer:exoplayer-core:r2.4.2'
+
 }

@@ -41,7 +41,6 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.AndroidMediaPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.source.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;

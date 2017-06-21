@@ -45,7 +45,7 @@ import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
-import fi.finwe.orion360.sdk.pro.variable.FloatFunction;
+import fi.finwe.orion360.sdk.pro.variable.Float1ToFloat1Function;
 import fi.finwe.orion360.sdk.pro.variable.TimedFloatFunction;
 import fi.finwe.orion360.sdk.pro.variable.TimedVariable;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -100,7 +100,7 @@ public class CrossFade extends OrionActivity {
     /** The widget that will handle our touch gestures. */
     protected TouchControllerWidget mTouchController;
 
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -192,7 +192,8 @@ public class CrossFade extends OrionActivity {
 
         // Create a new timed variable for alpha animation. Here we want to adjust alpha
         // in the range [0.0-1.0] to cross-fade between two panoramas using linear interpolation.
-        mAlphaAnimator = TimedFloatFunction.fromRange(0.0f, 1.0f, FloatFunction.Function.LINEAR);
+        mAlphaAnimator = TimedFloatFunction.fromRange(0.0f, 1.0f,
+                Float1ToFloat1Function.Function.LINEAR);
 
         // We start from opaque (1.0).
         mAlphaAnimator.setInputValue(1.0f);
