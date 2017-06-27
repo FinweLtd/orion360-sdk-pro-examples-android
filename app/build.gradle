@@ -44,6 +44,6 @@ dependencies {
     releaseCompile 'fi.finwe.util:finwe-util:1.0.04' // From Finwe maven repo at Bintray
 
     // ExoPlayer as an alternative video engine.
-    compile 'com.google.android.exoplayer:exoplayer-core:r2.4.2'
+    //compile 'com.google.android.exoplayer:exoplayer-core:r2.4.2'
 
 }
