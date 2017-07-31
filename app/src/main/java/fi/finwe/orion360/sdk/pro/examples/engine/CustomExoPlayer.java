@@ -384,7 +384,7 @@ public class CustomExoPlayer extends OrionActivity {
                 }
 
                 // Create a new media source. Here we simply create the basic type, but
-                // you could create a different source for HLS, DASH, SmoothStreming etc.
+                // you could create a different source for HLS, DASH, SmoothStreaming etc.
                 String userAgent = Util.getUserAgent(mContext, USER_AGENT);
                 DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
                 DefaultDataSourceFactory dataSourceFactory =

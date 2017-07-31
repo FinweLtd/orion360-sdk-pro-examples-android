@@ -163,6 +163,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <activity
+            android:name=".binding.Tiled"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
             android:name=".engine.AndroidMediaPlayer"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
