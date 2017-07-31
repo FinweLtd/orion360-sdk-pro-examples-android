@@ -44,6 +44,7 @@ Table of Contents
 7. [Engine](#engine)
    1. [Android MediaPlayer](#android-mediaplayer)
    2. [Google ExoPlayer](#google-exoplayer)
+   3. [Custom ExoPlayer](#custom-exoplayer)
 8. [Binding](#binding)
    1. [Mono Panorama](#mono-panorama)
    2. [Mono Panorama VR](#mono-panorama-vr)
@@ -394,6 +395,16 @@ Usually the developer does not need to select the engine, as Android MediaPlayer
 An example of using Google ExoPlayer (that is embedded to Orion360) as the audio/video player engine.
 
 > Currently, the embedded ExoPlayer has configuration only for HLS streams, which it plays much better than Android MediaPlayer on most devices. Normal .mp4 video files and streams should be played using Android MediaPlayer engine.
+
+### Custom ExoPlayer
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/CustomExoPlayer.java)
+
+An example of using a custom configuration for ExoPlayer as the audio/video player engine.
+
+>  This example is useful also when you want to use a custom or 3rd party audio/video player engine.
 
 Binding
 -------
