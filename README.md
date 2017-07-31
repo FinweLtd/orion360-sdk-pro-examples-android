@@ -57,6 +57,7 @@ Table of Contents
    9. [Overview](#overview)
    10. [Blending](#blending)
    11. [Video Ball](#video-ball)
+   12. [Tiled](#tiled)
 9. [Input](#input)
    1. [Sensors](#sensors)
    2. [Touch](#touch)
@@ -618,6 +619,24 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 - Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
 - Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_. Move it far enough forward to look at it from outside, compensate mirroring effect from inward texture normals with a negative scale, apply sensor fusion and touch control and rotate 180 degrees to bring front side in view.
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
+- Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+### Tiled
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20850222/c7cffd50-b8e2-11e6-8151-9723edf4f199.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Tiled.java)
+
+An example of bindings for creating a player for tiled panoramas.
+
+In this example, the panorama image source is split to 2x2 grid of images, which are loaded into separate textures (to allow higher total image resolution or faster start-up time). In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical image surface in the 3D world. Bind it to _OrionScene_.
+- Create four _OrionTexture_ objects in Java code. These will contain the four panorama image tiles. Bind them to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
 
 Input
