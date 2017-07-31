@@ -623,7 +623,7 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 
 ### Tiled
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20850222/c7cffd50-b8e2-11e6-8151-9723edf4f199.png)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640714/bf81686c-b3ee-11e6-961a-6189dbdaf1bd.png)
 
 [View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Tiled.java)
 
