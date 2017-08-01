@@ -282,7 +282,7 @@ public class CustomExoPlayer extends OrionActivity {
      * will continue with another callback. This allows performing operations in multiple steps
      * and in correct order based on the current control status.
      */
-    class CustomExoPlayerWrapper extends VideoPlayerWrapper implements ExoPlayer.EventListener {
+    private class CustomExoPlayerWrapper extends VideoPlayerWrapper implements ExoPlayer.EventListener {
 
         /** User agent string. */
         String USER_AGENT = "Orion360";
@@ -305,7 +305,7 @@ public class CustomExoPlayer extends OrionActivity {
          *
          * @param context the context.
          */
-        public CustomExoPlayerWrapper(Context context) {
+        CustomExoPlayerWrapper(Context context) {
             mContext = context;
         }
 
