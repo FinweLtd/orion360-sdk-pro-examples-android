@@ -60,8 +60,8 @@ Table of Contents
    12. [Tiled](#tiled)
 9. [Projection](#projection)
    1. [Rectilinear](#rectilinear)
-   2. [Little Planet](#little-planet)
-   3. [Source](#source)
+   2. [Source](#source)
+   3. [Little Planet](#little-planet)
    4. [Perfect Diamond](#perfect-diamond)
 10. [Input](#input)
    1. [Sensors](#sensors)
@@ -658,6 +658,42 @@ This category contains examples that focus on illustrating different projections
 An example that illustrates the rectilinear projection.
 
 Rectilinear projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
+
+> This projection is used by default in Orion360 and does not need to be explicitly set.
+
+### Source
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816319-19ab58b2-76ad-11e7-94f4-35c60dfed85d.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/Source.java)
+
+An example that illustrates the source projection.
+
+Source projection maintains the original projection of the content (source). For example, an equirectangular panorama image is rendered on screen so that the whole equirectangular image is visible at once inside a rectangular area.
+
+This projection is useful for viewing the whole panorama at once (an overview image) or when standard 2D video is played with Orion360.
+
+### Little Planet
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816503-c25b52aa-76ad-11e7-8d5d-5a3baa5fc7e9.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/LittlePlanet.java)
+
+An example that illustrates the stereographic a.k.a Little Planet (Tiny Planet) projection.
+
+Little Planet projection produces a strongly distorted view where the whole horizon is wrapped around the nadir direction. It provides a kind of a 'birds-eye' view that can be useful for getting a quick overview around the surroundings of the 360 camera. Despite of strong distortion people in general find this projection fun and 'cute'.
+
+### Perfect Diamond
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816733-8597b01a-76ae-11e7-8b50-eba882153076.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/PerfectDiamond.java)
+
+An example that illustrates the perfect diamond projection.
+
+Perfect Diamond projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
+
+The difference to Rectilinear projection is in the way the end result is achieved internally: while the Rectilinear projection utilizes a sphere model, Perfect Diamond uses a diamond model. The benefit is that the diamond model is more lightweight and in general produces better looking nadir and zenith.
 
 Input
 =====
