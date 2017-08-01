@@ -63,7 +63,7 @@ Table of Contents
    2. [Source](#source)
    3. [Little Planet](#little-planet)
    4. [Perfect Diamond](#perfect-diamond)
-10. [Projection](#projection)
+9. [Projection](#projection)
    1. [Rectilinear](#rectilinear)
    2. [Source](#source)
    3. [Little Planet](#little-planet)
