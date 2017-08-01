@@ -58,24 +58,29 @@ Table of Contents
    10. [Blending](#blending)
    11. [Video Ball](#video-ball)
    12. [Tiled](#tiled)
-9. [Input](#input)
+9. [Projection](#projection)
+   1. [Rectilinear](#rectilinear)
+   2. [Little Planet](#little-planet)
+   3. [Source](#source)
+   4. [Perfect Diamond](#perfect-diamond)
+10. [Input](#input)
    1. [Sensors](#sensors)
    2. [Touch](#touch)
-10. [Streaming](#streaming)
+11. [Streaming](#streaming)
     1. [Buffering Indicator](#buffering-indicator)
-11. [Sprite](#sprite)
+12. [Sprite](#sprite)
     1. [Image Sprite](#image-sprite)
     2. [Video Sprite](#video-sprite)
     3. [Sprite Layout](#sprite-layout)
-12. [Widget](#widget)
+13. [Widget](#widget)
     1. [Video Controls](#video-controls)
     2. [Interactive Hotspots](#interactive-hotspots)
-13. [Polygon](#polygon)
+14. [Polygon](#polygon)
     1. [Textured Cube](#textured-cube)
     2. [Orion Figure](#orion-figure)
-14. [Animation](#animation)
+15. [Animation](#animation)
     1. [Cross-fade](#cross-fade)
-15. [Gallery](#gallery)
+16. [Gallery](#gallery)
     1. [Thumbnail Pager](#thumbnail-pager)
 
 
@@ -638,6 +643,21 @@ In this example, the panorama image source is split to 2x2 grid of images, which
 - Create one _OrionPanorama_ in Java code. This will represent the spherical image surface in the 3D world. Bind it to _OrionScene_.
 - Create four _OrionTexture_ objects in Java code. These will contain the four panorama image tiles. Bind them to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+Projection
+==========
+
+This category contains examples that focus on illustrating different projections that can be used for rendering content on screen.
+
+### Rectilinear
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28814455-56a36ae0-76a6-11e7-9d49-a8ea661754c9.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/Rectilinear.java)
+
+An example that illustrates the rectilinear projection.
+
+Rectilinear projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
 
 Input
 =====
