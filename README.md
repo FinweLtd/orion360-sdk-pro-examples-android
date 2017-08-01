@@ -63,6 +63,8 @@ Table of Contents
    2. [Source](#source)
    3. [Little Planet](#little-planet)
    4. [Perfect Diamond](#perfect-diamond)
+9. [Layout](#layout)
+   1. [RecyclerView Layout](#recyclerview-layout)
 9. [Input](#input)
    1. [Sensors](#sensors)
    2. [Touch](#touch)
@@ -694,6 +696,23 @@ An example that illustrates the perfect diamond projection.
 Perfect Diamond projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
 
 The difference to Rectilinear projection is in the way the end result is achieved internally: while the Rectilinear projection utilizes a sphere model, Perfect Diamond uses a diamond model. The benefit is that the diamond model is more lightweight and in general produces better looking nadir and zenith.
+
+Layout
+======
+
+This category contains examples that demonstrate how Orion360 views can be added to different Android layouts.
+
+### RecyclerView Layout
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28832412-041b44d4-76e5-11e7-8b74-04c1edabd256.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/layout/RecyclerViewLayout.java)
+
+An example that illustrates embedding Orion360 view into a RecyclerView component.
+
+Sometimes multiple panoramas need to be rendered on screen completely separately, each having their own instance of Orion360 view. This example demonstrates the concept by using a recycler view component to create a simple video gallery. Each video item has a thumbnail, title and play button overlay that will trigger video playback when tapped. 
+
+> Some devices support playing multiple videos simultaneously; this can be tested by tapping next video item before the playback of the previous item has ended.
 
 Input
 =====
