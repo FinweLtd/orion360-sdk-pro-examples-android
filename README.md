@@ -44,6 +44,7 @@ Table of Contents
 7. [Engine](#engine)
    1. [Android MediaPlayer](#android-mediaplayer)
    2. [Google ExoPlayer](#google-exoplayer)
+   3. [Custom ExoPlayer](#custom-exoplayer)
 8. [Binding](#binding)
    1. [Mono Panorama](#mono-panorama)
    2. [Mono Panorama VR](#mono-panorama-vr)
@@ -56,24 +57,32 @@ Table of Contents
    9. [Overview](#overview)
    10. [Blending](#blending)
    11. [Video Ball](#video-ball)
+   12. [Tiled](#tiled)
+9. [Projection](#projection)
+   1. [Rectilinear](#rectilinear)
+   2. [Source](#source)
+   3. [Little Planet](#little-planet)
+   4. [Perfect Diamond](#perfect-diamond)
+9. [Layout](#layout)
+   1. [RecyclerView Layout](#recyclerview-layout)
 9. [Input](#input)
    1. [Sensors](#sensors)
    2. [Touch](#touch)
-10. [Streaming](#streaming)
+9. [Streaming](#streaming)
     1. [Buffering Indicator](#buffering-indicator)
-11. [Sprite](#sprite)
+9. [Sprite](#sprite)
     1. [Image Sprite](#image-sprite)
     2. [Video Sprite](#video-sprite)
     3. [Sprite Layout](#sprite-layout)
-12. [Widget](#widget)
+9. [Widget](#widget)
     1. [Video Controls](#video-controls)
     2. [Interactive Hotspots](#interactive-hotspots)
-13. [Polygon](#polygon)
+9. [Polygon](#polygon)
     1. [Textured Cube](#textured-cube)
     2. [Orion Figure](#orion-figure)
-14. [Animation](#animation)
+9. [Animation](#animation)
     1. [Cross-fade](#cross-fade)
-15. [Gallery](#gallery)
+9. [Gallery](#gallery)
     1. [Thumbnail Pager](#thumbnail-pager)
 
 
@@ -395,6 +404,16 @@ An example of using Google ExoPlayer (that is embedded to Orion360) as the audio
 
 > Currently, the embedded ExoPlayer has configuration only for HLS streams, which it plays much better than Android MediaPlayer on most devices. Normal .mp4 video files and streams should be played using Android MediaPlayer engine.
 
+### Custom ExoPlayer
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/CustomExoPlayer.java)
+
+An example of using a custom configuration for ExoPlayer as the audio/video player engine.
+
+>  This example is useful also when you want to use a custom or 3rd party audio/video player engine.
+
 Binding
 -------
 
@@ -608,6 +627,92 @@ In this example, the viewer is taken outside of the panorama sphere, creating an
 - Create one _OrionPanorama_ in Java code. This will represent the spherical video surface in the 3D world. Bind it to _OrionScene_. Move it far enough forward to look at it from outside, compensate mirroring effect from inward texture normals with a negative scale, apply sensor fusion and touch control and rotate 180 degrees to bring front side in view.
 - Create one _OrionTexture_ in Java code. This will contain the latest decoded video frame. Bind it to _OrionPanorama_.
 - Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+### Tiled
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640714/bf81686c-b3ee-11e6-961a-6189dbdaf1bd.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/binding/Tiled.java)
+
+An example of bindings for creating a player for tiled panoramas.
+
+In this example, the panorama image source is split to 2x2 grid of images, which are loaded into separate textures (to allow higher total image resolution or faster start-up time). In short, this configuration requires the following steps:
+
+- Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
+- Create one _OrionViewport_ in Java code. This will define the internal layout of the _OrionView_. Bind it to _OrionView_.
+- Create one _OrionScene_ in Java code. This will contain our 3D world. Bind it to _OrionView_.
+- Create one _OrionCamera_ in Java code. This will project the 3D world onto a 2D surface. Bind it to _OrionView_.
+- Create one _OrionPanorama_ in Java code. This will represent the spherical image surface in the 3D world. Bind it to _OrionScene_.
+- Create four _OrionTexture_ objects in Java code. These will contain the four panorama image tiles. Bind them to _OrionPanorama_.
+- Get _SensorFusion_ in Java code. That will rotate the panorama according to device orientation. Bind it to _OrionScene_ AND _OrionPanorama_.
+
+Projection
+==========
+
+This category contains examples that focus on illustrating different projections that can be used for rendering content on screen.
+
+### Rectilinear
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28814455-56a36ae0-76a6-11e7-9d49-a8ea661754c9.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/Rectilinear.java)
+
+An example that illustrates the rectilinear projection.
+
+Rectilinear projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
+
+> This projection is used by default in Orion360 and does not need to be explicitly set.
+
+### Source
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816319-19ab58b2-76ad-11e7-94f4-35c60dfed85d.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/Source.java)
+
+An example that illustrates the source projection.
+
+Source projection maintains the original projection of the content (source). For example, an equirectangular panorama image is rendered on screen so that the whole equirectangular image is visible at once inside a rectangular area.
+
+This projection is useful for viewing the whole panorama at once (an overview image) or when standard 2D video is played with Orion360.
+
+### Little Planet
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816503-c25b52aa-76ad-11e7-8d5d-5a3baa5fc7e9.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/LittlePlanet.java)
+
+An example that illustrates the stereographic a.k.a Little Planet (Tiny Planet) projection.
+
+Little Planet projection produces a strongly distorted view where the whole horizon is wrapped around the nadir direction. It provides a kind of a 'birds-eye' view that can be useful for getting a quick overview around the surroundings of the 360 camera. Despite of strong distortion people in general find this projection fun and 'cute'.
+
+### Perfect Diamond
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28816733-8597b01a-76ae-11e7-8b50-eba882153076.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/projection/PerfectDiamond.java)
+
+An example that illustrates the perfect diamond projection.
+
+Perfect Diamond projection maintains all lines straight and is the "natural" projection; i.e. 360 photos and videos are rendered on screen similar to what they appear to humans in reality.
+
+The difference to Rectilinear projection is in the way the end result is achieved internally: while the Rectilinear projection utilizes a sphere model, Perfect Diamond uses a diamond model. The benefit is that the diamond model is more lightweight and in general produces better looking nadir and zenith.
+
+Layout
+======
+
+This category contains examples that demonstrate how Orion360 views can be added to different Android layouts.
+
+### RecyclerView Layout
+
+![alt tag](https://user-images.githubusercontent.com/12032146/28832412-041b44d4-76e5-11e7-8b74-04c1edabd256.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/layout/RecyclerViewLayout.java)
+
+An example that illustrates embedding Orion360 view into a RecyclerView component.
+
+Sometimes multiple panoramas need to be rendered on screen completely separately, each having their own instance of Orion360 view. This example demonstrates the concept by using a recycler view component to create a simple video gallery. Each video item has a thumbnail, title and play button overlay that will trigger video playback when tapped. 
+
+> Some devices support playing multiple videos simultaneously; this can be tested by tapping next video item before the playback of the previous item has ended.
 
 Input
 =====

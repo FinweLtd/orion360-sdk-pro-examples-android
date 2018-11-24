@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Finwe Ltd. All rights reserved.
+ * Copyright (c) 2017, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -27,12 +27,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package fi.finwe.orion360.sdk.pro.examples.binding;
+package fi.finwe.orion360.sdk.pro.examples.projection;
 
-import android.graphics.RectF;
 import android.os.Bundle;
 
-import fi.finwe.math.Quatf;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
@@ -49,14 +47,14 @@ import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
 
 /**
- * An example of bindings for creating a player with a rear-view mirror.
+ * An example that uses stereographic / Little Planet projection.
  * <p/>
  * Features:
  * <ul>
  * <li>Plays one hard-coded full spherical (360x180) equirectangular video
  * <li>Creates a fullscreen view locked to landscape orientation
  * <li>Auto-starts playback on load and stops when playback is completed
- * <li>Renders the video using standard rectilinear projection
+ * <li>Renders the video using stereographic / Little Planet projection
  * <li>Allows navigation with touch & movement sensors (if supported by HW) as follows:
  * <ul>
  * <li>Panning (gyro or swipe)
@@ -66,32 +64,27 @@ import fi.finwe.util.ContextUtil;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class RearviewMirror extends OrionActivity {
+public class LittlePlanet extends OrionActivity {
 
     /** The Android view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
     protected OrionScene mScene;
-    protected OrionScene mSceneRearview;
 
     /** The panorama sphere where our video texture will be mapped to. */
     protected OrionPanorama mPanorama;
-    protected OrionPanorama mPanoramaRearview;
 
     /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mPanoramaTexture;
 
-    /** The camera which will project our 3D scene to a 2D main viewport surface. */
-    protected OrionCamera mMainViewCamera;
-
-    /** The camera which will project our 3D scene to a 2D rear-view viewport surface. */
-    protected OrionCamera mRearViewCamera;
+    /** The camera which will project our 3D scene to a 2D (view) surface. */
+    protected OrionCamera mCamera;
 
     /** The widget that will handle our touch gestures. */
     protected TouchControllerWidget mTouchController;
 
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -99,14 +92,15 @@ public class RearviewMirror extends OrionActivity {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
         mScene = new OrionScene();
-        mSceneRearview = new OrionScene();
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
         mScene.bindController(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
         mPanorama = new OrionPanorama();
-        mPanoramaRearview = new OrionPanorama();
+
+        // Use a rectangular panel for rendering video in stereographic (Little Planet) projection.
+        mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_LITTLEPLANET);
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
@@ -116,36 +110,18 @@ public class RearviewMirror extends OrionActivity {
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
         // If you have stereoscopic content or doughnut shape video, use other method variants.
         mPanorama.bindTextureFull(0, mPanoramaTexture);
-        mPanoramaRearview.bindTextureFull(0, mPanoramaTexture);
 
         // Bind the panorama to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mPanorama);
-        mSceneRearview.bindSceneItem(mPanoramaRearview);
 
-        // Create a new camera (main view). This will become the end-user's eyes into the 3D world.
-        mMainViewCamera = new OrionCamera();
-
-        // Set yaw angle to 0. Now the camera will always point to the same angle
-        // (to the center point of the equirectangular video/image source)
-        // when starting the app, regardless of the orientation of the device.
-        mMainViewCamera.setRotation(Quatf.fromRotationAxisY(0.0 / Quatf.RAD));
-
-        // Create a new camera (rear-view). This will become the end-user's eyes into the 3D world.
-        mRearViewCamera = new OrionCamera();
-
-        // Set yaw angle to -180. Now the camera will always point to the same yaw angle
-        // (to the horizontal left edge of the equirectangular video/image source)
-        // when starting the app, regardless of the orientation of the device.
-        mRearViewCamera.setRotation(Quatf.fromRotationAxisY(180.0f / Quatf.RAD));
+        // Create a new camera. This will become the end-user's eyes into the 3D world.
+        mCamera = new OrionCamera();
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        mOrionContext.getSensorFusion().bindControllable(mMainViewCamera);
+        mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-        // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
-        mOrionContext.getSensorFusion().bindControllable(mRearViewCamera);
-
-        // Create a new touch controller widget (convenience class) and let it control our cameras.
-        mTouchController = new TouchControllerWidget(mMainViewCamera, mRearViewCamera);
+        // Create a new touch controller widget (convenience class), and let it control our camera.
+        mTouchController = new TouchControllerWidget(mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -154,32 +130,15 @@ public class RearviewMirror extends OrionActivity {
         mView = (OrionView)findViewById(R.id.orion_view);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
-        //mView.bindDefaultScene(mGalleryScene);
+        mView.bindDefaultScene(mScene);
+
+        // Bind the camera to the view. We will look into the 3D world through this camera.
+        mView.bindDefaultCamera(mCamera);
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
-        // viewport per eye. Here we fill the complete view with one (landscape) viewport, and
-        // add another much smaller one on top of it to function as a rear-view mirror.
-        mView.bindViewports(new RectF[] {
-                new RectF(0.0F, 1.0F, 1.0F, 0.0F),          // Main view covers the whole view
-                new RectF(0.25F, 0.95F, 0.75F, 0.75F) },    // Rear-view covers small area on top
+        // viewport per eye. Here we fill the complete view with one (landscape) viewport.
+        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
-
-        // Notice the viewport rect coordinate system. The viewport coordinates are relative
-        // to its parent view, whose left edge is 0.0 and right edge 1.0, bottom edge is 0.0
-        // and top edge 1.0. Values less than 0.0 (negative) and greater than 1.0 are allowed.
-        // The coordinates are given as follows:
-        // - 1st param: viewport left coordinate (calculated from view left edge at 0.0)
-        // - 2nd param: viewport top coordinate (calculated from view bottom edge at 0.0)
-        // - 3rd param: viewport right coordinate (calculated from view left edge at 0.0)
-        // - 4th param: viewport bottom coordinate (calculated from view bottom edge at 0.0)
-
-        // Bind the main viewport to the main view camera.
-        mView.getViewports()[0].bindCamera(mMainViewCamera);
-        mView.getViewports()[0].bindScene(mScene);
-
-        // Bind the rear-view viewport to the rear-view camera.
-        mView.getViewports()[1].bindCamera(mRearViewCamera);
-        mView.getViewports()[1].bindScene(mSceneRearview);
 	}
 
     /**
@@ -187,11 +146,8 @@ public class RearviewMirror extends OrionActivity {
      */
     public class TouchControllerWidget implements OrionWidget {
 
-        /** The main camera that will be controlled by this widget. */
-        private OrionCamera mMainCamera;
-
-        /** The rear-view camera that will be controlled by this widget. */
-        private OrionCamera mRearViewCamera;
+        /** The camera that will be controlled by this widget. */
+        private OrionCamera mCamera;
 
         /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
         private TouchPincher mTouchPincher;
@@ -206,45 +162,31 @@ public class RearviewMirror extends OrionActivity {
         /**
          * Constructs the widget.
          *
-         * @param mainCamera The main camera to be controlled by this widget.
-         * @param rearViewCamera The rear-view camera to be controlled by this widget.
+         * @param camera The camera to be controlled by this widget.
          */
-        TouchControllerWidget(OrionCamera mainCamera, OrionCamera rearViewCamera) {
+        TouchControllerWidget(OrionCamera camera) {
 
-            // Keep references to the cameras that we control.
-            mMainCamera = mainCamera;
-            mRearViewCamera = rearViewCamera;
+            // Keep a reference to the camera that we control.
+            mCamera = camera;
 
-            // Create pinch-to-zoom/pinch-to-rotate handler for the main camera only.
-            // Notice that we do not want zooming to rear-view mirror, hence no binding.
+            // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mMainCamera, OrionCamera.VAR_FLOAT1_ZOOM);
+            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
-            // Notice that we want panning to affect to both main and rear-view cameras.
             mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mMainCamera);
-            mTouchRotater.bindControllable(mRearViewCamera);
+            mTouchRotater.bindControllable(mCamera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mMainCamera);
-            mRotationAligner.bindControllable(mRearViewCamera);
+            mRotationAligner.bindControllable(mCamera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
             mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-
-            // Notice that touch gestures will work when performed either on main viewport or
-            // rear-view viewport, but if user has zoomed in the amount of panning applied is
-            // relative to the zoom level of the viewport where the gesture is performed.
-            // As an example, consider a case where the main view is zoomed in. Now, panning
-            // the main view is slow (follows finger movement on main view) but panning the
-            // rear-view mirror is fast (follows finger movement on rear-view mirror).
-            // Tip: you can create quick pan control stripes with this technique.
         }
 
         @Override

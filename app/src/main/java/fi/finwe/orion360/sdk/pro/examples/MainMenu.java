@@ -148,6 +148,18 @@ public class MainMenu extends ListActivity {
 	/** Test image name for medium quality image that is bundled with the app in /assets. */
 	public static final String TEST_IMAGE_FILE_MQ = "Orion360_test_image_1920x960.jpg";
 
+	/** Test image name for high quality tiled image that is bundled with the app in /assets. */
+	public static final String TEST_IMAGE_FILE_HQ_TILE_TL = "Orion360_test_image_4096x2048_top_left.jpg";
+
+	/** Test image name for high quality tiled image that is bundled with the app in /assets. */
+	public static final String TEST_IMAGE_FILE_HQ_TILE_TR = "Orion360_test_image_4096x2048_top_right.jpg";
+
+	/** Test image name for high quality tiled image that is bundled with the app in /assets. */
+	public static final String TEST_IMAGE_FILE_HQ_TILE_BL = "Orion360_test_image_4096x2048_bottom_left.jpg";
+
+	/** Test image name for high quality tiled image that is bundled with the app in /assets. */
+	public static final String TEST_IMAGE_FILE_HQ_TILE_BR = "Orion360_test_image_4096x2048_bottom_right.jpg";
+
 	/** Test image name for high quality mono living room image in app /assets. */
 	public static final String TEST_IMAGE_FILE_LIVINGROOM_HQ = "Orion360_livingroom_3840x1920.jpg";
 

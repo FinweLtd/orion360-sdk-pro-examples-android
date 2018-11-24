@@ -9,7 +9,6 @@ android {
         targetSdkVersion 25
         versionCode 1100400
         versionName "1.1.00.400"
-        //multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
