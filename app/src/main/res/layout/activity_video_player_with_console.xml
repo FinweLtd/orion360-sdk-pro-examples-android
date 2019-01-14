@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <HorizontalScrollView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5"
+        android:background="@color/pure_black">
+
+        <TextView
+            android:id="@+id/message_log"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:scrollbars="horizontal|vertical"
+            android:layout_margin="16dp"
+            android:gravity="bottom"
+            android:textColor="@color/pure_white"
+            android:text="[Message Log]" />
+
+    </HorizontalScrollView>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5">
+
+        <!-- This is the view where 360 video will show up. -->
+        <fi.finwe.orion360.sdk.pro.view.OrionView
+            android:id="@+id/orion_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- This is a buffering indicator view on top of the video. -->
+        <ProgressBar
+            android:id="@+id/buffering_indicator"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>
