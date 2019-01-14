@@ -70,6 +70,7 @@ Table of Contents
    2. [Touch](#touch)
 9. [Streaming](#streaming)
     1. [Buffering Indicator](#buffering-indicator)
+    2. [Player State](#player-state)
 9. [Sprite](#sprite)
     1. [Image Sprite](#image-sprite)
     2. [Video Sprite](#video-sprite)
@@ -795,6 +796,22 @@ The buffering indicator can be easily realized with an Android progress bar widg
 When video is being prepared for playback over the network, it can take a long time before Android MediaPlayer reports that buffering has started. Hence, it is a good idea to show the buffering indicator immediately after changing video URI to _OrionTexture_ - without waiting for the callback that tells that buffering has started. Since the activity can get paused and resumed at any time, and the video playback is usually auto-started when the player activity is resumed, it is often simplest to show the buffering indicator in onResume() and hide it when the playback begins.
 
 Unfortunately, some Android devices have a buggy implementation of video buffering events and the event that tells that buffering has stopped might never come! We have noticed this behavior occasionally when the player is buffering the very beginning of the video. To prevent the buffering indicator for staying on screen forever, you can for example use a simple handler that polls when the video playback has progressed, and thus ensure that the buffering indicator gets always removed when playback begins/continues.
+
+### Player State
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20885359/13921c06-baf9-11e6-9ebe-74347a5c504d.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/streaming/PlayerState.java)
+
+An example of observing Orion360 video player's state while streaming video from network.
+
+This example contains a simple Orion360 video player, which streams a video file from network, and prints messages to console. The messages are nothing more than log prints from the various callbacks of OrionVideoTexture.Listener, which you should implement when you want to observe the player's state.
+
+Try modifying the example and make different tests to what kind of callbacks you get in different situations:
+* Test with your own video URIs
+* Test with video URIs that do not exist
+* Test without a network connection (disable Wifi and Cellular)
+* Test pausing, playing, seeking, etc.
 
 Sprite
 ======
