@@ -246,7 +246,7 @@ public class CustomExoPlayer extends OrionActivity {
     /**
      * A wrapper for a custom video player engine.
      *
-     * Sometimes there is a need use a custom video player engine, for example to add support
+     * Sometimes there is a need to use a custom video player engine, for example to add support
      * for a video format that the built-in video engine does not support, to replace the video
      * engine with a 3rd party or the developer's own implementation, to configure ExoPlayer
      * engine for a particular use case, or to simply use a different version of ExoPlayer.
