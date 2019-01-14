@@ -799,7 +799,7 @@ Unfortunately, some Android devices have a buggy implementation of video bufferi
 
 ### Player State
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20885359/13921c06-baf9-11e6-9ebe-74347a5c504d.png)
+![alt tag](https://user-images.githubusercontent.com/12032146/51131642-fb02a300-1838-11e9-98c6-03cd0c226e7a.png)
 
 [View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/streaming/PlayerState.java)
 
@@ -807,7 +807,7 @@ An example of observing Orion360 video player's state while streaming video from
 
 This example contains a simple Orion360 video player, which streams a video file from network, and prints messages to console. The messages are nothing more than log prints from the various callbacks of OrionVideoTexture.Listener, which you should implement when you want to observe the player's state.
 
-Try modifying the example and make different tests to what kind of callbacks you get in different situations:
+Try modifying the example and make different tests to learn what kind of callbacks you get in different situations:
 * Test with your own video URIs
 * Test with video URIs that do not exist
 * Test without a network connection (disable Wifi and Cellular)
