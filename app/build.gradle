@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
         minSdkVersion 18
-        targetSdkVersion 25
-        versionCode 1100400
-        versionName "1.1.00.400"
+        targetSdkVersion 28
+        versionCode 1101400
+        versionName "1.1.01.400"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -24,10 +24,10 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-v4:25.3.1'
-    implementation 'com.android.support:appcompat-v7:25.3.1'
-    implementation 'com.android.support:recyclerview-v7:25.3.1'
-    implementation 'com.android.support:cardview-v7:25.3.1'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
     implementation files('libs/google-play-zip-file_lib.jar')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -35,7 +35,7 @@ dependencies {
     })
 
     // Orion360 SDK (Pro) library.
-    implementation 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.000' // From Finwe maven repo at Bintray
+    implementation 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.002' // From Finwe maven repo at Bintray
 
     // Debug version of FinweUtil enables debug logs from Orion360.
     debugImplementation 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray
