@@ -15,12 +15,12 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
         jcenter()
 
         maven {
             url 'https://finwe.bintray.com/orion360-sdk-public' // For Orion360 SDK
         }
-        google()
     }
 }
 

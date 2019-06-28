@@ -9,7 +9,7 @@ android {
         targetSdkVersion 28
         versionCode 1101400
         versionName "1.1.01.400"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -20,22 +20,25 @@ android {
             debuggable true
         }
     }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
     implementation files('libs/google-play-zip-file_lib.jar')
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
     // Orion360 SDK (Pro) library.
-    implementation 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.002' // From Finwe maven repo at Bintray
+    implementation 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.100' // From Finwe maven repo at Bintray
 
     // Debug version of FinweUtil enables debug logs from Orion360.
     debugImplementation 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray
@@ -44,6 +47,9 @@ dependencies {
     releaseImplementation 'fi.finwe.util:finwe-util:1.0.04' // From Finwe maven repo at Bintray
 
     // ExoPlayer as an alternative video engine.
-    //implementation 'com.google.android.exoplayer:exoplayer-core:r2.4.2'
-
+    implementation 'com.google.android.exoplayer:exoplayer-core:r2.4.1'
+    implementation 'com.google.android.exoplayer:exoplayer-dash:r2.4.1'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:r2.4.1'
+    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:r2.4.1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:r2.4.1'
 }

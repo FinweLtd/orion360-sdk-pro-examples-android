@@ -33,7 +33,7 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.util.Pair;
+import androidx.core.util.Pair;
 import android.util.Log;
 import android.widget.Toast;
 
