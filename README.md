@@ -418,9 +418,11 @@ Usually the developer does not need to select the engine, as Android MediaPlayer
 
 [View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/GoogleExoPlayer.java)
 
-An example of using Google ExoPlayer (that is embedded to Orion360) as the audio/video player engine.
+An example of using Google ExoPlayer (that used to be embedded to Orion360) as the audio/video player engine.
 
-> Currently, the embedded ExoPlayer has configuration only for HLS streams, which it plays much better than Android MediaPlayer on most devices. Normal .mp4 video files and streams should be played using Android MediaPlayer engine.
+> ExoPlayer dependency has been changed from internal .jar package to optional gradle dependency. This solves dependency issue in case Orion360 SDK user wishes to use a different ExoPlayer version or another 3rd party library that comes with built-in ExoPlayer. Copy the ExoPlayerWrapper.java to your own app and follow this example to use it.
+
+> This wrapper works with ExoPlayer version 2.4.1. If you choose to use different ExoPlayer version, you probably need to modify this class according ExoPlayer's API changes.
 
 ### Custom ExoPlayer
 
