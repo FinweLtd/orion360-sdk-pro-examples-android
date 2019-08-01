@@ -55,7 +55,10 @@ import fi.finwe.orion360.sdk.pro.licensing.LicenseManager;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseSource;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseStatus;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseVerifier;
+import fi.finwe.orion360.sdk.pro.source.AndroidMediaPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.source.VideoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -117,6 +120,9 @@ public class RecyclerViewLayout extends Activity {
         /** A content URI for the panorama item, to be given to Orion360 for playback. */
         private String mContentUri;
 
+        /** A volume level for the panorama item, to be given to Orion360 for playback. */
+        private float mVolumeLevel = 1.0f;
+
         /**
          * Set the title string.
          *
@@ -151,6 +157,24 @@ public class RecyclerViewLayout extends Activity {
          */
         String getContentUri() {
             return mContentUri;
+        }
+
+        /**
+         * Set the volume level.
+         *
+         * @param volumeLevel the volume level.
+         */
+        void setVolumeLevel(float volumeLevel) {
+            this.mVolumeLevel = volumeLevel;
+        }
+
+        /**
+         * Get the volume level.
+         *
+         * @return the volume level, or 1.0f if not set.
+         */
+        float getVolumeLevel() {
+            return mVolumeLevel;
         }
     }
 
@@ -193,7 +217,7 @@ public class RecyclerViewLayout extends Activity {
                     // and start playing the content with Orion360.
                     customViewHolder.mThumbnail.setVisibility(View.INVISIBLE);
                     customViewHolder.mPlayButton.setVisibility(View.INVISIBLE);
-                    customViewHolder.play(item.getContentUri());
+                    customViewHolder.play(item.getContentUri(), item.getVolumeLevel());
                 }
             });
         }
@@ -231,6 +255,9 @@ public class RecyclerViewLayout extends Activity {
         /** The camera which will project our 3D scene to a 2D (view) surface. */
         OrionCamera mCamera;
 
+        /** The video player. */
+        VideoPlayerWrapper mVideoPlayer;
+
 
         /**
          * Constructor.
@@ -252,8 +279,9 @@ public class RecyclerViewLayout extends Activity {
          * This is a very simple implementation that just initializes Orion360 for playback.
          *
          * @param contentUri the URI where from the content can be played.
+         * @param volumeLevel the volume level for the content to be played.
          */
-        public void play(String contentUri) {
+        public void play(String contentUri, final float volumeLevel) {
 
             // Create a new scene. This represents a 3D world where various objects can be placed.
             mScene = new OrionScene();
@@ -265,8 +293,17 @@ public class RecyclerViewLayout extends Activity {
             mPanorama = new OrionPanorama();
 
             // Create a new video (or image) texture from a video (or image) source URI.
-            mPanoramaTexture = OrionTexture.createTextureFromURI(
-                    RecyclerViewLayout.this, contentUri);
+            mVideoPlayer = new AndroidMediaPlayerWrapper(RecyclerViewLayout.this);
+            mPanoramaTexture = new OrionVideoTexture(mVideoPlayer, contentUri);
+
+            // Set volume level when content has been prepared.
+            ((OrionVideoTexture) mPanoramaTexture).addTextureListener(
+                    new OrionVideoTexture.ListenerBase() {
+                @Override
+                public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
+                    mVideoPlayer.setVolume(volumeLevel);
+                }
+            });
 
             // Bind the panorama texture to the panorama object.
             mPanorama.bindTextureFull(0, mPanoramaTexture);
@@ -315,12 +352,15 @@ public class RecyclerViewLayout extends Activity {
         PanoramaItem item1 = new PanoramaItem();
         item1.setTitle("Hello Orion 1");
         item1.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        item1.setVolumeLevel(0.10f);
         PanoramaItem item2 = new PanoramaItem();
         item2.setTitle("Hello Orion 2");
         item2.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        item2.setVolumeLevel(0.50f);
         PanoramaItem item3 = new PanoramaItem();
         item3.setTitle("Hello Orion 3");
         item3.setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        item3.setVolumeLevel(1.00f);
 
         // IMPORTANT:
         // Some Android devices can play back more than one video file at the same time,
