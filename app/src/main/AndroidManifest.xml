@@ -312,10 +312,10 @@
             android:multiprocess="true">
             <meta-data
                 android:name="mainVersion"
-                android:value="1100400" />
+                android:value="1101401" />
             <meta-data
                 android:name="patchVersion"
-                android:value="1100400" />
+                android:value="1101401" />
         </provider>
 
     </application>

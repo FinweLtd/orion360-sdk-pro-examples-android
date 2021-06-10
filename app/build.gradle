@@ -1,14 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 30
     defaultConfig {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
         minSdkVersion 18
-        targetSdkVersion 28
-        versionCode 1101400
-        versionName "1.1.01.400"
+        targetSdkVersion 30
+        versionCode 1101401
+        versionName "1.1.01.401"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -28,23 +27,25 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation files('libs/google-play-zip-file_lib.jar')
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    // Orion360 SDK (Pro) library.
-    implementation 'fi.finwe.orion360:orion360-sdk-pro:3.1.02.100' // From Finwe maven repo at Bintray
-
     // Debug version of FinweUtil enables debug logs from Orion360.
-    debugImplementation 'fi.finwe.util:finwe-util:1.0.04-debug' // From Finwe maven repo at Bintray
+    //noinspection GradleDependency
+    debugImplementation 'fi.finwe.util:finwe-util-public:1.0.04-debug'
 
     // Release version of FinweUtil should be used for all releases (no debug logs).
-    releaseImplementation 'fi.finwe.util:finwe-util:1.0.04' // From Finwe maven repo at Bintray
+    //noinspection GradleDependency
+    releaseImplementation 'fi.finwe.util:finwe-util-public:1.0.04'
+
+    // From Finwe maven repo at GitHub
+    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
 
     // ExoPlayer as an alternative video engine.
     implementation 'com.google.android.exoplayer:exoplayer-core:r2.4.1'
