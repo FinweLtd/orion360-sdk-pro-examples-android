@@ -8,6 +8,48 @@ This repository contains a set of examples for creating a 360 photo/video player
 
 > IMPORTANT NOTE
 >
+> Starting May 1st, 2021, Bintray is sunsetting their repositories, including the popular jcenter and also Finwe's bintray repository.
+>
+> Finwe has moved all Orion360 SDK packages from our Bintray maven repositories to GitHub Packages maven repositories.
+>
+> You need to make a few changes to your build.gradle files as follows:
+>
+> 1. In your project level build.gradle file
+> - Replace references to 'jcenter()' with 'mavenCentral()'
+> - Remove this maven repository:
+> ```
+> maven {
+>            url 'https://finwe.bintray.com/orion360-sdk-public' // For Orion360 SDK
+>       }
+> ```
+> - Add this maven repository
+> ```
+> maven {
+>            name = "FinweOrion360SDKPublicMaven"
+>            url = uri("https://maven.pkg.github.com/finweltd/orion360-sdk-public-maven")
+>            credentials {
+>                username = "orion360sdk"
+>                password = "\u0067hp_6zjSXtyiCnFn3r6XdlVXpeWmGIMovz2fHHqe"
+>            }
+>        }
+> ```
+> - Notice that given credentials are mandatory, as GitHub Packages does not support unauthenticated maven repos.
+>
+> 2. In your app level build.gradle file
+> - Add '-public' to all artifactIds from Finwe repositories
+> - For example, replace 
+> ```
+> implementation 'fi.finwe.orion360:orion360-sdk-basic:1.2.11'
+> ``` 
+> with 
+> ```
+> implementation 'fi.finwe.orion360:orion360-sdk-basic-public:1.2.11'
+> ```
+>
+> That's it. Clean and rebuild your project.
+
+> IMPORTANT NOTE
+>
 > Starting August 1, 2019, your apps published on Google Play will need to support 64-bit architectures. 
 > 
 > You can create a single .apk that contains the usual 32-bit and 64-bit binaries (armeabi-v7a and arm64-v8a) by using Orion360 v. 3.1.02.002 or later in your gradle file: 
