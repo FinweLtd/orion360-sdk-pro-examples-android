@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/orion360-sdk-pro-examples-android.iml" filepath="$PROJECT_DIR$/orion360-sdk-pro-examples-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/orion360-sdk-pro-examples-android.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/orion360-sdk-pro-examples-android.app.iml" />
-    </modules>
-  </component>
-</project>
