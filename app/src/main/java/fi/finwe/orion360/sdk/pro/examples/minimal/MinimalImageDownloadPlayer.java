@@ -29,11 +29,14 @@
 
 package fi.finwe.orion360.sdk.pro.examples.minimal;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import androidx.core.util.Pair;
+
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -44,6 +47,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
@@ -81,7 +86,7 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
     private String mImagePath;
 
     /** A class for creating a tuple from a URL and a file path. */
-    private class UrlFilePair extends Pair<String, String> {
+    private static class UrlFilePair extends Pair<String, String> {
         UrlFilePair(String url, String filePath) {
             super(url, filePath);
         }
@@ -141,33 +146,51 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
         // Create a background task for downloading the file (will take a moment).
-        new DownloadFileTask(progress).execute(new UrlFilePair(imageUrl, mImagePath));
+        new DownloadFileTask(this, progress).execute(new UrlFilePair(imageUrl, mImagePath));
     }
 
-    /**
-     * Background task for downloading files.
-     */
-    private class DownloadFileTask extends AsyncTask<UrlFilePair, Integer, Integer> {
+    public class DownloadFileTask {
+        private final ExecutorService executors;
+        private final Activity activity;
+        private final ProgressDialog progress;
 
-        /** Progress dialog to be shown while working. */
-        ProgressDialog mProgress;
+        @SuppressWarnings("FieldCanBeLocal")
+        private boolean cancelled = false;
 
-        /**
-         * Constructor.
-         *
-         * @param progress The progress dialog to be used.
-         */
-        DownloadFileTask(ProgressDialog progress) {
-            mProgress = progress;
+        public DownloadFileTask(Activity activity, ProgressDialog progress) {
+            this.executors = Executors.newSingleThreadExecutor();
+            this.activity = activity;
+            this.progress = progress;
         }
 
-        @Override
+        public void execute(UrlFilePair... files) {
+            onPreExecute();
+            executors.execute(() -> {
+                Integer result = doInBackground(files);
+                new Handler(Looper.getMainLooper()).post(() -> onPostExecute(result));
+            });
+        }
+
+        @SuppressWarnings("unused")
+        public void cancel() {
+            cancelled = true;
+        }
+
+        @SuppressWarnings("unused")
+        public void shutdown() {
+            executors.shutdown();
+        }
+
+        @SuppressWarnings("unused")
+        public boolean isShutdown() {
+            return executors.isShutdown();
+        }
+
         public void onPreExecute() {
-            mProgress.show();
+            progress.show();
         }
 
-        @Override
-        protected Integer doInBackground(UrlFilePair... files) {
+        public Integer doInBackground(UrlFilePair... files) {
 
             // Download files over the network to the local file system,
             // if not already there.
@@ -194,15 +217,16 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
                             out.write(buffer, 0, read);
                             out.flush();
                             total += read;
-                            publishProgress((int) ((total / (float) contentLength) * 100));
+                            progress.setProgress((int) ((total / (float) contentLength) * 100));
 
                             // Escape early if cancel() is called.
-                            if (isCancelled()) break;
+                            if (cancelled) break;
                         }
                         downloadFileCount++;
 
                     } catch (Exception e) {
-                        Log.e(TAG, "Failed to download " + downloadUrl + " to " + outputFile, e);
+                        Log.e(TAG, "Failed to download " + downloadUrl
+                                + " to " + outputFile, e);
                     } finally {
                         if (null != in) {
                             try { in.close(); } catch (IOException e) { Log.e(TAG,
@@ -219,19 +243,19 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
             return downloadFileCount;
         }
 
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-            mProgress.setProgress(progress[0]);
-        }
+        public void onPostExecute(Integer result) {
+            progress.dismiss();
 
-        @Override
-        protected void onPostExecute(Integer result) {
-            mProgress.dismiss();
+            if (result > 0) {
+                Toast.makeText(this.activity, String.format(activity.getString(
+                                R.string.main_menu_init_files_copied), result),
+                        Toast.LENGTH_LONG).show();
+            }
 
             // Notify downloaded files.
             if (result > 0) {
-                Toast.makeText(MinimalImageDownloadPlayer.this,
-                        String.format(getString(R.string.player_file_download_completed), result),
+                Toast.makeText(this.activity, String.format(activity.getString(
+                                R.string.main_menu_init_files_copied), result),
                         Toast.LENGTH_LONG).show();
             }
 
@@ -243,5 +267,4 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
             }
         }
     }
-
 }

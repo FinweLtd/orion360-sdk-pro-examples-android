@@ -93,15 +93,17 @@ public class StereoPanoramaVR extends OrionActivity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_OU_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH +
+                        MainMenu.TEST_IMAGE_FILE_LIVINGROOM_OU_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular stereoscopic over-and-under source, and wrap the top half of the
         // texture around left eye sphere and bottom half of the texture around right eye sphere.
         // Notice that we call bindTextureVR variant to define different texture based on whether
         // it's rendered to VR_LEFT or VR_RIGHT enabled OrionViewport.
+        //noinspection SuspiciousNameCombination
         mPanorama.bindTextureVR(0, mPanoramaTexture,
-                new RectF(-180, 90, 180, -90),                  // Full spherical texture
+                new RectF(-180, 90, 180, -90), // Full spherical texture
                 OrionPanorama.TEXTURE_RECT_HALF_TOP,            // Left eye gets the top half
                 OrionPanorama.TEXTURE_RECT_HALF_BOTTOM);        // Right eye gets the bottom half
 
@@ -110,6 +112,9 @@ public class StereoPanoramaVR extends OrionActivity {
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
+
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);

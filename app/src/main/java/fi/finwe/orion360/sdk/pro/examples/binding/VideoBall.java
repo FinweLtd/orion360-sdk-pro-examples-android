@@ -31,7 +31,6 @@ package fi.finwe.orion360.sdk.pro.examples.binding;
 
 import android.os.Bundle;
 
-import fi.finwe.math.Quatf;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
@@ -101,25 +100,20 @@ public class VideoBall extends OrionActivity {
 
         // By default, the panorama sphere has a radius of 1.0 and the camera is at the origin.
         // If we move the sphere far enough forward (along the negative Z-axis), our camera will
-        // go through the back of the sphere and starts to see the sphere from outside.
+        // go through the back of the sphere and starts to see the sphere from the outside.
         mPanorama.setWorldTranslation(new Vec3f(0.0f, 0.0f, -2.0f));
 
         // Since the texture is mapped to the inside of the sphere, when looking at it from
-        // outside it appears mirrored. This can be easily solved by using a negative scale.
+        // outside it appears mirrored. This can be easily solved by using a negative X scale.
         mPanorama.setScale(new Vec3f(-1.0f, 1.0f, 1.0f));
 
         // To look around the sphere, we can map sensor fusion directly to the panorama.
         // Thus, instead of rotating the camera (as usual), we rotate the panorama sphere.
         mOrionContext.getSensorFusion().bindControllable(mPanorama);
 
-        // Set yaw angle to 180 degrees when starting the app. Since we moved the
-        // panorama forward, we are now looking at it from behind and need to
-        // rotate it 180 degrees to see its front side again.
-        mPanorama.setRotation(Quatf.fromRotationAxisY(180.0 / Quatf.RAD));
-
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -160,17 +154,11 @@ public class VideoBall extends OrionActivity {
      */
     public class TouchControllerWidget implements OrionWidget {
 
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** The panorama that will be controlled by this widget. */
-        private OrionPanorama mPanorama;
-
         /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
+        private final TouchPincher mTouchPincher;
 
         /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
+        private final TouchRotater mTouchRotater;
 
 
         /**
@@ -181,18 +169,20 @@ public class VideoBall extends OrionActivity {
          */
         TouchControllerWidget(OrionCamera camera, OrionPanorama panorama) {
 
-            // Keep a reference to the camera and panorama that we control.
-            mCamera = camera;
-            mPanorama = panorama;
+            // When controlling the video ball, you will notice that typical sensor fusion and
+            // touch control are not optimal for controlling a rotating ball. What feels 'right'
+            // depends on how the user interface is designed to work, what is the purpose of
+            // the video ball and its controls, and whether there is a transition between 'inside'
+            // and 'outside' views. This goes way beyond this simple binding example!
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
+            mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
             mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mPanorama);
+            mTouchRotater.bindControllable(panorama);
         }
 
         @Override

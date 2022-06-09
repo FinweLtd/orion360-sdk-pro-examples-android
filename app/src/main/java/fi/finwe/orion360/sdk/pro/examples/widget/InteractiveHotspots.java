@@ -35,18 +35,14 @@ import android.util.Log;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
-import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.orion360.sdk.pro.widget.SelectablePointerIcon;
-import fi.finwe.util.ContextUtil;
 
 /**
  * An example of a hotspot, an icon that can be selected simply by pointing / looking at it.
@@ -74,7 +70,7 @@ public class InteractiveHotspots extends OrionActivity {
     /** The size of the hotspots, as a scaling factor relative to image asset size (100% = 1.0f). */
     protected final static float HOTSPOT_SCALE_FACTOR = 0.21f;
 
-    /** When focused the hotspot will grow larger up to this scale factor (no effect = 1.0f). */
+    /** When focused, the hotspot will grow larger up to this scale factor (no effect = 1.0f). */
     protected final static float HOTSPOT_SCALE_FOCUSED_MAX = 1.5f * HOTSPOT_SCALE_FACTOR;
 
     /** When focused the hotspot selection will trigger after this many frames rendered (~60FPS). */
@@ -127,7 +123,7 @@ public class InteractiveHotspots extends OrionActivity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Pause video playback until user triggers one of the 'Start' hotspots.
         mPanoramaTexture.pause();
@@ -146,11 +142,14 @@ public class InteractiveHotspots extends OrionActivity {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
+
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -193,6 +192,7 @@ public class InteractiveHotspots extends OrionActivity {
      * @param pitchDeg The pitch angle in degrees.
      * @param rollDeg The roll angle in degrees.
      */
+    @SuppressWarnings("SameParameterValue")
     protected SelectablePointerIcon createStartHotSpot(float yawDeg, float pitchDeg, float rollDeg) {
 
         // Create a new hotspot as a selectable pointer icon widget.
@@ -217,15 +217,14 @@ public class InteractiveHotspots extends OrionActivity {
         hotspot.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
                 getString(R.string.asset_hotspot_pie)));
 
-        // Set the pointer i.e. scene item whose nearness to watch, typically the camera.
-        // This way we know if user is looking at the hotspot.
+        // Set the pointer (typically the camera). Now we know if user is looking at the hotspot.
         hotspot.setPointer(mCamera);
 
         // When hotspot is focused, we keep counting frames until a given frame count is reached
         // and it is time to trigger the hotspot action. Notice that if end-user looks away and
         // hotspot focus is lost, we do not immediately reset the count but start decreasing it
         // slowly so end-user can focus on the hotspot again if she accidentally moved away.
-        // The rendering runs at 60 framer per second (FPS), if not limited by weak hardware.
+        // The rendering runs at 60 frames per second (FPS), if not limited by weak hardware.
         hotspot.setSelectionTriggerFrameCount(HOTSPOT_TRIGGER_DELAY_IN_FRAMES);
 
         // Create a listener so that we can respond to selection events.
@@ -259,7 +258,7 @@ public class InteractiveHotspots extends OrionActivity {
      */
     protected void start() {
 
-        // Hide (and disable) hotspots, there are not needed anymore.
+        // Hide (and disable) hotspots, they are not needed anymore.
         mHotspotFront.setEnabled(false);
         mHotspotLeft.setEnabled(false);
         mHotspotRight.setEnabled(false);
@@ -271,71 +270,5 @@ public class InteractiveHotspots extends OrionActivity {
         // Start video playback.
         mPanoramaTexture.play();
 
-    }
-
-
-    /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-        /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-            // Create the rotation aligner, responsible for rotating the view so that the horizon
-            // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
-            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
-
-            // Rotation aligner needs sensor fusion data in order to do its job.
-            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
-        }
     }
 }

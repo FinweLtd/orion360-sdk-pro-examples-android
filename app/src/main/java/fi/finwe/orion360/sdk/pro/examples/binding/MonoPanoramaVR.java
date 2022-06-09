@@ -92,7 +92,7 @@ public class MonoPanoramaVR extends OrionActivity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -103,6 +103,9 @@ public class MonoPanoramaVR extends OrionActivity {
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
+
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);

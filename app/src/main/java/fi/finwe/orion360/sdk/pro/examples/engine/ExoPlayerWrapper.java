@@ -71,6 +71,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import fi.finwe.log.Logger;
 import fi.finwe.orion360.sdk.pro.source.VideoPlayerWrapper;
@@ -97,49 +98,31 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
 {
 
     /** Tag for debug logging. */
-    public static String TAG = new Object() { }.getClass().getEnclosingClass().getSimpleName();
+    public static String TAG = ExoPlayerWrapper.class.getSimpleName();
 
     /** User agent string. */
     private final static String USER_AGENT = "Finwe Ltd. Orion360 VR Video Player v3.0 (Android)";
 
-    /** HLS filename extension. */
-    private final static String HLS_FILENAME_EXT = ".m3u8";
-
-    /** Buffer size for a single segment. */
-    private final static int BUFFER_SEGMENT_SIZE = 256 * 1024;
-    // above: in total 262144 bytes (256kB), value comes from ExoPlayer demo app.
-
-    /** Number of segments in the buffer. */
-    private final static int BUFFER_SEGMENTS = 64;
-    // above: in total 16777216 bytes (16MB), value comes from ExoPlayer demo app.
-
-    private static final long	DEFAULT_ALLOWED_JOINING_TIME_MS = 5000;
-    private static final int	DEFAULT_MAX_DROPPED_FRAME_COUNT_TO_NOTIFY = 50;
-
-//	private static final int ERROR_EXTRA_SECURITY_EXCEPTION_WHEN_SET_DATA_SOURCE= 0x1FF;
-//	private static final int ERROR_EXTRA_ILLEGAL_STATE= 0x2FF;
-
     /** Handle for ExoPlayer instance. */
     private SimpleExoPlayer mExoPlayer;
     //private FinweExoPlayer mExoPlayer;
-    private DefaultBandwidthMeter mDefaultBandwidthMeter;
+
+    private final DefaultBandwidthMeter mDefaultBandwidthMeter;
     DataSource.Factory mMediaDataSourceFactory;
 
     private MediaSource mMediaSource;
-    private String mOverrideExtension = "";  // Set to override media type inference from the uri
     private int	mAudioSessionID = 0;
 
     /** Handler for video position updates. */
-    private Handler	mHandler;
     private Handler	mMainHandler;   // Handler in main ui thread
 
     /** Task that handles video position update notifications. */
-    private VideoPositionUpdateTask	mPositionUpdater = new VideoPositionUpdateTask();
+    private final VideoPositionUpdateTask	mPositionUpdater = new VideoPositionUpdateTask();
 
-    private int						mPositionUpdateTimeoutMs = 200;
+    private int	mPositionUpdateTimeoutMs = 200;
 
     /** Task that handles video buffer update notifications. */
-    private VideoBufferUpdateTask mBufferUpdater = new VideoBufferUpdateTask();
+    private final VideoBufferUpdateTask mBufferUpdater = new VideoBufferUpdateTask();
 
 
     /**
@@ -161,10 +144,8 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
     DataSource.Factory createDataSourceFactory(boolean useBandwidthMeter) {
         DefaultBandwidthMeter meter = useBandwidthMeter ? mDefaultBandwidthMeter : null;
         String userAgent = Util.getUserAgent(mContext, USER_AGENT);
-        DataSource.Factory factory = new DefaultDataSourceFactory(mContext,
-                meter,
+        return new DefaultDataSourceFactory(mContext, meter,
                 new DefaultHttpDataSourceFactory(userAgent, meter));
-        return factory;
     }
 
     private boolean isInPlaybackState() {
@@ -276,7 +257,6 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         // At this moment the player should be in the END state.
         synchronized (mCurrentStatus) {
             if (mCurrentStatus.playerState == PlayerState.END) {
-                mHandler = new Handler();
                 mMainHandler = new Handler(Looper.getMainLooper());
                 mMainHandler.postDelayed(mPositionUpdater, mPositionUpdateTimeoutMs);
 
@@ -339,17 +319,13 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
     @Override
     protected boolean processSetDataSource() {
         // At this point we know we are in the IDLE state.
-//		int notifyError = 0, errorextra = 0;
-        boolean notifyValidUri = false;
         synchronized (mCurrentStatus) {
             synchronized (mTargetStatus) {
                 if (mTargetStatus.uri == null) {
                     mCurrentStatus.uri = null;
                     return false;
                 }
-                if (mCurrentStatus.uri == mTargetStatus.uri
-                        || (mCurrentStatus.uri != null && mCurrentStatus.uri
-                        .equals(mTargetStatus.uri))) {
+                if (Objects.equals(mCurrentStatus.uri, mTargetStatus.uri)) {
                     return true;
                 }
             }
@@ -361,11 +337,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             }
 
             int type;
-            if (mOverrideExtension.length() == 0) {
-                type = Util.inferContentType(mTargetStatus.uri);
-            } else {
-                type = Util.inferContentType("." + mOverrideExtension);
-            }
+            type = Util.inferContentType(mTargetStatus.uri);
             switch (type) {
                 case C.TYPE_SS:
                     mMediaSource = new SsMediaSource(mTargetStatus.uri,
@@ -389,13 +361,10 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                             mMediaDataSourceFactory,
                             new DefaultExtractorsFactory(),
                             mMainHandler,
-                            new ExtractorMediaSource.EventListener() {
-                                @Override
-                                public void onLoadError(IOException e) {
-                                    //Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString(), e.getCause());
-                                    Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString());
-                                    mUpdateListener.onException(null, e);
-                                }
+                            e -> {
+                                //Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString(), e.getCause());
+                                Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString());
+                                mUpdateListener.onException(null, e);
                             }
                     );
                     break;
@@ -407,11 +376,8 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             // No exceptions? Everything went better than expected
             mCurrentStatus.uri = mTargetStatus.uri;
             mCurrentStatus.playerState = PlayerState.INITIALIZED;
-            notifyValidUri = true;
         }
-        if (notifyValidUri) {
-            mUpdateListener.onVideoSourceURISet(null);
-        }
+        mUpdateListener.onVideoSourceURISet(null);
 
         return false;
     }
@@ -424,8 +390,6 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 case STARTED:
                 case PAUSED:
                 case PLAYBACK_COMPLETED:
-                    // stop = true;
-                    // break;
                 case STOPPED:
                 case INITIALIZED:
                 case PREPARED:
@@ -447,9 +411,6 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                     break;
             }
         }
-//		if (stop) {
-//			doStop();
-//		}
         return false;
     }
 
@@ -555,8 +516,8 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 case STARTED:
                     break;
                 case PLAYBACK_COMPLETED:
-                    // Don't start again, unless looping is set true, or the player has been seeked after playback completion
-                    if (mCurrentStatus.looping == false && mCurrentStatus.completionSeekRequired == true && mCurrentStatus.completionSeekDone == false) {
+                    // Don't start again, unless looping is set true, or the player has been sought after playback completion
+                    if (!mCurrentStatus.looping && mCurrentStatus.completionSeekRequired && !mCurrentStatus.completionSeekDone) {
                         break;
                     }
                     mCurrentStatus.playerState = PlayerState.PREPARING;
@@ -784,7 +745,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             case ExoPlayer.STATE_ENDED: return "Ended";
             case ExoPlayer.STATE_IDLE: return "Idle";
             case ExoPlayer.STATE_READY: return "Ready";
-            default: return "Unknown(" + Integer.toString(state) + ")";
+            default: return "Unknown(" + state + ")";
         }
     }
 
@@ -809,7 +770,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 // The player has finished playing the media.
                 synchronized (mCurrentStatus) {
                     mCurrentStatus.playerState = PlayerState.PLAYBACK_COMPLETED;
-                    if (mCurrentStatus.looping == false) {
+                    if (!mCurrentStatus.looping) {
                         // The player was not set to loop upon completion -> seek is needed to resume playback
                         mCurrentStatus.completionSeekRequired = true;
                         mCurrentStatus.completionSeekDone = false;
@@ -823,7 +784,6 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 break;
             case ExoPlayer.STATE_READY:
                 // The player is prepared and able to immediately play from the current position.
-                // FIXME: Don't keep the synchronization locks when calling callbacks, because it's evil!!!!
                 synchronized (mCurrentStatus) {
                     if (mCurrentStatus.preparing) {
                         mCurrentStatus.preparing = false;
@@ -907,7 +867,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
     public void onPlayerError(ExoPlaybackException e) {
         Logger.logE(TAG, "onPlayerError(): " + e.toString(), e.getCause());
 
-        // FIXME: ExoPlayer can actually be used even after getting this call.
+        // NOTE: ExoPlayer can actually be used even after getting this call.
         // Internally the player is in ExoPlayer.STATE_IDLE immediately after this method is called
         // Also, the player must be released with ExoPlayer.release() afterwards.
 
@@ -917,12 +877,12 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 mTargetStatus.playerState = PlayerState.END;
             }
         }
-        // FIXME this API does not work for ExoPlayer errors. We have an Exception, not error codes!
+        // This API does not work for ExoPlayer errors. We have an Exception, not error codes...
         mUpdateListener.onVideoError(null, 0, 0);
         postUpdateState();
     }
 
-    private VideoRendererEventListener mVideoRendererEventListener = new VideoRendererEventListener() {
+    private final VideoRendererEventListener mVideoRendererEventListener = new VideoRendererEventListener() {
         @Override
         public void onVideoEnabled(DecoderCounters decoderCounters) {
 //			Logger.logD(TAG, "ExoPlayer onVideoEnabled()");
@@ -946,7 +906,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         @Override
         public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
             Logger.logI(TAG, "ExoPlayer onVideoSizeChanged(): size = " +
-                    + width + " x " + height + ", unapplied rotation = " + unappliedRotationDegrees + ", pixelWidthHeightRatio= " + pixelWidthHeightRatio);
+                    width + " x " + height + ", unapplied rotation = " + unappliedRotationDegrees + ", pixelWidthHeightRatio= " + pixelWidthHeightRatio);
 
             mUpdateListener.onVideoSizeChanged(null, width, height);
         }
@@ -963,7 +923,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         }
     };
 
-    private AudioRendererEventListener mAudioRendererEventListener = new AudioRendererEventListener() {
+    private final AudioRendererEventListener mAudioRendererEventListener = new AudioRendererEventListener() {
         @Override
         public void onAudioEnabled(DecoderCounters decoderCounters) {
 //			Logger.logD(TAG, "ExoPlayer onAudioEnabled()");
@@ -995,7 +955,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         }
     };
 
-    private AdaptiveMediaSourceEventListener mAdaptiveMediaSourceEventListener = new AdaptiveMediaSourceEventListener() {
+    private final AdaptiveMediaSourceEventListener mAdaptiveMediaSourceEventListener = new AdaptiveMediaSourceEventListener() {
         @Override
         public void onLoadStarted(DataSpec dataSpec, int i, int i1, Format format, int i2, Object o, long l, long l1, long l2) {
 

@@ -24,7 +24,8 @@
         android:id="@+id/buffering_indicator_vr"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" >
+        android:visibility="gone"
+        android:baselineAligned="false">
 
         <RelativeLayout
             android:layout_width="0dp"

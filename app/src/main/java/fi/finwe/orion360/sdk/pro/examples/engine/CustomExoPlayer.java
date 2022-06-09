@@ -60,25 +60,21 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
-import java.io.IOException;
+import java.util.Objects;
 
 import fi.finwe.log.Logger;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
-import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.source.VideoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
-import fi.finwe.util.ContextUtil;
 
 /**
  * An example of using a custom configured ExoPlayer as an audio/video engine.
@@ -154,11 +150,14 @@ public class CustomExoPlayer extends OrionActivity {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
+
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -177,71 +176,6 @@ public class CustomExoPlayer extends OrionActivity {
         mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
 	}
-
-    /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-        /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-            // Create the rotation aligner, responsible for rotating the view so that the horizon
-            // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
-            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
-
-            // Rotation aligner needs sensor fusion data in order to do its job.
-            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
-        }
-    }
 
     /**
      * A wrapper for a custom video player engine.
@@ -282,7 +216,8 @@ public class CustomExoPlayer extends OrionActivity {
      * will continue with another callback. This allows performing operations in multiple steps
      * and in correct order based on the current control status.
      */
-    private class CustomExoPlayerWrapper extends VideoPlayerWrapper implements ExoPlayer.EventListener {
+    private static class CustomExoPlayerWrapper extends VideoPlayerWrapper
+            implements ExoPlayer.EventListener {
 
         /** User agent string. */
         String USER_AGENT = "Orion360";
@@ -370,9 +305,7 @@ public class CustomExoPlayer extends OrionActivity {
                         mCurrentStatus.uri = null;
                         return false;
                     }
-                    if (mCurrentStatus.uri == mTargetStatus.uri
-                            || (mCurrentStatus.uri != null && mCurrentStatus.uri
-                            .equals(mTargetStatus.uri))) {
+                    if (Objects.equals(mCurrentStatus.uri, mTargetStatus.uri)) {
                         return true;
                     }
                 }
@@ -395,12 +328,7 @@ public class CustomExoPlayer extends OrionActivity {
                         dataSourceFactory,
                         extractorsFactory,
                         mMainHandler,
-                        new ExtractorMediaSource.EventListener() {
-                            @Override
-                            public void onLoadError(IOException e) {
-                                Log.e(TAG, "onLoadError(): " + e.toString());
-                            }
-                        });
+                        e -> Log.e(TAG, "onLoadError(): " + e.toString()));
 
                 // Update video Uri and player state.
                 mCurrentStatus.uri = mTargetStatus.uri;
@@ -468,7 +396,7 @@ public class CustomExoPlayer extends OrionActivity {
                         break;
                     case PLAYBACK_COMPLETED:
                         // Don't start again unless looping is set true or the player has been
-                        // seek'ed after playback completion.
+                        // sought after playback completion.
                         if (!mCurrentStatus.looping && mCurrentStatus.completionSeekRequired
                                 && !mCurrentStatus.completionSeekDone) {
                             break;
@@ -554,14 +482,13 @@ public class CustomExoPlayer extends OrionActivity {
             boolean stop = false;
             synchronized (mCurrentStatus) {
                 switch (mCurrentStatus.playerState) {
-                    case STOPPED:
-                        break;
                     case PREPARED:
                     case STARTED:
                     case PAUSED:
                     case PLAYBACK_COMPLETED:
                         stop = true;
                         break;
+                    case STOPPED:
                     case ERROR:
                     case INITIALIZED:
                     case PREPARING:

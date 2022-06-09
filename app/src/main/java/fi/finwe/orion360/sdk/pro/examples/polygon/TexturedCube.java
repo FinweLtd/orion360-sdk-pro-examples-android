@@ -39,13 +39,11 @@ import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPolygon;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 
 /**
  * An example of loading a textured 3D model and rendering it with Orion360.
@@ -118,13 +116,13 @@ public class TexturedCube extends OrionActivity {
 
         // Set yaw angle to 0. Now the camera will always point to the same yaw angle
         // when starting the app, regardless of the orientation of the device.
-        mCamera.setRotationYaw(0);
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -143,57 +141,6 @@ public class TexturedCube extends OrionActivity {
         mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
 	}
-
-    /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-        }
-    }
 
     @Override
     public void onResume() {

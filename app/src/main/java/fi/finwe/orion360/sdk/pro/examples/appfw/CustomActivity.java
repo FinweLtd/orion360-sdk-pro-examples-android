@@ -37,10 +37,8 @@ import java.util.List;
 
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseManager;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseSource;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseStatus;
@@ -51,8 +49,6 @@ import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
-import fi.finwe.util.ContextUtil;
 
 /**
  * An example of a minimal Orion360 video player, implemented as a custom activity.
@@ -88,22 +84,22 @@ public class CustomActivity extends Activity {
 
     /**
      * OrionView is an Android SurfaceView that Orion360 uses for presenting rendered content
-     * on the device display. Different types of OrionViews exist for the purpose of rendering
+     * on the device's display. Different types of OrionViews exist for the purpose of rendering
      * content using a particular external library, such as Oculus GearVR (OrionOvrView) or
      * Google DayDream (OrionGvrView).
      *
      * Further, OrionViewport defines a part of an OrionView that is used for rendering an
-     * OrionScene using an OrionCamera (on that particular slice of the OrionView).
+     * OrionScene using an OrionCamera, on that particular area of the OrionView.
      *
      * In most cases, the OrionView contains just a single OrionViewport that comprises the
      * full OrionView, or two OrionViewports side by side to be used for rendering a separate
-     * image for both eyes when using a VR headset.
+     * image for both eyes when using a VR headset. Yet, other configurations are possible.
      */
     protected OrionView mView;
 
     /**
      * OrionScene is a collection of content that is present in a rendered OrionView. The content
-     * consists of a set of visible artefacts (OrionSceneItem) and programs that manipulate them
+     * consists of a set of visible items (OrionSceneItem) and programs that manipulate them
      * (OrionController).
      */
     protected OrionScene mScene;
@@ -120,7 +116,7 @@ public class CustomActivity extends Activity {
      *
      * OrionPanorama is also responsible for handling the cases where different parts of the
      * source texture needs to be mapped into different parts of the polygon, and cases where
-     * the source texture contains less than full 360x180 degree panorama image.
+     * the source texture contains less than full 360x180 degree panorama image (e.g. doughnut).
      */
     protected OrionPanorama mPanorama;
 
@@ -149,10 +145,10 @@ public class CustomActivity extends Activity {
      * Convenience class for configuring typical touch control logic, where dragging gestures
      * are mapped to panning the view, and pinch gestures to zooming/rotating the view.
      *
-     * In addition, a special mathematical algorithm called RotationAligner keeps the horizon
-     * straight when user is not looking towards nadir (down) or zenith (up). This allows
-     * free navigation within the sphere, without any artificial limits - a feature that is
-     * unique to Orion360.
+     * In addition, a special mathematical algorithm Auto Horizon Aligner (AHL), here used via
+     * its component RotationAligner, keeps the horizon straight when user is not looking towards
+     * nadir (down) or zenith (up). This allows free navigation within the sphere, without any
+     * artificial limits - a feature that is unique to Orion360.
      */
     protected TouchControllerWidget mTouchController;
 
@@ -249,7 +245,7 @@ public class CustomActivity extends Activity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
 		mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -269,13 +265,13 @@ public class CustomActivity extends Activity {
         // Set yaw angle to 0. Now the camera will always point to the same yaw angle
         // (to the horizontal center point of the equirectangular video/image source)
         // when starting the app, regardless of the orientation of the device.
-        mCamera.setRotationYaw(0);
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -293,70 +289,5 @@ public class CustomActivity extends Activity {
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
         mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
-    }
-
-    /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-        /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-            // Create the rotation aligner, responsible for rotating the view so that the horizon
-            // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
-            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
-
-            // Rotation aligner needs sensor fusion data in order to do its job.
-            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
-        }
     }
 }

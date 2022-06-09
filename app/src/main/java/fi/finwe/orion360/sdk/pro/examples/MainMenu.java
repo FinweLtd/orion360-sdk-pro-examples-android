@@ -30,11 +30,10 @@
 package fi.finwe.orion360.sdk.pro.examples;
 
 import android.Manifest;
-import android.app.ListActivity;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
@@ -42,7 +41,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -51,8 +50,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.ListFragment;
+
+import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -72,16 +78,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import fi.finwe.log.Logger;
 
 /**
  * Provides application's main menu: a list of selectable examples, each implemented as an activity.
  * <p/>
  * The activities are automatically searched from the package (manifest) and added to the menu.
  */
-public class MainMenu extends ListActivity {
+public class MainMenu extends FragmentActivity {
 
 	/** Tag for logging. */
 	public static final String TAG = MainMenu.class.getSimpleName();
@@ -94,6 +104,7 @@ public class MainMenu extends ListActivity {
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_video_2d_equi_360x180deg_1280x640pix_30fps_30sec_x264.mp4";
 
 	/** Test video URI for medium quality video that can be found from the network. */
+	@SuppressWarnings("unused")
 	public static final String TEST_VIDEO_URI_1920x960 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_video_2d_equi_360x180deg_1920x960pix_30fps_30sec_x264.mp4";
 
@@ -110,14 +121,17 @@ public class MainMenu extends ListActivity {
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_video_2d_equi_360x135deg_1920x720pix_30fps_30sec_x264.mp4";
 
 	/** Test image URI for low quality image that can be found from the network. */
+	@SuppressWarnings("unused")
 	public static final String TEST_IMAGE_URI_1280x640 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_image_1280x640.jpg";
 
 	/** Test image URI for medium quality image that can be found from the network. */
+	@SuppressWarnings("unused")
 	public static final String TEST_IMAGE_URI_1920x960 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_image_1920x960.jpg";
 
 	/** Test image URI for high quality image that can be found from the network. */
+	@SuppressWarnings("unused")
 	public static final String TEST_IMAGE_URI_3840x1920 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_image_3840x1920.jpg";
 
@@ -126,7 +140,8 @@ public class MainMenu extends ListActivity {
 			"https://s3.amazonaws.com/orion360-us/Orion360_example_image_1_4096x2048.jpg";
 
     /** Example image 1 URI for 8k image that can be found from the network. */
-    public static final String EXAMPLE_IMAGE_1_URI_8129x4096 =
+    @SuppressWarnings("unused")
+	public static final String EXAMPLE_IMAGE_1_URI_8129x4096 =
             "https://s3.amazonaws.com/orion360-us/Orion360_example_image_1_8192x4096.jpg";
 
 	/** Test video name for low quality video that is bundled with the app in /res/raw. */
@@ -142,8 +157,8 @@ public class MainMenu extends ListActivity {
 	/** Test video name for medium quality video that is bundled with the app in /assets. */
 	public static final String TEST_VIDEO_FILE_MQ = "Orion360_test_video_1920x960.mp4";
 
-    /** Test video name for high quality video that is bundled with the app in /assets. */
-    public static final String TEST_VIDEO_FILE_HQ = "Orion360_test_video_2_3840x2160.mp4";
+	/** Test video name for high quality video that is bundled with the app in /assets. */
+	public static final String TEST_VIDEO_2_FILE_HQ = "Orion360_test_video_2_3840x2160.mp4";
 
 	/** Test image name for medium quality image that is bundled with the app in /assets. */
 	public static final String TEST_IMAGE_FILE_MQ = "Orion360_test_image_1920x960.jpg";
@@ -165,9 +180,6 @@ public class MainMenu extends ListActivity {
 
 	/** Test image name for medium quality stereo over-and-under living room image in app /assets. */
 	public static final String TEST_IMAGE_FILE_LIVINGROOM_OU_MQ = "Orion360_livingroom_ou_2048x2048.jpg";
-
-    /** Test image name for medium quality example image in app /assets. */
-    public static final String TEST_IMAGE_FILE_EXAMPLE2_MQ = "Orion360_example_image_2048x1024.jpg";
 
     /** Test image name for medium quality preview image that is bundled with the app in /assets. */
 	public static final String TEST_PREVIEW_IMAGE_FILE_MQ = "Orion360_preview_image_1920x960.jpg";
@@ -208,7 +220,7 @@ public class MainMenu extends ListActivity {
 	public static String PRIVATE_EXTERNAL_FILES_PATH;
 
 	/** A class for creating a tuple from two file paths. */
-	private class FilePathPair extends Pair<String, String> {
+	private static class FilePathPair extends Pair<String, String> {
 		FilePathPair(String first, String second) {
 			super(first, second);
 		}
@@ -228,18 +240,6 @@ public class MainMenu extends ListActivity {
 		private static final long serialVersionUID = 1L;
 	}
 
-	/** Store activity data structures grouped by their last package names. */
-	private HashMap<String, List<ActivityData>> mGroupedActivities;
-
-    /** Adapter for listing activity groups. */
-    private ArrayAdapter<String> mGroupAdapter;
-
-    /** Adapter for listing activities themselves. */
-    private SimpleAdapter mItemAdapter;
-
-    /** Text view for title text. */
-    private TextView mMainMenuTitleText;
-
     /** Time limit for counting two back presses (in ms). */
     protected static final int DOUBLE_BACK_TO_EXIT_TIME_WINDOW = 2000;
 
@@ -256,13 +256,172 @@ public class MainMenu extends ListActivity {
     protected Handler mDoubleBackToExitHandler = null;
 
     /** Runnable that actually resets back press counter (flag). */
-    private Runnable mDoubleBackToExitCounterReset = new Runnable() {
-        @Override
-        public void run() {
-            mDoubleBackToExitPressedOnce = false;
-        }
-    };
+    private final Runnable mDoubleBackToExitCounterReset =
+			() -> mDoubleBackToExitPressedOnce = false;
 
+	/** Fragment that lists all test activities. */
+	public static class MenuFragment extends ListFragment {
+
+		/** Tag for logging. */
+		public static final String TAG = MenuFragment.class.getSimpleName();
+
+		/** Text view for title text. */
+		private TextView mMainMenuTitleText;
+
+		/** Store activity data structures grouped by their last package names. */
+		private HashMap<String, List<ActivityData>> mGroupedActivities;
+
+		/** Adapter for listing activity groups. */
+		private ArrayAdapter<String> mGroupAdapter;
+
+		/** Adapter for listing activities themselves. */
+		private SimpleAdapter mItemAdapter;
+
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+								 Bundle savedInstanceState) {
+
+			View view = inflater.inflate(R.layout.fragment_main_menu,
+					container, false);
+
+			// Get title text view.
+			mMainMenuTitleText = (TextView) view.findViewById(R.id.main_menu_title);
+
+			// Find other activities in our package.
+			List<ActivityData> activityDataList = findOtherActivities();
+
+			// Group the activities based on last package name.
+			mGroupedActivities = createActivityGroups(activityDataList);
+
+			// Setup an adapter for listing the activity groups in the UI.
+			ArrayList<String> groupNames = new ArrayList<>(mGroupedActivities.keySet());
+			Collections.sort(groupNames);
+			mGroupAdapter = new ArrayAdapter<>(getActivity(),
+					R.layout.list_main_menu_row, R.id.textview_activity_name, groupNames);
+
+			// Show groups.
+	        setListAdapter(mGroupAdapter);
+
+			return view;
+		}
+
+		@Override
+		public void onListItemClick(ListView listView, View view, int position, long id) {
+			view.setSelected(true);
+
+			if (listView.getAdapter() == mGroupAdapter) {
+
+				// An activity group was selected from the UI, try to show grouped activities.
+				String groupName = (String) listView.getItemAtPosition(position);
+				List<ActivityData> activities = mGroupedActivities.get(groupName);
+				String [] rowNames = new String [] { KEY_ACTIVITY_NAME };
+				int [] cellResIds = new int [] { R.id.textview_activity_name };
+				mItemAdapter = new SimpleAdapter(getActivity(), activities,
+						R.layout.list_main_menu_row, rowNames, cellResIds);
+				setListAdapter(mItemAdapter);
+				mMainMenuTitleText.setText(groupName);
+
+			} else if (listView.getAdapter() == mItemAdapter) {
+
+				// An activity was selected from the UI, try to start it now.
+				ActivityData activityData = (ActivityData) listView.getItemAtPosition(position);
+				try {
+					String name = activityData.get(KEY_ACTIVITY_FULL_NAME);
+					if (null != name) {
+						Intent intent = new Intent(getActivity(), Class.forName(name));
+						startActivity(intent);
+					}
+				} catch (ClassNotFoundException e) {
+					Log.e(TAG, "Failed to start selected activity", e);
+				}
+
+			}
+		}
+
+		/**
+		 * Find all other activities in the package, and return a list of data structures.
+		 *
+		 * @return A data structure for each found activity, or an empty list if none was found.
+		 */
+		private List<ActivityData> findOtherActivities() {
+
+			// Create a list where to store activity data.
+			List<ActivityData> activityDataList = new ArrayList<>();
+
+			// Get all activities in the package.
+			PackageInfo packageInfo = requireActivity().getPackageManager().getPackageArchiveInfo(
+					requireActivity().getPackageCodePath(), PackageManager.GET_ACTIVITIES);
+
+			// Parse each activity's name, package and full name, and store them into the list.
+			for (ActivityInfo activityInfo : packageInfo.activities) {
+				if (activityInfo.name.equals(this.getClass().getName()))
+					continue; // Skip self.
+
+				ActivityData activityData = new ActivityData();
+				String [] nameParts = activityInfo.name.split("\\.");
+				activityData.put(KEY_ACTIVITY_NAME, nameParts[nameParts.length - 1]
+						.replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2"));
+				// above: HelloWorld -> Hello World
+				activityData.put(KEY_ACTIVITY_PACKAGE, activityInfo.packageName);
+				activityData.put(KEY_ACTIVITY_FULL_NAME, activityInfo.name);
+
+				activityDataList.add(activityData);
+			}
+
+			return activityDataList;
+		}
+
+		/**
+		 * Group activity data structures by their last package names.
+		 *
+		 * @param data The key-value data structure of each activity to be grouped.
+		 * @return A map containing grouped activity data structures.
+		 */
+		private HashMap<String, List<ActivityData>> createActivityGroups(List<ActivityData> data) {
+			HashMap<String, List<ActivityData>> grouped = new HashMap<>();
+
+			for (ActivityData activityData : data) {
+				String fullName = activityData.get(KEY_ACTIVITY_FULL_NAME);
+				if (null == fullName) continue;
+				String groupName = fullName.substring(
+						(fullName.substring(0, fullName.lastIndexOf('.')))
+								.lastIndexOf('.') + 1, fullName.lastIndexOf('.'));
+				String GroupName = groupName.substring(0, 1).toUpperCase() + groupName.substring(1);
+				if (grouped.containsKey(GroupName)) {
+					List<ActivityData> oldGroup = grouped.get(GroupName);
+					if (null != oldGroup) {
+						oldGroup.add(activityData);
+					}
+				} else {
+					List<ActivityData> newGroup = new ArrayList<>();
+					newGroup.add(activityData);
+					grouped.put(GroupName, newGroup);
+				}
+			}
+
+			return grouped;
+		}
+
+		/**
+		 * Handle back button press in the fragment, allow handling it in the activity.
+		 *
+		 * @return true if allowed to be handled in the activity.
+		 */
+		public boolean allowBackPress() {
+
+			if (this.getListAdapter() != mGroupAdapter) {
+
+				// Return to groups view.
+				setListAdapter(mGroupAdapter);
+				mMainMenuTitleText.setText(R.string.app_name);
+
+				return false;
+			}
+
+			return true;
+		}
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -271,8 +430,11 @@ public class MainMenu extends ListActivity {
 		// Set layout.
 		setContentView(R.layout.activity_main_menu);
 
-        // Get title text view.
-        mMainMenuTitleText = (TextView) findViewById(R.id.main_menu_title);
+		// Set fragment.
+		MenuFragment fragment = new MenuFragment();
+		final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		transaction.replace(R.id.frame_layout, fragment, MenuFragment.TAG);
+		transaction.commit();
 
 		// Initialize application's private paths (we need a Context to do these).
 		PRIVATE_R_RAW_FILES_PATH = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
@@ -291,25 +453,10 @@ public class MainMenu extends ListActivity {
 		// When the result is known, copy only the relevant files in the background.
 		checkWritePermissionAndCopyContent();
 
-		// Find other activities in our package.
-		List<ActivityData> activityDataList = findOtherActivities();
-
-        // Group the activities based on last package name.
-        mGroupedActivities = createActivityGroups(activityDataList);
-
-        // Setup an adapter for listing the activity groups in the UI.
-        ArrayList<String> groupNames = new ArrayList<>(mGroupedActivities.keySet());
-        Collections.sort(groupNames);
-        mGroupAdapter = new ArrayAdapter<>(this,
-                R.layout.list_main_menu_row, R.id.textview_activity_name, groupNames);
-
-        // Show groups.
-        setListAdapter(mGroupAdapter);
-
         // Double back press to exit.
         mDoubleBackToExitPressedOnce = false;
-        mDoubleBackToExitNotification = Toast.makeText(this, getResources()
-                        .getString(R.string.double_back_exit_notification),
+        mDoubleBackToExitNotification = Toast.makeText(this,
+				getResources().getString(R.string.double_back_exit_notification),
                 Toast.LENGTH_SHORT); // Disregard warning, not supposed to show the toast yet!
         mDoubleBackToExitHandler = new Handler();
     }
@@ -334,26 +481,22 @@ public class MainMenu extends ListActivity {
             // Handle double back to exit -feature.
             if (!mDoubleBackToExitPressedOnce) {
 
-                if (this.getListAdapter() != mGroupAdapter) {
+				final MenuFragment fragment = (MenuFragment) getSupportFragmentManager()
+						.findFragmentByTag(MenuFragment.TAG);
+				if (null == fragment || fragment.allowBackPress()) {
 
-                    // Return to groups view.
-                    setListAdapter(mGroupAdapter);
-                    mMainMenuTitleText.setText(R.string.app_name);
+					// First press observed.
+					mDoubleBackToExitPressedOnce = true;
 
-                } else {
+					// Notify user that another press is needed.
+					mDoubleBackToExitNotification.show();
 
-                    // First press observed.
-                    mDoubleBackToExitPressedOnce = true;
+					// Cancel first press if second press is not observed in time.
+					mDoubleBackToExitHandler.postDelayed(
+							mDoubleBackToExitCounterReset,
+							DOUBLE_BACK_TO_EXIT_TIME_WINDOW);
 
-                    // Notify user that another press is needed.
-                    mDoubleBackToExitNotification.show();
-
-                    // Cancel first press if second press is not observed in time.
-                    mDoubleBackToExitHandler.postDelayed(
-                            mDoubleBackToExitCounterReset,
-                            DOUBLE_BACK_TO_EXIT_TIME_WINDOW);
-
-                }
+				}
 
             } else {
 
@@ -371,37 +514,6 @@ public class MainMenu extends ListActivity {
             super.onBackPressed();
         }
     }
-
-    @Override
-	public void onListItemClick(ListView listView, View view, int position, long id) {
-		view.setSelected(true);
-
-        if (listView.getAdapter() == mGroupAdapter) {
-
-            // An activity group was selected from the UI, try to show grouped activities.
-            String groupName = (String) listView.getItemAtPosition(position);
-            List<ActivityData> activities = mGroupedActivities.get(groupName);
-            String [] rowNames = new String [] { KEY_ACTIVITY_NAME };
-            int [] cellResIds = new int [] { R.id.textview_activity_name };
-            mItemAdapter = new SimpleAdapter(this, activities,
-                    R.layout.list_main_menu_row, rowNames, cellResIds);
-            setListAdapter(mItemAdapter);
-            mMainMenuTitleText.setText(groupName);
-
-        } else if (listView.getAdapter() == mItemAdapter) {
-
-            // An activity was selected from the UI, try to start it now.
-            ActivityData activityData = (ActivityData) listView.getItemAtPosition(position);
-            try {
-                Intent intent = new Intent(this, Class.forName(
-                        activityData.get(KEY_ACTIVITY_FULL_NAME)));
-                startActivity(intent);
-            } catch (ClassNotFoundException e) {
-                Log.e(TAG, "Failed to start selected activity", e);
-            }
-
-        }
-	}
 
     /**
      * Check if write permission is granted, and if not, request it, and then copy the content.
@@ -422,11 +534,7 @@ public class MainMenu extends ListActivity {
 				builder.setMessage(R.string.main_menu_permission_request_write)
 						.setTitle(R.string.main_menu_permission_request_title);
 				builder.setPositiveButton(R.string.main_menu_permission_grant_button_label,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								requestWritePermission();
-							}
-						});
+						(dialog, id) -> requestWritePermission());
 				AlertDialog dialog = builder.create();
 				dialog.show();
 			} else {
@@ -449,6 +557,7 @@ public class MainMenu extends ListActivity {
 				REQUEST_WRITE_STORAGE);
 	}
 
+	@SuppressWarnings("SwitchStatementWithTooFewBranches")
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String [] permissions,
 										   @NonNull int [] grantResults) {
@@ -460,8 +569,10 @@ public class MainMenu extends ListActivity {
 						PackageManager.PERMISSION_GRANTED) {
 					Log.i(TAG, "Write permission was denied by user");
 
-					Toast.makeText(this, R.string.main_menu_permission_warning,
-							Toast.LENGTH_LONG).show();
+					if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+						Toast.makeText(this, R.string.main_menu_permission_warning,
+								Toast.LENGTH_LONG).show();
+					}
 
 					// Permission was denied, proceed to copy files that do not need it.
 					copyTestContent(false);
@@ -494,21 +605,19 @@ public class MainMenu extends ListActivity {
 				PRIVATE_INTERNAL_FILES_PATH + TEST_IMAGE_FILE_MQ));
 		copyFiles.add(new FilePathPair(TEST_VIDEO_FILE_MQ,
 				PRIVATE_EXTERNAL_FILES_PATH + TEST_VIDEO_FILE_MQ));
+		copyFiles.add(new FilePathPair(TEST_VIDEO_2_FILE_HQ,
+				PRIVATE_EXTERNAL_FILES_PATH + TEST_VIDEO_2_FILE_HQ));
 		copyFiles.add(new FilePathPair(TEST_IMAGE_FILE_MQ,
 				PRIVATE_EXTERNAL_FILES_PATH + TEST_IMAGE_FILE_MQ));
 		copyFiles.add(new FilePathPair(TEST_PREVIEW_IMAGE_FILE_MQ,
 				PRIVATE_EXTERNAL_FILES_PATH + TEST_PREVIEW_IMAGE_FILE_MQ));
 
 		// Add files to be copied to public area (needs write permission).
-		if (hasWritePermission) {
+		if (hasWritePermission || Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			copyFiles.add(new FilePathPair(TEST_VIDEO_FILE_MQ,
 					PUBLIC_EXTERNAL_MOVIES_ORION_PATH + TEST_VIDEO_FILE_MQ));
-            copyFiles.add(new FilePathPair(TEST_VIDEO_FILE_HQ,
-                    PUBLIC_EXTERNAL_MOVIES_ORION_PATH + TEST_VIDEO_FILE_HQ));
 			copyFiles.add(new FilePathPair(TEST_IMAGE_FILE_MQ,
 					PUBLIC_EXTERNAL_PICTURES_ORION_PATH + TEST_IMAGE_FILE_MQ));
-			copyFiles.add(new FilePathPair(TEST_TAG_IMAGE_FILE_HQ,
-					PUBLIC_EXTERNAL_PICTURES_ORION_PATH + TEST_TAG_IMAGE_FILE_HQ));
 		}
 
 		// Create a progress bar to be shown while copying files.
@@ -519,36 +628,50 @@ public class MainMenu extends ListActivity {
 		progress.setIndeterminate(false);
 		progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
-		// Create a background task for copying the files (will take a moment).
-		new CopyFileTask(progress).execute(copyFiles.toArray(
-				new FilePathPair[ copyFiles.size() ]));
+		// Create a background task for copying the files (it will take a moment).
+		new CopyFileTask(this, progress).execute(copyFiles.toArray(new FilePathPair[0]));
 	}
 
-	/**
-	 * Background task for copying files.
-	 */
-	private class CopyFileTask extends AsyncTask<FilePathPair, Integer, Integer> {
+	public class CopyFileTask {
+		private final ExecutorService executors;
+		private final Activity activity;
+		private final ProgressDialog progress;
+		private boolean cancelled = false;
 
-		/** Progress dialog to be shown while working. */
-		ProgressDialog mProgress;
-
-		/**
-		 * Constructor.
-		 *
-		 * @param progress The progress dialog to be used.
-		 */
-		CopyFileTask(ProgressDialog progress) {
-			mProgress = progress;
+		public CopyFileTask(Activity activity, ProgressDialog progress) {
+			this.executors = Executors.newSingleThreadExecutor();
+			this.activity = activity;
+			this.progress = progress;
 		}
 
-		@Override
+		public void execute(FilePathPair... filePaths) {
+			onPreExecute();
+			executors.execute(() -> {
+				Integer result = doInBackground(filePaths);
+				new Handler(Looper.getMainLooper()).post(() -> onPostExecute(result));
+			});
+		}
+
+		@SuppressWarnings("unused")
+		public void cancel() {
+			cancelled = true;
+		}
+
+		@SuppressWarnings("unused")
+		public void shutdown() {
+			executors.shutdown();
+		}
+
+		@SuppressWarnings("unused")
+		public boolean isShutdown() {
+			return executors.isShutdown();
+		}
+
 		public void onPreExecute() {
-			mProgress.show();
+			progress.show();
 		}
 
-		@Override
-		protected Integer doInBackground(FilePathPair... filePaths) {
-
+		public Integer doInBackground(FilePathPair... filePaths) {
 			// Copy media files from assets to ordinary files in the file system,
 			// if not already there.
 			int pathCount = filePaths.length;
@@ -556,18 +679,22 @@ public class MainMenu extends ListActivity {
 			for (int i = 0; i < pathCount; i++) {
 				String fromPath = filePaths[i].first;
 				String toPath = filePaths[i].second;
+
+				Logger.logD(TAG, "Using file stream API to copy file to " + toPath);
+
 				if (copyAssetToFileIfNotExist(fromPath, toPath)) {
 					copyCount++;
 				}
-				publishProgress((int) ((i / (float) pathCount) * 100));
+
+				progress.setProgress((int) ((i / (float) pathCount) * 100));
 
 				// Escape early if cancel() is called.
-				if (isCancelled()) break;
+				if (cancelled) break;
 			}
 
 			// Expansion package (.obb) is an optional extra installation file that is used for
 			// bundling large asset files with the app (for example videos that rarely change).
-			// With an expansion package, it is possible to publish larger than 100 MB apps
+			// With an expansion package, it is possible to publish larger than 100/150 MB apps
 			// in the Google Play store. Usually the file comes from Google Play automatically
 			// when the app is downloaded, but here we create one for simplicity, by zipping
 			// media files (without compressing them) to a specifically named file.
@@ -578,17 +705,12 @@ public class MainMenu extends ListActivity {
 			return copyCount;
 		}
 
-		@Override
-		protected void onProgressUpdate(Integer... progress) {
-			mProgress.setProgress(progress[0]);
-		}
+		public void onPostExecute(Integer result) {
+			progress.dismiss();
 
-		@Override
-		protected void onPostExecute(Integer result) {
-			mProgress.dismiss();
 			if (result > 0) {
-				Toast.makeText(MainMenu.this,
-						String.format(getString(R.string.main_menu_init_files_copied), result),
+				Toast.makeText(this.activity, String.format(activity.getString(
+								R.string.main_menu_init_files_copied), result),
 						Toast.LENGTH_LONG).show();
 			}
 		}
@@ -614,7 +736,8 @@ public class MainMenu extends ListActivity {
 			Log.i(TAG, "Copying " + assetPath + " to " + filePath);
 
 			// Create directories.
-			if (file.getParentFile().mkdirs()) {
+			File parent = file.getParentFile();
+			if (null != parent && parent.mkdirs()) {
 				Log.i(TAG, "Created directory " + file.getParentFile().getAbsolutePath());
 			}
 
@@ -650,6 +773,8 @@ public class MainMenu extends ListActivity {
 					}
 				}
 			}
+		} else {
+			Log.i(TAG, "Skip copying, already exists: " + filePath);
 		}
 
 		return success;
@@ -680,8 +805,16 @@ public class MainMenu extends ListActivity {
 		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 
 			// Build the full path to the app's main expansion file.
-			File root = Environment.getExternalStorageDirectory();
-			File expPath = new File(root.toString() + EXPANSION_PACKAGES_PATH + getPackageName());
+			File root;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+				// Scoped storage; not possible to write directly to /Android/obb/[package name]!
+				root = getExternalFilesDir(null);
+			} else {
+				root = Environment.getExternalStorageDirectory();
+			}
+
+			File expPath = new File(root.toString() +
+					EXPANSION_PACKAGES_PATH + getPackageName());
 
 			// Create missing directories, if any.
 			if (expPath.mkdirs()) {
@@ -729,6 +862,7 @@ public class MainMenu extends ListActivity {
 	 * @param filenames The full path to the file(s) to be included to the zip file.
 	 * @return true if package was successfully created, else false.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private boolean zip(String zipFile, boolean compress, String... filenames) {
 		Log.i(TAG, "Creating a zip file: " + zipFile);
 
@@ -779,7 +913,7 @@ public class MainMenu extends ListActivity {
 	 * @param filepath The full path to the file to whose checksum to calculate.
 	 * @return the calculated CRC value.
 	 */
-	private long crc32(String filepath) {
+	private static long crc32(String filepath) {
 		CRC32 checksum = new CRC32();
 		checksum.reset();
 		byte [] buffer = new byte[1024];
@@ -794,70 +928,11 @@ public class MainMenu extends ListActivity {
 			Log.e(TAG, "Failed to calculate CRC32 checksum from file " + filepath);
 		} finally {
 			if (null != in) {
-				try { in.close(); } catch (IOException e) { Log.e(TAG, "Failed to close stream."); }
+				try { in.close(); } catch (IOException e) {
+					Log.e(TAG, "Failed to close stream."); }
 			}
 		}
 		return checksum.getValue();
-	}
-
-	/**
-	 * Find all other activities in the package, and return a list of data structures.
-	 *
-	 * @return A data structure for each found activity, or an empty list if none was found.
-	 */
-	private List<ActivityData> findOtherActivities() {
-
-		// Create a list where to store activity data.
-		List<ActivityData> activityDataList = new ArrayList<>();
-
-		// Get all activities in the package.
-		PackageInfo packageInfo = getPackageManager().getPackageArchiveInfo(
-				getPackageCodePath(), PackageManager.GET_ACTIVITIES);
-
-		// Parse each activity's name, package and full name, and store them into the list.
-		for (ActivityInfo activityInfo : packageInfo.activities) {
-			if (activityInfo.name.equals(this.getClass().getName()))
-				continue; // Skip self.
-
-			ActivityData activityData = new ActivityData();
-			String [] nameParts = activityInfo.name.split("\\.");
-			activityData.put(KEY_ACTIVITY_NAME, nameParts[nameParts.length - 1]
-					.replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2")); // HelloWorld -> Hello World
-			activityData.put(KEY_ACTIVITY_PACKAGE, activityInfo.packageName);
-			activityData.put(KEY_ACTIVITY_FULL_NAME, activityInfo.name);
-
-			activityDataList.add(activityData);
-		}
-
-		return activityDataList;
-	}
-
-	/**
-	 * Group activity data structures by their last package names.
-	 *
-	 * @param data The key-value data structure of each activity to be grouped.
-	 * @return A map containing grouped activity data structures.
-     */
-	private HashMap<String, List<ActivityData>> createActivityGroups(List<ActivityData> data) {
-		HashMap<String, List<ActivityData>> grouped = new HashMap<>();
-
-		for (ActivityData activityData : data) {
-            String fullName = activityData.get(KEY_ACTIVITY_FULL_NAME);
-			String groupName = fullName.substring(
-                    (fullName.substring(0, fullName.lastIndexOf('.'))).lastIndexOf('.') + 1,
-                    fullName.lastIndexOf('.'));
-            String GroupName = groupName.substring(0, 1).toUpperCase() + groupName.substring(1);
-            if (grouped.containsKey(GroupName)) {
-                List<ActivityData> oldGroup = grouped.get(GroupName);
-                oldGroup.add(activityData);
-            } else {
-                List<ActivityData> newGroup = new ArrayList<>();
-                newGroup.add(activityData);
-                grouped.put(GroupName, newGroup);
-            }
-		}
-
-		return grouped;
 	}
 
     /**
@@ -870,8 +945,9 @@ public class MainMenu extends ListActivity {
      * @param thumbnailUri The absolute file path in the local file system where to save the image.
      * @param jpgQuality The JPEG algorithm compression quality in range [0-100], 100 = best.
      */
-    public static void createThumbnailForVideo(Context context, String videoUri, int positionMs,
-                                                 int heightPx, String thumbnailUri, int jpgQuality) {
+    public static void createThumbnailForVideo(Context context, String videoUri,
+											   int positionMs, int heightPx,
+											   String thumbnailUri, int jpgQuality) {
         if (!new File(thumbnailUri).exists()) {
             Bitmap videoFrame = extractFrameFromVideo(context, videoUri, positionMs);
             Bitmap scaledFrame = scaleBitmapToHeight(videoFrame, heightPx);
@@ -903,7 +979,8 @@ public class MainMenu extends ListActivity {
         } catch (RuntimeException re) {
             re.printStackTrace();
         } finally {
-            try { mmr.release(); } catch (RuntimeException re) { Log.e(TAG, "MMR release failed.");}
+            try { mmr.release(); } catch (RuntimeException re) {
+				Log.e(TAG, "MMR release failed.");}
         }
         return bitmap;
     }
@@ -944,15 +1021,15 @@ public class MainMenu extends ListActivity {
 			bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out);
 			out.flush();
 			out.close();
-		} catch (FileNotFoundException fnfe) {
+		} catch (FileNotFoundException fnf) {
             if (null != out) {
-                try { out.close(); } catch (IOException e) { Log.e(TAG, "Failed to close stream.");}
+                try { out.close(); } catch (IOException e) {
+					Log.e(TAG, "Failed to close stream.");}
             }
-            fnfe.printStackTrace();
+            fnf.printStackTrace();
 		} catch (IOException ioe) {
-            if (null != out) {
-                try { out.close(); } catch (IOException e) { Log.e(TAG, "Failed to close stream.");}
-            }
+			try { out.close(); } catch (IOException e) {
+				Log.e(TAG, "Failed to close stream.");}
 			ioe.printStackTrace();
 		}
 	}

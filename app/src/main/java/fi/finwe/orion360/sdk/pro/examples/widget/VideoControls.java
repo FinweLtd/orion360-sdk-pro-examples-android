@@ -44,18 +44,17 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import fi.finwe.log.Logger;
 import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controllable.DisplayClickable;
-import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.controller.TouchDisplayClickListener;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
@@ -63,12 +62,12 @@ import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
 import fi.finwe.orion360.sdk.pro.widget.ControlPanel;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
-import fi.finwe.util.ContextUtil;
 
 
 /**
- * An example of creating custom video controls.
+ * An example of creating custom video player controls.
+ * <p/>
+ * Note: To see how to use Android MediaController as controls, see streaming/PlayerState example!
  * <p/>
  * Features:
  * <ul>
@@ -143,7 +142,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         // Let control panel control our video texture (video, audio)
         mControlPanel.setControlledContent((OrionVideoTexture) mPanoramaTexture);
 
-        // Let control panel control our camera (VR mode).
+        // Let control panel control our camera (toggle VR mode).
         mControlPanel.setControlledCamera(mCamera);
 
         // Listen for control panel events.
@@ -175,53 +174,48 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             @Override
             public void onDisplayClick(DisplayClickable clickable, Vec2f displayCoords) {
-                runOnUiThread (new Thread(new Runnable() {
-                    public void run() {
+                runOnUiThread (new Thread(() -> {
 
-                        // Toggle panels visibility in normal mode; hint about long tap in VR mode.
-                        if (!mControlPanel.isVRModeEnabled()) {
-                            mControlPanel.toggleTitlePanel();
-                            mControlPanel.toggleControlPanel();
-                        } else {
-                            String message = getString(R.string.player_long_tap_hint_exit_vr_mode);
-                            Toast.makeText(VideoControls.this, message, Toast.LENGTH_SHORT).show();
-                        }
-
+                    // Toggle panels visibility in normal mode; hint about long tap in VR mode.
+                    if (!mControlPanel.isVRModeEnabled()) {
+                        mControlPanel.toggleTitlePanel();
+                        mControlPanel.toggleControlPanel();
+                    } else {
+                        String message = getString(R.string.player_long_tap_hint_exit_vr_mode);
+                        Toast.makeText(VideoControls.this, message,
+                                Toast.LENGTH_SHORT).show();
                     }
+
                 }));
             }
 
             @Override
             public void onDisplayDoubleClick(DisplayClickable clickable, Vec2f displayCoords) {
-                runOnUiThread (new Thread(new Runnable() {
-                    public void run() {
+                runOnUiThread (new Thread(() -> {
 
-                        // Toggle between play and pause states in normal mode.
-                        if (!mControlPanel.mIsVRModeEnabled) {
-                            OrionVideoTexture t = (OrionVideoTexture) mPanoramaTexture;
-                            if (t.getActualPlaybackState() == OrionTexture.PlaybackState.PLAYING) {
-                                mControlPanel.pause();
-                                mControlPanel.runPauseAnimation();
-                            } else {
-                                mControlPanel.play();
-                                mControlPanel.runPlayAnimation();
-                            }
+                    // Toggle between play and pause states in normal mode.
+                    if (!mControlPanel.mIsVRModeEnabled) {
+                        OrionVideoTexture t = (OrionVideoTexture) mPanoramaTexture;
+                        if (t.getActualPlaybackState() == OrionTexture.PlaybackState.PLAYING) {
+                            mControlPanel.pause();
+                            mControlPanel.runPauseAnimation();
+                        } else {
+                            mControlPanel.play();
+                            mControlPanel.runPlayAnimation();
                         }
-
                     }
+
                 }));
             }
 
             @Override
             public void onDisplayLongClick(DisplayClickable clickable, Vec2f displayCoords) {
 
-                runOnUiThread (new Thread(new Runnable() {
-                    public void run() {
+                runOnUiThread (new Thread(() -> {
 
-                        // Change VR mode (via control panel so that it stays in sync).
-                        mControlPanel.toggleVRMode();
+                    // Change VR mode (via control panel so that it stays in sync).
+                    mControlPanel.toggleVRMode();
 
-                    }
                 }));
             }
         });
@@ -245,10 +239,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     }
 
     /** Custom Orion360 control panel implementation. */
-    private class MyControlPanel extends ControlPanel {
-
-        /** Layout root view. */
-        private ViewGroup mRootView;
+    private static class MyControlPanel extends ControlPanel {
 
         /** Title panel. */
         private View mTitlePanelView;
@@ -352,7 +343,8 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         public View createLayout(LayoutInflater inflater, ViewGroup anchorView) {
 
             // Inflate the layout for this component.
-            mRootView = (ViewGroup) inflater.inflate(R.layout.video_controls, anchorView, false);
+            ViewGroup mRootView = (ViewGroup) inflater.inflate(
+                    R.layout.video_controls, anchorView, false);
 
             // Title panel.
             mTitlePanelView = mRootView.findViewById(R.id.player_title_panel);
@@ -405,16 +397,11 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             // Logo button.
             mLogoButton = (ImageView) mRootView.findViewById(R.id.player_title_panel_logo_button);
-            mLogoButton.setVisibility(View.GONE);
-            mLogoButton.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    if (null != mListener) {
-                        mListener.onLogoButtonClicked();
-                    }
+            mLogoButton.setVisibility(View.VISIBLE);
+            mLogoButton.setOnClickListener(v -> {
+                if (null != mListener) {
+                    mListener.onLogoButtonClicked();
                 }
-
             });
 
             // Title text.
@@ -422,15 +409,10 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             // Close button.
             mCloseButton = (ImageView) mRootView.findViewById(R.id.player_title_panel_close_button);
-            mCloseButton.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    if (null != mListener) {
-                        mListener.onCloseButtonClicked();
-                    }
+            mCloseButton.setOnClickListener(v -> {
+                if (null != mListener) {
+                    mListener.onCloseButtonClicked();
                 }
-
             });
 
             // Control panel.
@@ -519,27 +501,17 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             // Duration (total time) text.
             mDurationTime = (TextView) mRootView.findViewById(R.id.player_controls_duration_text);
             setDurationLabel(mDurationTime);
-            mDurationTime.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    mDurationTime.setVisibility(View.GONE);
-                    mRemainingTime.setVisibility(View.VISIBLE);
-                }
-
+            mDurationTime.setOnClickListener(v -> {
+                mDurationTime.setVisibility(View.GONE);
+                mRemainingTime.setVisibility(View.VISIBLE);
             });
 
             // Remaining time text.
             mRemainingTime = (TextView) mRootView.findViewById(R.id.player_controls_remaining_text);
             setRemainingLabel(mRemainingTime);
-            mRemainingTime.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    mDurationTime.setVisibility(View.VISIBLE);
-                    mRemainingTime.setVisibility(View.GONE);
-                }
-
+            mRemainingTime.setOnClickListener(v -> {
+                mDurationTime.setVisibility(View.VISIBLE);
+                mRemainingTime.setVisibility(View.GONE);
             });
 
             // Audio mute button.
@@ -551,14 +523,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
             // Configure VR mode on/off button.
             mVRModeButton = (ImageButton) mRootView.findViewById(R.id.player_controls_vr_button);
-            mVRModeButton.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    toggleVRMode();
-                }
-
-            });
+            mVRModeButton.setOnClickListener(v -> toggleVRMode());
 
             // Play overlay.
             mPlayOverlay = (ImageView) mRootView.findViewById(R.id.play_overlay);
@@ -789,71 +754,6 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     }
 
     /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-        /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-            // Create the rotation aligner, responsible for rotating the view so that the horizon
-            // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
-            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
-
-            // Rotation aligner needs sensor fusion data in order to do its job.
-            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
-        }
-    }
-
-    /**
      * Configure Orion360 as a typical mono panorama video player.
      */
     protected void initOrion() {
@@ -882,11 +782,14 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
+
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
@@ -925,7 +828,8 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         if (enabled) {
 
             // Bind the complete texture to both left and right eyes. Assume full spherical mono.
-            mPanorama.bindTextureVR(0, mPanoramaTexture, new RectF(-180, 90, 180, -90),
+            mPanorama.bindTextureVR(0, mPanoramaTexture,
+                    new RectF(-180, 90, 180, -90),
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).
@@ -1007,6 +911,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
     @Override
     public void onInvalidURI(OrionTexture orionTexture) {
+        Logger.logD(TAG, "onInvalidURI()");
 
         // If the set video stream URI was invalid, we can't play it. Hide indicator.
         mControlPanel.hideBufferingIndicator();
@@ -1014,13 +919,18 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     }
 
     @Override
-    public void onException(OrionTexture orionTexture, Exception e) {}
+    public void onException(OrionTexture orionTexture, Exception e) {
+        Logger.logD(TAG, "onException() " + e.toString());
+    }
 
     @Override
-    public void onVideoPlayerCreated(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoPlayerCreated(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoPlayerCreated()");
+    }
 
     @Override
     public void onVideoSourceURISet(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoSourceURISet()");
 
         // Assume buffering is needed when a new video stream URI is set. Show indicator.
         mControlPanel.showBufferingIndicator();
@@ -1029,60 +939,98 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
     @Override
     public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoBufferingStart()");
 
         // Video player tells it has started buffering. Show indicator.
+        // Notice that this can happen also during playback, not only in the beginning.
         mControlPanel.showBufferingIndicator();
 
     }
 
     @Override
     public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoBufferingEnd()");
 
         // Video player tells it has stopped buffering. Hide indicator.
+        // Notice that this can happen also during playback, not only in the beginning.
         mControlPanel.hideBufferingIndicator();
 
     }
 
     @Override
     public void onVideoBufferingUpdate(OrionVideoTexture orionVideoTexture,
-                                       int fromPercent, int toPercent) {}
+                                       int fromPercent, int toPercent) {
+        Logger.logD(TAG, "onVideoBufferingUpdate() " + fromPercent + " -> " + toPercent);
+    }
 
     @Override
-    public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoPrepared()");
+    }
 
     @Override
-    public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoRenderingStart()");
+
+        // Video player tells it has buffered enough and decoded first frame.
+        // Playback starts now, so hide buffering indicator. If buffering occurs
+        // again during playback, will show/hide indicator by responding to
+        // buffering callbacks.
+        mControlPanel.hideBufferingIndicator();
+    }
 
     @Override
-    public void onVideoStarted(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoStarted(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoStarted()");
+    }
 
     @Override
-    public void onVideoPaused(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoPaused(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoPaused()");
+    }
 
     @Override
-    public void onVideoStopped(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoStopped(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoStopped()");
+    }
 
     @Override
-    public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
+        Logger.logD(TAG, "onVideoCompleted()");
+    }
 
     @Override
-    public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long l) {}
+    public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long ms) {
+        Logger.logD(TAG, "onVideoSeekStarted() " + ms);
+    }
 
     @Override
-    public void onVideoSeekCompleted(OrionVideoTexture orionVideoTexture, long l) {}
+    public void onVideoSeekCompleted(OrionVideoTexture orionVideoTexture, long ms) {
+        Logger.logD(TAG, "onVideoSeekCompleted() " + ms);
+    }
 
     @Override
-    public void onVideoPositionChanged(OrionVideoTexture orionVideoTexture, long l) {}
+    public void onVideoPositionChanged(OrionVideoTexture orionVideoTexture, long ms) {
+        Logger.logD(TAG, "onVideoPositionChanged() " + ms);
+    }
 
     @Override
-    public void onVideoDurationUpdate(OrionVideoTexture orionVideoTexture, long l) {}
+    public void onVideoDurationUpdate(OrionVideoTexture orionVideoTexture, long ms) {
+        Logger.logD(TAG, "onVideoDurationUpdate() " + ms);
+    }
 
     @Override
-    public void onVideoSizeChanged(OrionVideoTexture orionVideoTexture, int i, int i1) {}
+    public void onVideoSizeChanged(OrionVideoTexture orionVideoTexture, int w, int h) {
+        Logger.logD(TAG, "onVideoSizeChanged() " + w + "x" + h);
+    }
 
     @Override
-    public void onVideoError(OrionVideoTexture orionVideoTexture, int i, int i1) {}
+    public void onVideoError(OrionVideoTexture orionVideoTexture, int e1, int e2) {
+        Logger.logD(TAG, "onVideoError() " + e1 + ", " + e2);
+    }
 
     @Override
-    public void onVideoInfo(OrionVideoTexture orionVideoTexture, int i, String s) {}
+    public void onVideoInfo(OrionVideoTexture orionVideoTexture, int i, String s) {
+        Logger.logD(TAG, "onVideoInfo() " + i + ", " + s);
+    }
 }

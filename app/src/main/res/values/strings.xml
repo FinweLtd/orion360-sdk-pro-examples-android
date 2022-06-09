@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Application -->
     <string name="app_name">Orion Examples</string>
     <string name="double_back_exit_notification">Please click BACK again to exit</string>
@@ -24,6 +24,8 @@
     <string name="player_long_tap_hint_exit_vr_mode">"Long tap to exit VR mode"</string>
     <string name="player_controls_play_overlay_desc">Play</string>
     <string name="player_controls_pause_overlay_desc">Pause</string>
+    <string name="player_console_message_log">[Message Log]</string>
+    <string name="player_file_already_downloaded">Video file already downloaded</string>
 
     <!-- Video controls -->
     <string name="player_title_panel_logo_button_desc">Logo</string>
@@ -31,9 +33,9 @@
     <string name="player_title_panel_close_button_desc">Close</string>
     <string name="player_controls_play_button_desc">Play/pause</string>
     <string name="player_controls_audio_button_desc">Toggle mute on/off</string>
-    <string name="player_controls_player_position">-:--</string>
-    <string name="player_controls_duration">-:--</string>
-    <string name="player_controls_remaining">-:--</string>
+    <string name="player_controls_player_position" tools:ignore="TypographyDashes">-:--</string>
+    <string name="player_controls_duration" tools:ignore="TypographyDashes">-:--</string>
+    <string name="player_controls_remaining" tools:ignore="TypographyDashes">-:--</string>
     <string name="player_controls_vr_button_desc">Toggle VR on/off</string>
     <string name="player_hud_progressbar_image_desc">Progress</string>
 
@@ -50,6 +52,21 @@
         <item>asset://align/rect_5.png</item>
         <item>asset://align/rect_6.png</item>
     </string-array>
+    <string name="sprite_layout_top_left">TL</string>
+    <string name="sprite_layout_top_center">TC</string>
+    <string name="sprite_layout_top_right">TR</string>
+    <string name="sprite_layout_center_left">CL</string>
+    <string name="sprite_layout_center_center">CC</string>
+    <string name="sprite_layout_center_right">CR</string>
+    <string name="sprite_layout_bottom_left">BL</string>
+    <string name="sprite_layout_bottom_center">BC</string>
+    <string name="sprite_layout_bottom_right">BR</string>
+    <string name="sprite_layout_swap_texture">Swap texture</string>
+    <string name="sprite_layout_long_side">Long side</string>
+    <string name="sprite_layout_short_side">Short side</string>
+    <string name="sprite_layout_short_width">Width</string>
+    <string name="sprite_layout_short_height">Height</string>
+    <string name="sprite_layout_crop">Crop</string>
 
     <!-- Button/hotspot image files -->
     <string name="asset_nadir_patch">asset://Orion360_nadir_patch_1024x1024.png</string>

@@ -67,7 +67,7 @@ public class SpriteLayout extends OrionActivity {
     protected OrionSprite mSprite;
 
     /** The image textures where our decoded images will be added to. */
-    protected OrionTexture [] mSpriteTextures;
+    protected OrionTexture[] mSpriteTextures;
 
     /** The index of the sprite texture that is currently active (bound to the sprite). */
     protected int mCurrentTexture;

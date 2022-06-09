@@ -28,7 +28,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/orion360_test_image_thumbnail"/>
+                android:src="@drawable/orion360_test_image_thumbnail"
+                android:contentDescription="dummy" />
 
             <ImageView
                 android:id="@+id/play_overlay"

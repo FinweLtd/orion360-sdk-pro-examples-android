@@ -110,29 +110,23 @@ public class CameraPass extends OrionActivity {
                                            @NonNull int [] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
-            case REQUEST_CAMERA: {
+        if (requestCode == REQUEST_CAMERA) {
+            // User has now answered to our read permission request. Let's see how:
+            if (grantResults.length == 0 || grantResults[0] !=
+                    PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "Camera permission was denied by user");
 
-                // User has now answered to our read permission request. Let's see how:
-                if (grantResults.length == 0 || grantResults[0] !=
-                        PackageManager.PERMISSION_GRANTED) {
-                    Log.i(TAG, "Camera permission was denied by user");
+                // Bail out with a notification for user.
+                Toast.makeText(this, R.string.player_camera_permission_denied,
+                        Toast.LENGTH_LONG).show();
 
-                    // Bail out with a notification for user.
-                    Toast.makeText(this, R.string.player_camera_permission_denied,
-                            Toast.LENGTH_LONG).show();
+            } else {
+                Log.i(TAG, "Camera permission was granted by user");
 
-                } else {
-                    Log.i(TAG, "Camera permission was granted by user");
+                // Camera is accessible, let's go ahead and initialize Orion360.
+                initOrion();
 
-                    // Camera is accessible, let's go ahead and initialize Orion360.
-                    initOrion();
-
-                }
-                return;
             }
-            default:
-                break;
         }
     }
 
@@ -200,5 +194,4 @@ public class CameraPass extends OrionActivity {
         mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
                 OrionViewport.CoordinateType.FIXED_LANDSCAPE);
     }
-
 }

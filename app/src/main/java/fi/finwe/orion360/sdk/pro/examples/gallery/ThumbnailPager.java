@@ -43,24 +43,21 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.OrionViewport;
-import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
-import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
-import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
 import fi.finwe.orion360.sdk.pro.source.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.orion360.sdk.pro.widget.SelectablePointerIcon;
-import fi.finwe.util.ContextUtil;
 
 /**
  * An example of a simple video gallery using a thumbnail pager style.
@@ -88,7 +85,7 @@ public class ThumbnailPager extends OrionActivity {
     public static final String TAG = ThumbnailPager.class.getSimpleName();
 
     /** The file system path where media items are searched from. */
-    protected final static String MEDIA_PATH = MainMenu.PUBLIC_EXTERNAL_MOVIES_ORION_PATH;
+    protected final static String MEDIA_PATH = MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
 
     /** Request code for file read permission. */
     protected static final int REQUEST_READ_STORAGE = 111;
@@ -153,7 +150,9 @@ public class ThumbnailPager extends OrionActivity {
         // When accessing paths on the external media, we should first check if it is currently
         // mounted or not (though, it is often built-in non-removable memory nowadays).
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            Toast.makeText(this, R.string.player_media_not_mounted, Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    R.string.player_media_not_mounted,
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -175,6 +174,7 @@ public class ThumbnailPager extends OrionActivity {
         initialize();
 	}
 
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String [] permissions,
                                            @NonNull int [] grantResults) {
@@ -215,11 +215,14 @@ public class ThumbnailPager extends OrionActivity {
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
+
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
         // Create a new touch controller widget (convenience class), and let it control our camera.
-        mTouchController = new TouchControllerWidget(mCamera);
+        mTouchController = new TouchControllerWidget(mOrionContext, mCamera);
 
         // Initialize video player components.
         initVideoPlayer();
@@ -327,7 +330,8 @@ public class ThumbnailPager extends OrionActivity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mGalleryBackgroundTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH +
+                        MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -448,7 +452,7 @@ public class ThumbnailPager extends OrionActivity {
 
             @Override
             public void onSelectionFocusLost() {
-                Log.d(TAG, "Nexut button focus lost");
+                Log.d(TAG, "Next button focus lost");
             }
 
             @Override
@@ -517,71 +521,6 @@ public class ThumbnailPager extends OrionActivity {
     }
 
     /**
-     * Convenience class for configuring typical touch control logic.
-     */
-    public class TouchControllerWidget implements OrionWidget {
-
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
-        /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
-
-        /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
-
-        /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
-
-
-        /**
-         * Constructs the widget.
-         *
-         * @param camera The camera to be controlled by this widget.
-         */
-        TouchControllerWidget(OrionCamera camera) {
-
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
-            // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
-            mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
-
-            // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
-
-            // Create the rotation aligner, responsible for rotating the view so that the horizon
-            // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
-            mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
-                    mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
-
-            // Rotation aligner needs sensor fusion data in order to do its job.
-            mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
-        }
-
-        @Override
-        public void onBindWidget(OrionScene scene) {
-            // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
-        }
-
-        @Override
-        public void onReleaseWidget(OrionScene scene) {
-            // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
-        }
-    }
-
-    /**
      * Convenience class for constructing a simple video item gallery from a given path.
      */
     private class Gallery {
@@ -613,15 +552,17 @@ public class ThumbnailPager extends OrionActivity {
          * @param path The file system path to scan for video files.
          * @param filter The filename extension for recognizing videos from other files.
          */
+        @SuppressWarnings("SameParameterValue")
         void addVideosFromPath(String path, String filter) {
-            for (File file : new File(path).listFiles()) {
+            File dir = new File(path);
+            for (File file : Objects.requireNonNull(dir.listFiles())) {
                 String fileName = file.getName();
                 if (fileName.endsWith(filter)) {
                     String filePath = path + fileName;
                     String thumbPath = filePath.replace(filter, ".jpg");
                     MainMenu.createThumbnailForVideo(
                             ThumbnailPager.this, filePath,
-                            10000, // Grab a frame at 10s from the beginning for a thumbnail.
+                            10000, // Grab a frame at 10s from the beginning.
                             720,   // Scale thumbnails for 720 pixels high
                             thumbPath,
                             90);   // Save thumbnails as jpg files with quality level 90.

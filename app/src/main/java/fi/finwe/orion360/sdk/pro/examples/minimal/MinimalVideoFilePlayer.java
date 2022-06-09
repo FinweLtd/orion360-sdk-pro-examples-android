@@ -64,6 +64,7 @@ import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
+@SuppressWarnings("unused")
 public class MinimalVideoFilePlayer extends SimpleOrionActivity {
 
     /** Tag for logging. */
@@ -118,32 +119,46 @@ public class MinimalVideoFilePlayer extends SimpleOrionActivity {
         // Try different locations by commenting out all but one from below:
         String video;
 
-        // Private asset folder allows playing content embedded to the apps's own
-        // installation package (.apk) (notice 100MB apk size limit in Google Play store).
+        // Private asset folder allows playing content embedded to the app's own
+        // installation package (.apk) (notice 100/150MB apk size limit in Google Play store).
+        // This location should always work, independent of granted permissions.
         video = PRIVATE_ASSET_VIDEO_PATH;
 
         // Private raw resource folder allows playing content embedded to the app's own
-        // installation package (.apk) (notice 100MB apk size limit in Google Play).
-        // Use lowercase characters in filename, and access it without extension!
-        //video = PRIVATE_R_RAW_VIDEO_PATH;
+        // installation package (.apk) (notice 100/150MB apk size limit in Google Play).
+        // Use lowercase characters in filenames and access them without extension!
+        // We recommend using assets instead of R.raw.
+//        video = PRIVATE_R_RAW_VIDEO_PATH;
 
-        // Private internal folder is useful mainly when the app downloads a video file,
+        // Private internal folder is useful mainly when the app downloads a protected video file,
         // as only the app itself can access that location (exception: rooted devices).
-        //video = PRIVATE_INTERNAL_VIDEO_PATH;
+        // This location should always work, independent of granted permissions.
+        // NOTE: Many devices have quite limited memory space for this path.
+//        video = PRIVATE_INTERNAL_VIDEO_PATH;
 
         // Private external folder allows copying videos via file manager app or a
         // USB cable, which can be useful for users who know their way in the file
         // system and the package name of the app (e.g. developers).
-        //video = PRIVATE_EXTERNAL_VIDEO_PATH;
+        // This location works independent of granted permissions, but on some devices
+        // this memory can be unmounted and thus might not be present at all.
+//        video = PRIVATE_EXTERNAL_VIDEO_PATH;
 
         // Public external folder allows easy content sharing between apps and copying
         // content from PC to a familiar location such as the /Movies folder, but video
-        // playback requires READ_EXTERNAL_STORAGE permission.
-        //video = PUBLIC_EXTERNAL_VIDEO_PATH;
+        // playback requires READ_EXTERNAL_STORAGE permission on Android 6.0 or above.
+//        video = PUBLIC_EXTERNAL_VIDEO_PATH;
 
         // Private expansion package allows playing content embedded to the app's
         // extra installation package (.obb) (up to 2 GB per package, max 2 packages).
-        //video = PRIVATE_EXPANSION_VIDEO_PATH;
+        // NOTE: Starting from Android 11, WRITE_EXTERNAL_STORAGE has no function. As a
+        // consequence, this test app cannot create an example .obb file to the correct
+        // file path. It will create it to /Android/data/fi.finwe.orion360.sdk.pro.examples
+        //  /files/Android/obb/fi.finwe.orion360.sdk.pro.examples, and you should manually
+        // copy it to /Android/obb/fi.finwe.orion360.sdk.pro.examples to make it work:
+        // 1. Install e.g. X-plore File Manager from the Play store.
+        // 2. Allow allow access to all files & permission to change system settings.
+        // 3. Copy .obb file as explained above.
+//        video = PRIVATE_EXPANSION_VIDEO_PATH;
 
         // Play the selected video file.
         playVideo(video);
@@ -201,27 +216,21 @@ public class MinimalVideoFilePlayer extends SimpleOrionActivity {
                                            @NonNull int [] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
-            case REQUEST_READ_STORAGE: {
+        if (requestCode == REQUEST_READ_STORAGE) {
+            // User has now answered to our read permission request. Let's see how:
+            if (grantResults.length == 0 || grantResults[0] !=
+                    PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "Read permission was denied by user");
 
-                // User has now answered to our read permission request. Let's see how:
-                if (grantResults.length == 0 || grantResults[0] !=
-                        PackageManager.PERMISSION_GRANTED) {
-                    Log.i(TAG, "Read permission was denied by user");
+                // Bail out with a notification for user.
+                Toast.makeText(this, R.string.player_read_permission_denied,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Log.i(TAG, "Read permission was granted by user");
 
-                    // Bail out with a notification for user.
-                    Toast.makeText(this, R.string.player_read_permission_denied,
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Log.i(TAG, "Read permission was granted by user");
-
-                    // Public external folder works, play the video file.
-                    setContentUri(mVideoPath);
-                }
-                return;
+                // Public external folder works, play the video file.
+                setContentUri(mVideoPath);
             }
-            default:
-                break;
         }
     }
 }

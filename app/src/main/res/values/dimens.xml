@@ -30,4 +30,7 @@
     <dimen name="player_hud_progressbar_width">60dp</dimen>
     <dimen name="player_hud_progressbar_height">60dp</dimen>
 
+    <!-- Sprite layout -->
+    <dimen name="sprite_layout_button_text_size">11sp</dimen>
+
 </resources>

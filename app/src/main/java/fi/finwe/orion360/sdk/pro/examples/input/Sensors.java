@@ -103,7 +103,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         /*
          * 360/VR video applications automatically rotate the view based on device orientation.
          * Hence, to look at a desired direction, end-user can turn the device towards that
-         * direction, or when viewing through a VR frame, simply turn her head.
+         * direction, or when viewing through a VR frame, simply turn his/her head.
          * <p/>
          * This feature requires hardware movement sensors that are built-in to phones and
          * tablets - most importantly, a gyroscope. Unfortunately, not all Android devices
@@ -136,7 +136,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * <p/>
          * While gyroscope and accelerometer are absolutely required for proper operation,
          * the magnetometer sensor is optional. Frequently, it is not necessary to align
-         * the 360 content with the point of the compass - instead, the view is rotated
+         * the 360 content with the point of the compass North - instead, the view is rotated
          * so that viewing begins from the content's 'front' direction, despite of the end
          * user's initial orientation with respect to North.
          * <p/>
@@ -149,7 +149,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * the device as a 'pen', simultaneously rotating it along its axis), end users are not
          * generally aware of this. Moreover, the device may need to be re-calibrated when the
          * magnetic environment changes - for example, the device is placed near metallic objects
-         * or strong electrical currents (USB cable connected for charging, for instance).
+         * or strong electric currents (USB cable connected for charging, for instance).
          * <p/>
          * As a conclusion, it is often better to disable the magnetometer. The recommended
          * place to do that is here when Orion360 environment is being initially configured.
@@ -158,7 +158,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * stabilizes more quickly when it is using data from all three sensors. In addition,
          * consider the case when the device is lying on a table display facing directly up or
          * down. The accelerometer and gyroscope sensors cannot determine the Azimuth angle,
-         * i.e. know if the device top side is pointing to North, East or what. However, when
+         * i.e. know if the device's top side is pointing to North, East or what. However, when
          * magnetometer is active during the initialization phase and even just a few samples
          * are received from it, the view can be much better oriented to make the 'front'
          * direction appear when the end-user lifts the phone up.
@@ -170,7 +170,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -196,8 +196,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         /*
          * If you want to ensure that viewing begins from the horizontal center point
          * of the equirectangular panoramic content ('front' direction appears when
-         * device is lifted up to reveal the horizon level), set item yaw rotation
-         * to 0 degrees using this convenience method.
+         * device is lifted up to reveal the horizon level), set item's default yaw
+         * rotation to 0 degrees using this convenience method.
          *
          * You can also set it to any other yaw angle, for example value 90 makes the
          * panorama start from 'left' and -90 from 'right'.
@@ -207,7 +207,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * and lets the sensor fusion algorithm determine proper compensation to
          * keep the 3D scene upright (horizon appears in level with real world).
          */
-        mCamera.setRotationYaw(0);
+        mCamera.setDefaultRotationYaw(0);
 
         /*
          * If you want to set the initial viewing angle freely (and override initial
@@ -250,17 +250,14 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
      */
     public class TouchControllerWidget implements OrionWidget {
 
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
         /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
+        private final TouchPincher mTouchPincher;
 
         /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
+        private final TouchRotater mTouchRotater;
 
         /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
+        private final RotationAligner mRotationAligner;
 
 
         /**
@@ -313,19 +310,16 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              * as a controllable to sensor fusion, as it needs sensor data for alignment.
              */
 
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
             // Create drag-to-pan handler.
             mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
+            mTouchRotater.bindControllable(camera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
+            mRotationAligner.bindControllable(camera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
             mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
@@ -357,19 +351,19 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              * <p/>
              * For consistency, the feature works everywhere within the 360 content, not just
              * near nadir or zenith. The reasoning is that if user has found the gesture and
-             * rolled the view to one direction, she has already learned to operate it and
+             * rolled the view to one direction, he/she has already learned to operate it and
              * can easily roll the view back and forth as she pleases. Furthermore, if
              * auto-horizon aligner is enabled, it will fix tilted horizon automatically.
              */
 
             // Set default camera zoom level and maximum zoom level.
-            mCamera.setZoom(1.0f);
-            mCamera.setZoomMax(3.0f);
+            camera.setZoom(1.0f);
+            camera.setZoomMax(3.0f);
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
+            mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
         }
 
         @Override
@@ -422,7 +416,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * <p/>
          * In this example, we simply print the latest orientation angles to logcat.
          * <p/>
-         * Notice that the quaternion tells device's orientation, not the 3D camera
+         * Notice that the quaternion tells the device's orientation, not the 3D camera
          * orientation where also touch and various compensations are included.
          */
 

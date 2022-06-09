@@ -31,6 +31,8 @@ package fi.finwe.orion360.sdk.pro.examples.layout;
 
 import android.app.Activity;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -73,8 +75,15 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
  * each having their own instance of Orion360 view. This example demonstrates the concept by
  * using a recycler view component to create a simple video gallery. Each video item has a
  * thumbnail, title and play button overlay that will trigger video playback when tapped.
+ * <p/>
  * Some devices support playing multiple videos simultaneously; this can be tested by
- * tapping next video item before the playback of the previous item has ended.
+ * tapping next video item before the playback of the previous item has ended. However,
+ * one must not overcome total video decoding capacity of the device. It is often reasonable
+ * to use low-quality previews in video thumbnails and switch to high-quality full-screen
+ * playback when user selects a video. This can be achieved also with adaptive HLS video,
+ * for example by creating different .m3u8 playlist files that do not contain links to
+ * high-quality streams. Another option is to use e.g. ExoPlayer and customize stream
+ * selection for preview videos.
  * <p/>
  * Features:
  * <ul>
@@ -94,25 +103,17 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
 public class RecyclerViewLayout extends Activity {
 
     /** Tag for logging. */
-    public static final String TAG = CustomFragmentActivity.class.getSimpleName();
+    private static final String TAG = CustomFragmentActivity.class.getSimpleName();
 
     /**
      * OrionContext used to be a static class, but starting from Orion360 3.1.x it must
      * be instantiated as a member.
      */
-    protected OrionContext mOrionContext;
-
-    /** A recycler view for listing a set of panorama items in the UI. */
-    RecyclerView mRecyclerView;
-
-    /** A data adapter for the recycler view. */
-    MyRecyclerViewAdapter mAdapter;
-
-     /** A set of panorama items to be shown in the recycler view via the data adapter. */
-    List<PanoramaItem> mItems;
+    private OrionContext mOrionContext;
 
     /** Panorama item is a simple data model class for the recycler view. */
-    private class PanoramaItem {
+    @SuppressWarnings("SameParameterValue")
+    private static class PanoramaItem {
 
         /** A title string for the panorama item, to be shown in the UI. */
         private String mTitle;
@@ -182,7 +183,7 @@ public class RecyclerViewLayout extends Activity {
     private class MyRecyclerViewAdapter extends RecyclerView.Adapter<CustomViewHolder> {
 
         /** A set of panorama items that will be listed within the recycler view. */
-        private List<PanoramaItem> mItems;
+        private final List<PanoramaItem> mItems;
 
         /**
          * Constructor.
@@ -193,6 +194,7 @@ public class RecyclerViewLayout extends Activity {
             this.mItems = itemList;
         }
 
+        @NonNull
         @Override
         public CustomViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
             // Inflate a new list row for the recycler view from our XML layout.
@@ -210,15 +212,12 @@ public class RecyclerViewLayout extends Activity {
             // by playing the correct panorama video.
             final PanoramaItem item = mItems.get(i);
             customViewHolder.mTitleText.setText(item.getTitle());
-            customViewHolder.mThumbnail.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // When clicked, simply hide the thumbnail and play button
-                    // and start playing the content with Orion360.
-                    customViewHolder.mThumbnail.setVisibility(View.INVISIBLE);
-                    customViewHolder.mPlayButton.setVisibility(View.INVISIBLE);
-                    customViewHolder.play(item.getContentUri(), item.getVolumeLevel());
-                }
+            customViewHolder.mThumbnail.setOnClickListener(view -> {
+                // When clicked, simply hide the thumbnail and play button
+                // and start playing the content with Orion360.
+                customViewHolder.mThumbnail.setVisibility(View.INVISIBLE);
+                customViewHolder.mPlayButton.setVisibility(View.INVISIBLE);
+                customViewHolder.play(item.getContentUri(), item.getVolumeLevel());
             });
         }
 
@@ -314,6 +313,9 @@ public class RecyclerViewLayout extends Activity {
             // Create a new camera. This will become the end-user's eyes into the 3D world.
             mCamera = new OrionCamera();
 
+            // Reset view to the 'front' direction (horizontal center of the panorama).
+            mCamera.setDefaultRotationYaw(0);
+
             // Bind camera as a controllable to sensor fusion.
             mOrionContext.getSensorFusion().bindControllable(mCamera);
 
@@ -344,8 +346,8 @@ public class RecyclerViewLayout extends Activity {
         setContentView(R.layout.activity_recyclerview);
 
         // Instantiate the recycler view.
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Create a couple of panorama items. Here we reuse the same video multiple times,
         // but in a real application there would of course be different content for each item.
@@ -371,16 +373,18 @@ public class RecyclerViewLayout extends Activity {
         // image as a placeholder and activate only one OrionView at a time.
         // However, multiple panorama images can be played back simultaneously and there
         // is no strict limitation for the maximum number - it depends on device resources.
+        // If you want to make the thumbnails feel more 'alive' without playing preview
+        // videos simultaneously, consider using a timer to change their thumbnail images.
 
         // Add panorama items to the item list.
-        mItems = new ArrayList<>();
-        mItems.add(item1);
-        mItems.add(item2);
-        mItems.add(item3);
+        List<PanoramaItem> items = new ArrayList<>();
+        items.add(item1);
+        items.add(item2);
+        items.add(item3);
 
         // Create an adapter for the list and set it to be the recycler view's data adapter.
-        mAdapter = new MyRecyclerViewAdapter(mItems);
-        mRecyclerView.setAdapter(mAdapter);
+        MyRecyclerViewAdapter adapter = new MyRecyclerViewAdapter(items);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override

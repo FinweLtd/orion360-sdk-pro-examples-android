@@ -63,6 +63,7 @@ import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
+@SuppressWarnings("unused")
 public class MinimalImageFilePlayer extends SimpleOrionActivity {
 
     /** Tag for logging. */
@@ -117,36 +118,41 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
         // Try different locations by commenting out all but one from below:
         String image;
 
-        // Private asset folder allows playing content embedded to the apps's own
-        // installation package (.apk) (notice 100MB apk size limit in Google Play store).
+        // Private asset folder allows playing content embedded to the app's own
+        // installation package (.apk) (notice 100/150MB apk size limit in Google Play store).
+        // This location should always work, independent of granted permissions.
         image = PRIVATE_ASSET_IMAGE_PATH;
 
         // Private raw resource folder allows playing content embedded to the app's own
-        // installation package (.apk) (notice 100MB apk size limit in Google Play).
-        // Use lowercase characters in filename, and access it without extension!
+        // installation package (.apk) (notice 100/150MB apk size limit in Google Play).
+        // Use lowercase characters in filenames and access them without extension!
         // NOTE: Playing images from R.raw is currently NOT supported - without filename
         // extension we assume URI points to a video file, and MediaPlayer does not decode images.
-        //image = PRIVATE_R_RAW_IMAGE_PATH;
+        // We recommend using assets instead of R.raw.
+//        image = PRIVATE_R_RAW_IMAGE_PATH;
 
-        // Private internal folder is useful mainly when the app downloads an image file,
+        // Private internal folder is useful mainly when the app downloads a protected image file,
         // as only the app itself can access that location (exception: rooted devices).
-        //image = PRIVATE_INTERNAL_IMAGE_PATH;
+        // This location should always work, independent of granted permissions.
+        // NOTE: Many devices have quite limited memory space for this path.
+//        image = PRIVATE_INTERNAL_IMAGE_PATH;
 
         // Private external folder allows copying images via file manager app or a
         // USB cable, which can be useful for users who know their way in the file
         // system and the package name of the app (e.g. developers).
-        //image = PRIVATE_EXTERNAL_IMAGE_PATH;
+        // This location works independent of granted permissions, but on some devices
+        // this memory can be unmounted and thus might not be present at all.
+//        image = PRIVATE_EXTERNAL_IMAGE_PATH;
 
         // Public external folder allows easy content sharing between apps and copying
-        // content from PC to a familiar location such as the /Movies folder, but image
-        // playback requires READ_EXTERNAL_STORAGE permission.
-        //image = PUBLIC_EXTERNAL_IMAGE_PATH;
+        // content from PC to a familiar location such as the /Pictures folder, but image
+        // playback requires READ_EXTERNAL_STORAGE permission on Android 6.0 or above.
+//        image = PUBLIC_EXTERNAL_IMAGE_PATH;
 
         // Private expansion package allows playing content embedded to the app's
         // extra installation package (.obb) (up to 2 GB per package, max 2 packages).
-        // NOTE: Playing images from expansion package is currently NOT supported! This feature
-        // will be added later.
-        //image = PRIVATE_EXPANSION_IMAGE_PATH;
+        // NOTE: Playing images from expansion package is currently NOT supported.
+//        image = PRIVATE_EXPANSION_IMAGE_PATH;
 
         // Show the selected image file.
         showImage(image);
@@ -204,27 +210,21 @@ public class MinimalImageFilePlayer extends SimpleOrionActivity {
                                            @NonNull int [] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
-            case REQUEST_READ_STORAGE: {
+        if (requestCode == REQUEST_READ_STORAGE) {
+            // User has now answered to our read permission request. Let's see how:
+            if (grantResults.length == 0 || grantResults[0] !=
+                    PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "Read permission was denied by user");
 
-                // User has now answered to our read permission request. Let's see how:
-                if (grantResults.length == 0 || grantResults[0] !=
-                        PackageManager.PERMISSION_GRANTED) {
-                    Log.i(TAG, "Read permission was denied by user");
+                // Bail out with a notification for user.
+                Toast.makeText(this, R.string.player_read_permission_denied,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Log.i(TAG, "Read permission was granted by user");
 
-                    // Bail out with a notification for user.
-                    Toast.makeText(this, R.string.player_read_permission_denied,
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Log.i(TAG, "Read permission was granted by user");
-
-                    // Public external folder works, start preparing the image file.
-                    setContentUri(mImagePath);
-                }
-                return;
+                // Public external folder works, start preparing the image file.
+                setContentUri(mImagePath);
             }
-            default:
-                break;
         }
     }
 }

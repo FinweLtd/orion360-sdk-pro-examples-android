@@ -29,6 +29,7 @@
 
 package fi.finwe.orion360.sdk.pro.examples.streaming;
 
+import android.annotation.SuppressLint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
@@ -134,7 +135,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     private boolean mIsVRModeEnabled = false;
 
 
-	@Override
+	@SuppressLint("ClickableViewAccessibility")
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -157,14 +159,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         // normal mode. Here we use touch events, as it is natural to try tapping the screen
         // if you don't know what else to do. Start by propagating touch events from the
         // Orion360 view to a gesture detector.
-        mView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return mGestureDetector.onTouchEvent(event);
-            }
-
-        });
+        mView.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
 
         // Then, handle tap and long press events based on VR mode state. Typically you
         // want to associate long tap for entering/exiting VR mode and inform the user
@@ -192,11 +187,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
                     public void onLongPress(MotionEvent e) {
 
                         // Enter or exit VR mode.
-                        if (!mIsVRModeEnabled) {
-                            setVRMode(true);
-                        } else {
-                            setVRMode(false);
-                        }
+                        setVRMode(!mIsVRModeEnabled);
 
                     }
 
@@ -281,6 +272,9 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
 
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
+
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
@@ -322,7 +316,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         if (enabled) {
 
             // Bind the complete texture to both left and right eyes. Assume full spherical mono.
-            mPanorama.bindTextureVR(0, mPanoramaTexture, new RectF(-180, 90, 180, -90),
+            mPanorama.bindTextureVR(0, mPanoramaTexture,
+                    new RectF(-180, 90, 180, -90),
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).
@@ -489,7 +484,13 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {}
 
     @Override
-    public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {}
+    public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {
+
+        // Video player tells it is ready to render the very first frame.
+        // Playback starts now, so hide buffering indicator.
+        hideBufferingIndicator();
+
+    }
 
     @Override
     public void onVideoStarted(OrionVideoTexture orionVideoTexture) {}

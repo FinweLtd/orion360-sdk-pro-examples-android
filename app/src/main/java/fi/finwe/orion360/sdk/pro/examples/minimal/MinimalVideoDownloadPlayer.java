@@ -45,11 +45,10 @@ import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import fi.finwe.log.Logger;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
-
-import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES_PATH;
 
 /**
  * An example of a minimal Orion360 video player, for downloading a video file before playback.
@@ -57,7 +56,7 @@ import static fi.finwe.orion360.sdk.pro.examples.MainMenu.PRIVATE_EXTERNAL_FILES
  * This example uses Android's DownloadManager service for downloading a file (recommended).
  * See MinimalImageDownloadPlayer for an example of using custom code instead.
  * <p>
- * Notice that saving a copy of a video file while streaming it is not possible with Android
+ * Notice that saving a copy of a video file while streaming is not possible with Android
  * MediaPlayer as a video backend. To obtain a local copy of a video file that resides in the
  * network you need to download it separately, as shown in this example.
  *
@@ -85,7 +84,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
     private long mDownloadId;
 
     /** Timer for updating download progress periodically on screen. */
-    private Timer mProgressTimer = new Timer();
+    private final Timer mProgressTimer = new Timer();
 
 
 	@Override
@@ -124,7 +123,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
     }
 
     /**
-     * Downloads a video file over the network to the local file system, then plays it.
+     * Download a video file over the network to the local file system, then play it.
      *
      * @param videoUrl The URL to the video file to be downloaded and played.
      */
@@ -133,20 +132,24 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         // Create a filename for the local copy of the video file.
         String fileName = videoUrl.substring(videoUrl.lastIndexOf('/') + 1);
 
-        // Skip download, if a file with that name already exists in our downloads directory.
+        // Skip download, if a file with that name already exists in the app's files directory.
         // Notice that we need to remove scheme from the URI (file://) for file existence check.
         // Notice that we should check if external media is mounted (omitted here for simplicity).
-        String localUri = PRIVATE_EXTERNAL_FILES_PATH + Environment.DIRECTORY_DOWNLOADS +
-                File.separator + fileName;
+        String localUri = MainMenu.PRIVATE_EXTERNAL_FILES_PATH +
+                Environment.DIRECTORY_DOWNLOADS + File.separator + fileName;
+        Logger.logD(TAG, "Target filepath: " + Uri.parse(localUri).getPath());
         if (new File(Uri.parse(localUri).getPath()).exists()) {
             setContentUri(localUri); // Play already downloaded video file.
+            Toast.makeText(this, R.string.player_file_already_downloaded,
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create a progress bar to be shown while downloading the file.
         final ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle(getString(R.string.player_file_download_title));
-        progress.setMessage(String.format(getString(R.string.player_file_download_message), fileName));
+        progress.setMessage(String.format(
+                getString(R.string.player_file_download_message), fileName));
         progress.setMax(100);
         progress.setIndeterminate(false);
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -177,10 +180,12 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
                                             R.string.player_file_download_completed), 1),
                                     Toast.LENGTH_LONG).show();
 
-                            String uriString = c.getString(c.getColumnIndex(
-                                    DownloadManager.COLUMN_LOCAL_URI));
-                            setContentUri(uriString); // Play just downloaded video file.
-
+                            int index = c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+                            if (index >= 0) {
+                                String uriString = c.getString(index);
+                                Logger.logD(TAG, "Downloaded video to " + uriString);
+                                setContentUri(uriString); // Play just downloaded video file.
+                            }
                         }
                     }
                 }
@@ -192,7 +197,8 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(videoUrl));
         request.setTitle(getResources().getString(R.string.app_name));
         request.setDescription(videoUrl);
-        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, fileName);
+        request.setDestinationInExternalFilesDir(this,
+                Environment.DIRECTORY_DOWNLOADS, fileName);
         mDownloadId = mDownloadManager.enqueue(request);
 
         // Create a background task for updating download progress.
@@ -205,20 +211,15 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
                 q.setFilterById(mDownloadId);
                 Cursor cursor = mDownloadManager.query(q);
                 cursor.moveToFirst();
-                int downloaded = cursor.getInt(cursor.getColumnIndex(
-                        DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                int total = cursor.getInt(cursor.getColumnIndex(
-                        DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                int index = cursor.getColumnIndex(
+                        DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                int downloaded = index >= 0 ? cursor.getInt(index) : 0;
+                index = cursor.getColumnIndex(
+                        DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                int total = index >= 0 ? cursor.getInt(index) : 0;
                 cursor.close();
                 final int percent = (int) (100.0 * downloaded / total);
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        progress.setProgress(percent);
-                    }
-
-                });
+                runOnUiThread(() -> progress.setProgress(percent));
 
             }
 

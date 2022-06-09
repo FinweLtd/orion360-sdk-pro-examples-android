@@ -125,7 +125,8 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
             mMediaController.setMediaPlayer(
                     ((OrionVideoTexture)mPanoramaTexture).getMediaPlayerControl());
 
-            // Set Orion360 view as anchor view (media controller positions itself on top of anchor).
+            // Set Orion360 view as anchor view (media controller positions itself
+            // on top of anchor).
             mMediaController.setAnchorView(mView);
 
             // By default, controls disappear after 3 seconds. Show again when view is clicked.
@@ -134,13 +135,11 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
 
                 @Override
                 public void onDisplayClick(DisplayClickable clickable, Vec2f displayCoords) {
-                    runOnUiThread (new Thread(new Runnable() {
-                        public void run() {
+                    runOnUiThread (new Thread(() -> {
 
-                            // Show controls.
-                            mMediaController.show();
+                        // Show controls.
+                        mMediaController.show();
 
-                        }
                     }));
                 }
 
@@ -202,8 +201,9 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                //MainMenu.TEST_VIDEO_URI_HLS);
-                MainMenu.TEST_VIDEO_URI_1280x640, OrionTexture.PlaybackState.PAUSED);
+//                MainMenu.TEST_VIDEO_URI_1280x640,     // Ordinary .mp4 video file
+                MainMenu.TEST_VIDEO_URI_HLS,            // Adaptive HLS video stream.
+                OrionTexture.PlaybackState.PAUSED);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -215,6 +215,9 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera();
+
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
@@ -316,16 +319,22 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     @Override
     public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
         logMessage("onVideoPrepared");
-
-        // Show controls.
-        if (null != mMediaController) {
-            mMediaController.show();
-        }
     }
 
     @Override
     public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {
         logMessage("onVideoRenderingStart");
+
+        // Video player tells it is ready to render the very first frame.
+        // Playback starts now, so hide buffering indicator.
+        hideBufferingIndicator();
+
+        // Show controls. In this example, we do not auto-start playback, so we should
+        // ensure controls are visible when we are ready to play.
+        mMediaController.show(0);
+
+        // Auto play.
+        ((OrionVideoTexture) mPanoramaTexture).play();
     }
 
     @Override

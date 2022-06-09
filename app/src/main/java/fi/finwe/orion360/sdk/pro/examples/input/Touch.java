@@ -29,6 +29,7 @@
 
 package fi.finwe.orion360.sdk.pro.examples.input;
 
+import android.annotation.SuppressLint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
@@ -160,6 +161,7 @@ public class Touch extends OrionActivity {
     private boolean mIsVRModeEnabled = false;
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -191,14 +193,7 @@ public class Touch extends OrionActivity {
         // To handle tapping events from the whole Orion360 view area with a gesture detector
         // (without caring about the position that user touched), propagate all touch events
         // from the view to a gesture detector.
-        mView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return mGestureDetector.onTouchEvent(event);
-            }
-
-        });
+        mView.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
 
         // In the gesture detector we handle tapping, double tapping and long press events.
         // The recommended mapping goes as follows:
@@ -237,11 +232,7 @@ public class Touch extends OrionActivity {
                         Log.d(TAG, "onLongPress() from thread " + Thread.currentThread().getId());
 
                         // Enter or exit VR mode.
-                        if (!mIsVRModeEnabled) {
-                            setVRMode(true);
-                        } else {
-                            setVRMode(false);
-                        }
+                        setVRMode(!mIsVRModeEnabled);
 
                     }
 
@@ -324,9 +315,6 @@ public class Touch extends OrionActivity {
             mWorldClickListener.bindClickable(hotspot.getIcon(),
                     new TouchWorldClickListener.Listener() {
 
-
-
-
                 @Override
                 public void onWorldClick(RaycastReceiver receiver, Vec2f vec2F,
                                          Raycast raycast) {
@@ -355,7 +343,8 @@ public class Touch extends OrionActivity {
         // Play overlay image and animation. Since the animation is not needed in VR mode and is
         // not related to viewing direction, simply use an Android image view and XML animation.
         mPlayOverlay = (ImageView) findViewById(R.id.play_overlay);
-        mPlayAnimation = AnimationUtils.loadAnimation(this, R.anim.fast_fadeinout_animation);
+        mPlayAnimation = AnimationUtils.loadAnimation(this,
+                R.anim.fast_fadeinout_animation);
         mPlayAnimation.setAnimationListener(new Animation.AnimationListener() {
 
             @Override
@@ -374,7 +363,8 @@ public class Touch extends OrionActivity {
         // Pause overlay image and animation. Since the animation is not needed in VR mode and is
         // not related to viewing direction, simply use an Android image view and XML animation.
         mPauseOverlay = (ImageView) findViewById(R.id.pause_overlay);
-        mPauseAnimation = AnimationUtils.loadAnimation(this, R.anim.fast_fadeinout_animation);
+        mPauseAnimation = AnimationUtils.loadAnimation(this,
+                R.anim.fast_fadeinout_animation);
         mPauseAnimation.setAnimationListener(new Animation.AnimationListener() {
 
             @Override
@@ -407,7 +397,7 @@ public class Touch extends OrionActivity {
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_EXPANSION_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+                MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -451,6 +441,7 @@ public class Touch extends OrionActivity {
      * @param pitchDeg The pitch angle in degrees.
      * @param rollDeg The roll angle in degrees.
      */
+    @SuppressWarnings("SameParameterValue")
     protected SelectablePointerIcon createHotSpot(float yawDeg, float pitchDeg, float rollDeg) {
 
         // Create a new hotspot as a selectable pointer icon widget.
@@ -480,17 +471,14 @@ public class Touch extends OrionActivity {
      */
     public class TouchControllerWidget implements OrionWidget {
 
-        /** The camera that will be controlled by this widget. */
-        private OrionCamera mCamera;
-
         /** Touch pinch-to-zoom/pinch-to-rotate gesture handler. */
-        private TouchPincher mTouchPincher;
+        private final TouchPincher mTouchPincher;
 
         /** Touch drag-to-pan gesture handler. */
-        private TouchRotater mTouchRotater;
+        private final TouchRotater mTouchRotater;
 
         /** Rotation aligner keeps the horizon straight at all times. */
-        private RotationAligner mRotationAligner;
+        private final RotationAligner mRotationAligner;
 
 
         /**
@@ -500,24 +488,21 @@ public class Touch extends OrionActivity {
          */
         TouchControllerWidget(OrionCamera camera) {
 
-            // Keep a reference to the camera that we control.
-            mCamera = camera;
-
             // Create pinch-to-zoom/pinch-to-rotate handler.
             mTouchPincher = new TouchPincher();
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
-            mTouchPincher.bindControllable(mCamera, OrionCamera.VAR_FLOAT1_ZOOM);
+            mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
             mTouchRotater = new TouchRotater();
-            mTouchRotater.bindControllable(mCamera);
+            mTouchRotater.bindControllable(camera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
             mRotationAligner = new RotationAligner();
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
-            mRotationAligner.bindControllable(mCamera);
+            mRotationAligner.bindControllable(camera);
 
             // Rotation aligner needs sensor fusion data in order to do its job.
             mOrionContext.getSensorFusion().bindControllable(mRotationAligner);
@@ -562,7 +547,8 @@ public class Touch extends OrionActivity {
         if (enabled) {
 
             // Bind the complete texture to both left and right eyes. Assume full spherical mono.
-            mPanorama.bindTextureVR(0, mPanoramaTexture, new RectF(-180, 90, 180, -90),
+            mPanorama.bindTextureVR(0, mPanoramaTexture,
+                    new RectF(-180, 90, 180, -90),
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).

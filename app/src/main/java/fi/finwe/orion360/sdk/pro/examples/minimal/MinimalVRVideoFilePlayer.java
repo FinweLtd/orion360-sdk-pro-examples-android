@@ -29,10 +29,10 @@
 
 package fi.finwe.orion360.sdk.pro.examples.minimal;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
@@ -63,6 +63,7 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
     private GestureDetector mGestureDetector;
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
 	public void onCreate(Bundle savedInstanceState) {
 
@@ -90,14 +91,7 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
         // normal mode. Here we use touch events, as it is natural to try tapping the screen
         // if you don't know what else to do. Start by propagating touch events from the
         // Orion360 view to a gesture detector.
-        getOrionView().setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return mGestureDetector.onTouchEvent(event);
-            }
-
-        });
+        getOrionView().setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
 
         // Then, handle tap and long press events based on VR mode state. Typically you
         // want to associate long tap for entering/exiting VR mode and inform the user
@@ -125,15 +119,10 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
                     public void onLongPress(MotionEvent e) {
 
                         // Enter or exit VR mode.
-                        if (!isVRModeEnabled()) {
-                            setVRMode(true);
-                        } else {
-                            setVRMode(false);
-                        }
+                        setVRMode(!isVRModeEnabled());
 
                     }
 
                 });
 	}
-
 }

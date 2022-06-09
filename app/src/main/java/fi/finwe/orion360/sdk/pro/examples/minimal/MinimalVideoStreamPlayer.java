@@ -96,6 +96,16 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         setVideoContentListener(new OrionVideoTexture.ListenerBase() {
 
             @Override
+            public void onVideoSourceURISet(OrionVideoTexture orionVideoTexture) {
+
+                // Assume buffering is needed when a new video stream URI is set. Show indicator.
+                if (null != mBufferingIndicator) {
+                    mBufferingIndicator.setVisibility(View.VISIBLE);
+                }
+
+            }
+
+            @Override
             public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
 
                 // Show buffering indicator whenever the player begins buffering video.
@@ -109,6 +119,17 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
             public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
 
                 // Hide buffering indicator whenever the player ends buffering video.
+                if (null != mBufferingIndicator) {
+                    mBufferingIndicator.setVisibility(View.GONE);
+                }
+
+            }
+
+            @Override
+            public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {
+
+                // Video player tells it is ready to render the very first frame.
+                // Playback starts now, so hide buffering indicator.
                 if (null != mBufferingIndicator) {
                     mBufferingIndicator.setVisibility(View.GONE);
                 }
