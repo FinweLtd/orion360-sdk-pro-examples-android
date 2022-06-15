@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/pure_black" >
 
-	<fi.finwe.orion360.sdk.pro.view.OrionView
-	    android:id="@+id/orion_view"
+	<fi.finwe.orion360.sdk.pro.view.OrionViewContainer
+	    android:id="@+id/orion_view_container"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent" />
 

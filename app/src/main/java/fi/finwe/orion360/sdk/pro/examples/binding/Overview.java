@@ -34,14 +34,15 @@ import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -64,7 +65,10 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
  */
 public class Overview extends OrionActivity {
 
-    /** The Android view where our 3D scenes will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our rectilinear panorama sphere will be added to. */
@@ -99,23 +103,23 @@ public class Overview extends OrionActivity {
 
         // Create two scenes. Notice that we need multiple scenes because we will have
         // multiple panoramas and want only one panorama to be visible per scene.
-        mSceneRectilinear = new OrionScene();
-        mSceneEquirectangular = new OrionScene();
+        mSceneRectilinear = new OrionScene(mOrionContext);
+        mSceneEquirectangular = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mSceneRectilinear.bindController(mOrionContext.getSensorFusion());
+        mSceneRectilinear.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create new panoramas for rectilinear sphere and equirectangular plane projections.
-        mPanoramaRectilinear = new OrionPanorama();
+        mPanoramaRectilinear = new OrionPanorama(mOrionContext);
         mPanoramaRectilinear.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
-        mPanoramaEquirectangular = new OrionPanorama();
+        mPanoramaEquirectangular = new OrionPanorama(mOrionContext);
         mPanoramaEquirectangular.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
 
         // We don't need perspective camera for viewing original equirectangular projection.
         mPanoramaEquirectangular.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama objects. Here we assume full spherical
@@ -132,7 +136,7 @@ public class Overview extends OrionActivity {
         // main viewport to respond to sensors and touch but overview camera stay still.
 
         // Create a new camera for the main viewport.
-        mMainViewCamera = new OrionCamera();
+        mMainViewCamera = new OrionCamera(mOrionContext);
 
         // Set yaw angle to 0. Now the camera will always point to the same angle
         // (to the center point of the equirectangular video/image source)
@@ -140,7 +144,7 @@ public class Overview extends OrionActivity {
         mMainViewCamera.setDefaultRotationYaw(0.0f);
 
         // Create a new camera for the overview viewport.
-        mOverviewCamera = new OrionCamera();
+        mOverviewCamera = new OrionCamera(mOrionContext);
 
         // Set yaw angle to 0. Now the camera will always point to the same angle
         // (to the center point of the equirectangular video/image source)
@@ -156,8 +160,12 @@ public class Overview extends OrionActivity {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mSceneRectilinear.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport, and
@@ -167,7 +175,7 @@ public class Overview extends OrionActivity {
                 // above: Main covers the whole view
                 new RectF(0.355F, 0.25F, 0.645F, 0.0F) },
                 // above: Overview covers small bottom area
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
         // Notice the viewport rect coordinate system. The viewport coordinates are relative
         // to its parent view, whose left edge is 0.0 and right edge 1.0, bottom edge is 0.0

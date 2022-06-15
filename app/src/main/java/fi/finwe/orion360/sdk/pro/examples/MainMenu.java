@@ -244,7 +244,7 @@ public class MainMenu extends FragmentActivity {
     protected static final int DOUBLE_BACK_TO_EXIT_TIME_WINDOW = 2000;
 
     /** Flag for enabling double back to exit -feature. */
-    protected boolean mDoubleBackToExitEnabled = true;
+    protected final boolean mDoubleBackToExitEnabled = true;
 
     /** Flag for counting two back presses for exit. */
     protected boolean mDoubleBackToExitPressedOnce = false;
@@ -974,10 +974,8 @@ public class MainMenu extends FragmentActivity {
         try {
             mmr.setDataSource(context, Uri.parse(videoUri));
             bitmap = mmr.getFrameAtTime(positionMs * 1000); // convert to microseconds
-        } catch (IllegalArgumentException iae) {
+        } catch (RuntimeException iae) {
             iae.printStackTrace();
-        } catch (RuntimeException re) {
-            re.printStackTrace();
         } finally {
             try { mmr.release(); } catch (RuntimeException re) {
 				Log.e(TAG, "MMR release failed.");}

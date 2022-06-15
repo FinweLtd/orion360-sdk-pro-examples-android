@@ -48,14 +48,16 @@ import java.util.Objects;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
+import fi.finwe.orion360.sdk.pro.viewport.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.SelectablePointerIcon;
 
@@ -90,7 +92,10 @@ public class ThumbnailPager extends OrionActivity {
     /** Request code for file read permission. */
     protected static final int REQUEST_READ_STORAGE = 111;
 
-    /** The Android view where our 3D scenes will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene for our gallery room. */
@@ -213,7 +218,7 @@ public class ThumbnailPager extends OrionActivity {
         mGallery = new Gallery(MEDIA_PATH);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -230,19 +235,26 @@ public class ThumbnailPager extends OrionActivity {
         // Initialize gallery components.
         initGallery();
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
 
-        // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
-        mView.bindDefaultScene(mGalleryScene);
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the camera to the view. We will look into the 3D world through this camera.
         mView.bindDefaultCamera(mCamera);
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
+
+        // Since we will swap scenes (gallery <> player), we do not bind a default scene to the
+        // OrionView. Instead, we bind the gallery scene (initial scene) to the Orion viewport
+        // and release/bind scenes on the go.
+        OrionViewport viewport = mView.getViewports()[0];
+        viewport.bindScene(mGalleryScene);
     }
 
     /**
@@ -251,16 +263,16 @@ public class ThumbnailPager extends OrionActivity {
     protected void initVideoPlayer() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mVideoPlayerScene = new OrionScene();
+        mVideoPlayerScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mVideoPlayerScene.bindController(mOrionContext.getSensorFusion());
+        mVideoPlayerScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mVideoPlayerScene.bindWidget(mTouchController);
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mVideoCanvas = new OrionPanorama();
+        mVideoCanvas = new OrionPanorama(mOrionContext);
 
         // Notice: we will create and bind video texture later, when user chooses the video.
 
@@ -268,16 +280,18 @@ public class ThumbnailPager extends OrionActivity {
         mVideoPlayerScene.bindSceneItem(mVideoCanvas);
 
         // Create video player 'home' button for returning to gallery, and bind it to the scene.
-        mHomeButton = new SelectablePointerIcon();
-        mHomeButton.setLocationPolarZXYDeg(0.0f, -65.0f, 0.0f, 0.7f);
+        mHomeButton = new SelectablePointerIcon(mOrionContext);
+        mHomeButton.setWorldTransformFromPolarZXYDeg(0.0f, -65.0f, 0.0f, 0.7f);
         mHomeButton.setScale(0.1f, 0.15f);
-        mHomeButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_home)));
-        mHomeButton.getIcon().setAmpAlpha(0.70f);
-        mHomeButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_home)));
+        mHomeButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_home)));
+        mHomeButton.getIcon().getColorFx().setAmpAlpha(0.70f);
+        mHomeButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_home)));
         mHomeButton.setPointer(mCamera);
-        mHomeButton.setSelectionTriggerFrameCount(90);
+        mHomeButton.setTriggerOnMaxFrameCount(true);
+        mHomeButton.setSelectionMaxFrameCount(90);
+
         mHomeButton.setUiThreadListener(new SelectablePointerIcon.Listener() {
 
             @Override
@@ -293,7 +307,7 @@ public class ThumbnailPager extends OrionActivity {
 
                 // Switch from video player scene to gallery scene.
                 OrionViewport viewport = mView.getViewports()[0];
-                viewport.releaseScene();
+                viewport.releaseScenes();
                 viewport.bindScene(mGalleryScene);
             }
 
@@ -317,20 +331,20 @@ public class ThumbnailPager extends OrionActivity {
     protected void initGallery() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mGalleryScene = new OrionScene();
+        mGalleryScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mGalleryScene.bindController(mOrionContext.getSensorFusion());
+        mGalleryScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mGalleryScene.bindWidget(mTouchController);
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mGalleryBackground = new OrionPanorama();
+        mGalleryBackground = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mGalleryBackgroundTexture = OrionTexture.createTextureFromURI(this,
-                MainMenu.PRIVATE_ASSET_FILES_PATH +
+        mGalleryBackgroundTexture = OrionTexture.createTextureFromURI(
+                mOrionContext, this, MainMenu.PRIVATE_ASSET_FILES_PATH +
                         MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -342,7 +356,7 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryScene.bindSceneItem(mGalleryBackground);
 
         // Create a new sprite. This is a 2D plane in the 3D world for our planar thumbnail.
-        mGalleryThumbnail = new OrionSprite();
+        mGalleryThumbnail = new OrionSprite(mOrionContext);
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
         mGalleryThumbnail.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
@@ -354,8 +368,8 @@ public class ThumbnailPager extends OrionActivity {
         List<Gallery.GalleryItem> items = mGallery.getItems();
         if (items.size() > 0) {
             mCurrentItemIndex = 0;
-            mGalleryThumbnailTexture = OrionTexture.createTextureFromURI(this,
-                    items.get(mCurrentItemIndex).mThumbUri);
+            mGalleryThumbnailTexture = OrionTexture.createTextureFromURI(
+                    mOrionContext, this, items.get(mCurrentItemIndex).mThumbUri);
             mGalleryThumbnail.bindTexture(mGalleryThumbnailTexture);
         }
 
@@ -363,16 +377,17 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryScene.bindSceneItem(mGalleryThumbnail);
 
         // Create gallery 'play' button and bind it to the scene.
-        mPlayButton = new SelectablePointerIcon();
-        mPlayButton.setLocationPolarZXYDeg(0.0f, 15.0f, 0.0f, 0.7f);
+        mPlayButton = new SelectablePointerIcon(mOrionContext);
+        mPlayButton.setWorldTransformFromPolarZXYDeg(0.0f, 15.0f, 0.0f, 0.7f);
         mPlayButton.setScale(0.2f, 0.3f);
-        mPlayButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_play)));
-        mPlayButton.getIcon().setAmpAlpha(0.70f);
-        mPlayButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_play)));
+        mPlayButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_play)));
+        mPlayButton.getIcon().getColorFx().setAmpAlpha(0.70f);
+        mPlayButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_play)));
         mPlayButton.setPointer(mCamera);
-        mPlayButton.setSelectionTriggerFrameCount(90);
+        mPlayButton.setTriggerOnMaxFrameCount(true);
+        mPlayButton.setSelectionMaxFrameCount(90);
         mPlayButton.setUiThreadListener(new SelectablePointerIcon.Listener() {
 
             @Override
@@ -383,7 +398,7 @@ public class ThumbnailPager extends OrionActivity {
                 Log.d(TAG, "Play button triggered for " + contentUri);
 
                 // Create a video texture from that video URI.
-                mVideoCanvasTexture = OrionTexture.createTextureFromURI(
+                mVideoCanvasTexture = OrionTexture.createTextureFromURI(mOrionContext,
                         ThumbnailPager.this, contentUri);
                 mVideoCanvasTexture.setLooping(true);
                 if (null != mVideoCanvasTexture) {
@@ -393,7 +408,7 @@ public class ThumbnailPager extends OrionActivity {
 
                     // Switch from gallery scene to video player scene.
                     OrionViewport viewport = mView.getViewports()[0];
-                    viewport.releaseScene();
+                    viewport.releaseScenes();
                     viewport.bindScene(mVideoPlayerScene);
                 }
             }
@@ -412,16 +427,17 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryScene.bindWidget(mPlayButton);
 
         // Create gallery 'next' button and bind it to the scene.
-        mNextButton = new SelectablePointerIcon();
-        mNextButton.setLocationPolarZXYDeg(-32.0f, 13.0f, 0.0f, 0.7f);
+        mNextButton = new SelectablePointerIcon(mOrionContext);
+        mNextButton.setWorldTransformFromPolarZXYDeg(-32.0f, 13.0f, 0.0f, 0.7f);
         mNextButton.setScale(0.05f, 1.5f * 0.05f);
-        mNextButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_arrow_right)));
-        mNextButton.getIcon().setAmpAlpha(0.70f);
-        mNextButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_arrow_right)));
+        mNextButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_arrow_right)));
+        mNextButton.getIcon().getColorFx().setAmpAlpha(0.70f);
+        mNextButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_arrow_right)));
         mNextButton.setPointer(mCamera);
-        mNextButton.setSelectionTriggerFrameCount(90);
+        mNextButton.setTriggerOnMaxFrameCount(true);
+        mNextButton.setSelectionMaxFrameCount(90);
         mNextButton.setUiThreadListener(new SelectablePointerIcon.Listener() {
 
             @Override
@@ -437,7 +453,8 @@ public class ThumbnailPager extends OrionActivity {
                     // Switch thumbnail.
                     mGalleryThumbnail.releaseTexture();
                     mGalleryThumbnailTexture = OrionTexture.createTextureFromURI(
-                            ThumbnailPager.this, items.get(mCurrentItemIndex).mThumbUri);
+                            mOrionContext, ThumbnailPager.this,
+                            items.get(mCurrentItemIndex).mThumbUri);
                     mGalleryThumbnail.bindTexture(mGalleryThumbnailTexture);
 
                     // Make 'previous' button visible, we can browse backwards.
@@ -467,16 +484,18 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryScene.bindWidget(mNextButton);
 
         // Create gallery 'previous' button and bind it to the scene.
-        mPreviousButton = new SelectablePointerIcon();
-        mPreviousButton.setLocationPolarZXYDeg(29.0f, 13.0f, 0.0f, 0.7f);
+        mPreviousButton = new SelectablePointerIcon(mOrionContext);
+        mPreviousButton.setWorldTransformFromPolarZXYDeg(
+                29.0f, 13.0f, 0.0f, 0.7f);
         mPreviousButton.setScale(0.05f, 1.5f * 0.05f);
-        mPreviousButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_arrow_left)));
-        mPreviousButton.getIcon().setAmpAlpha(0.70f);
-        mPreviousButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_icon_arrow_left)));
+        mPreviousButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_arrow_left)));
+        mPreviousButton.getIcon().getColorFx().setAmpAlpha(0.70f);
+        mPreviousButton.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(
+                mOrionContext, this, getString(R.string.asset_icon_arrow_left)));
         mPreviousButton.setPointer(mCamera);
-        mPreviousButton.setSelectionTriggerFrameCount(90);
+        mPreviousButton.setTriggerOnMaxFrameCount(true);
+        mPreviousButton.setSelectionMaxFrameCount(90);
         mPreviousButton.setUiThreadListener(new SelectablePointerIcon.Listener() {
 
             @Override
@@ -492,7 +511,8 @@ public class ThumbnailPager extends OrionActivity {
                     // Switch thumbnail.
                     mGalleryThumbnail.releaseTexture();
                     mGalleryThumbnailTexture = OrionTexture.createTextureFromURI(
-                            ThumbnailPager.this, items.get(mCurrentItemIndex).mThumbUri);
+                            mOrionContext, ThumbnailPager.this,
+                            items.get(mCurrentItemIndex).mThumbUri);
                     mGalleryThumbnail.bindTexture(mGalleryThumbnailTexture);
 
                     // Make 'next' button visible, we can browse forward.
@@ -526,7 +546,7 @@ public class ThumbnailPager extends OrionActivity {
     private class Gallery {
 
         /** The video items contained in the gallery. */
-        List<GalleryItem> mGalleryItems = new ArrayList<>();
+        final List<GalleryItem> mGalleryItems = new ArrayList<>();
 
         /**
          * Constructor with video file path.
@@ -574,8 +594,8 @@ public class ThumbnailPager extends OrionActivity {
 
         /** Data class that represents a gallery item. */
         class GalleryItem {
-            String mContentUri;
-            String mThumbUri;
+            final String mContentUri;
+            final String mThumbUri;
             GalleryItem(String contentUri, String thumbnailUri) {
                 mContentUri = contentUri;
                 mThumbUri = thumbnailUri;

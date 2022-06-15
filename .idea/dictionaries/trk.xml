@@ -2,6 +2,8 @@
   <dictionary name="trk">
     <words>
       <w>appfw</w>
+      <w>coeffs</w>
+      <w>littleplanet</w>
       <w>livingroom</w>
       <w>monoscopic</w>
       <w>plore</w>
@@ -10,6 +12,7 @@
       <w>tekstuurit</w>
       <w>unapplied</w>
       <w>unmute</w>
+      <w>wqhd</w>
     </words>
   </dictionary>
 </component>

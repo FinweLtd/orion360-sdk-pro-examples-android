@@ -103,7 +103,7 @@ public class MinimalVideoDownloadPlayer extends SimpleOrionActivity {
         mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Download the video file, then play it. Notice that this link points to a
         // 4k video file, older/mid-range devices may not be able to play it!

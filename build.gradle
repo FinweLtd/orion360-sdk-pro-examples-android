@@ -1,5 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+// Load own local properties file (which Android Studio cannot override).
+Properties properties = new Properties()
+properties.load(project.rootProject.file('my_local.properties').newDataInputStream())
+
 buildscript {
     repositories {
         google()
@@ -20,7 +24,20 @@ allprojects {
         jcenter() // Will be shutdown soon, but ExoPlayer example still needs it
         mavenCentral()
 
+        // This is required for retrieving packages from Finwe's private maven repo at GitHub.
+        // If you have been provided access to the private repo, you can get early releases of
+        // Orion360 SDK before they are published for all users.
+        maven {
+            name = "FinweOrion360SDKPrivateMaven"
+            url = uri("https://maven.pkg.github.com/finweltd/orion360-sdk-pro-sources")
+            credentials {
+                username = properties.getProperty("github.user")
+                password = properties.getProperty("github.apikey")
+            }
+        }
+
         // This is required for retrieving packages from Finwe's public maven repo at GitHub.
+        // You don't need any specific account or permission to access the public repo.
         maven {
             name = "FinweOrion360SDKPublicMaven"
             url = uri("https://maven.pkg.github.com/finweltd/orion360-sdk-public-maven")

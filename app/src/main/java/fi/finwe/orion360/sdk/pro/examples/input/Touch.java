@@ -31,7 +31,6 @@ package fi.finwe.orion360.sdk.pro.examples.input;
 
 import android.annotation.SuppressLint;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -50,9 +49,13 @@ import java.util.List;
 import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controllable.Raycast;
-import fi.finwe.orion360.sdk.pro.controllable.RaycastReceiver;
+import fi.finwe.orion360.sdk.pro.controllable.RaycastHit;
+import fi.finwe.orion360.sdk.pro.controllable.Raycastable;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
+import fi.finwe.orion360.sdk.pro.viewport.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
 import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
@@ -61,12 +64,10 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
-import fi.finwe.orion360.sdk.pro.widget.SelectablePointerIcon;
 import fi.finwe.util.ContextUtil;
 
 /**
@@ -109,7 +110,10 @@ public class Touch extends OrionActivity {
     /** The size of the hotspots, as a scaling factor relative to image asset size (100% = 1.0f). */
     protected final static float HOTSPOT_SCALE_FACTOR = 0.21f;
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
@@ -125,7 +129,7 @@ public class Touch extends OrionActivity {
     protected OrionCamera mCamera;
 
     /** The hotspot items that can be collected by tapping. */
-    protected List<SelectablePointerIcon> mHotspots;
+    protected List<OrionSprite> mHotspots;
 
     /** The widget that will handle our panning, zooming & rotating touch gestures. */
     protected TouchControllerWidget mTouchController;
@@ -188,12 +192,12 @@ public class Touch extends OrionActivity {
                 ((OrionVideoTexture)mPanoramaTexture).getMediaPlayerControl());
 
         // Set our OrionView as anchor view (media controller positions itself on top of anchor).
-        mMediaController.setAnchorView(mView);
+        mMediaController.setAnchorView(mViewContainer);
 
         // To handle tapping events from the whole Orion360 view area with a gesture detector
         // (without caring about the position that user touched), propagate all touch events
         // from the view to a gesture detector.
-        mView.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
+        mViewContainer.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
 
         // In the gesture detector we handle tapping, double tapping and long press events.
         // The recommended mapping goes as follows:
@@ -309,36 +313,36 @@ public class Touch extends OrionActivity {
         // TouchWorldClickListener object. Here we bind each hotspot's icon as a
         // clickable item to our world click listener. Notice that you can bind other
         // kinds of objects as well, such as sprites and polygons.
-        mWorldClickListener = new TouchWorldClickListener();
-        for (final SelectablePointerIcon hotspot : mHotspots) {
+        mWorldClickListener = new TouchWorldClickListener(mOrionContext);
+        for (final OrionSprite hotspot : mHotspots) {
 
-            mWorldClickListener.bindClickable(hotspot.getIcon(),
-                    new TouchWorldClickListener.Listener() {
+            mWorldClickListener.bindClickable(hotspot,
+                    new TouchWorldClickListener.ListenerBase() {
 
-                @Override
-                public void onWorldClick(RaycastReceiver receiver, Vec2f vec2F,
-                                         Raycast raycast) {
-                    Log.d(TAG, "onWorldClick(): " + receiver.toString());
-                    hotspot.setEnabled(false);
-                }
+                        @Override
+                        public void onWorldClick(Raycastable receiver, Vec2f displayCoords,
+                                                 Raycast raycast, RaycastHit raycastHit) {
+                            Log.d(TAG, "onWorldClick(): " + receiver.toString());
+                            hotspot.setVisible(false);
+                        }
 
-                @Override
-                public void onWorldDoubleClick(RaycastReceiver receiver, Vec2f vec2F,
-                                               Raycast raycast) {
-                    Log.d(TAG, "onWorldDoubleClick(): " + receiver.toString());
-                }
+                        @Override
+                        public void onWorldDoubleClick(Raycastable receiver, Vec2f displayCoords,
+                                                       Raycast raycast, RaycastHit raycastHit) {
+                            Log.d(TAG, "onWorldDoubleClick(): " + receiver.toString());
+                        }
 
-                @Override
-                public void onWorldLongClick(RaycastReceiver receiver, Vec2f vec2F,
-                                             Raycast raycast) {
-                    Log.d(TAG, "onWorldLongClick(): " + receiver.toString());
-                }
-            });
+                        @Override
+                        public void onWorldLongClick(Raycastable receiver, Vec2f displayCoords,
+                                                     Raycast raycast, RaycastHit raycastHit) {
+                            Log.d(TAG, "onWorldLongClick(): " + receiver.toString());
+                        }
+                    });
 
         }
 
         // Bind the world click listener to the scene to make it functional.
-        mScene.bindController(mWorldClickListener);
+        mScene.bindRoutine(mWorldClickListener);
 
         // Play overlay image and animation. Since the animation is not needed in VR mode and is
         // not related to viewing direction, simply use an Android image view and XML animation.
@@ -387,16 +391,16 @@ public class Touch extends OrionActivity {
     protected void initOrion() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -408,7 +412,10 @@ public class Touch extends OrionActivity {
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
+
+        // Reset view to the 'front' direction (horizontal center of the panorama).
+        mCamera.setDefaultRotationYaw(0);
 
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
@@ -419,8 +426,12 @@ public class Touch extends OrionActivity {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -430,8 +441,8 @@ public class Touch extends OrionActivity {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 
     /**
@@ -442,26 +453,28 @@ public class Touch extends OrionActivity {
      * @param rollDeg The roll angle in degrees.
      */
     @SuppressWarnings("SameParameterValue")
-    protected SelectablePointerIcon createHotSpot(float yawDeg, float pitchDeg, float rollDeg) {
+    protected OrionSprite createHotSpot(float yawDeg, float pitchDeg, float rollDeg) {
 
-        // Create a new hotspot as a selectable pointer icon widget.
-        SelectablePointerIcon hotspot = new SelectablePointerIcon();
+        // Create a new hotspot as an OrionSprite.
+        OrionSprite hotspot = new OrionSprite(mOrionContext);
 
         // Set the location of the hotspot using Euler angles.
-        hotspot.setLocationPolarZXYDeg(yawDeg, pitchDeg, rollDeg, HOTSPOT_LAYER_RADIUS);
+        hotspot.setWorldTransformFromPolarZXYDeg(yawDeg, pitchDeg, rollDeg,
+                HOTSPOT_LAYER_RADIUS);
 
         // Set the size of the hotspot as a scale factor relative to image asset size.
-        hotspot.setScale(HOTSPOT_SCALE_FACTOR, HOTSPOT_SCALE_FACTOR);
+        hotspot.setScale(HOTSPOT_SCALE_FACTOR);
 
         // Set the icon for the hotspot as a PNG image. */
-        hotspot.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_hotspot_start)));
+        OrionTexture texture = OrionTexture.createTextureFromURI(mOrionContext,
+                this, getString(R.string.asset_hotspot_start));
+        hotspot.bindTexture(texture);
 
         // Adjust hotspot icon's alpha value to make it a little bit transparent.
-        hotspot.getIcon().setAmpAlpha(0.90f);
+        hotspot.getColorFx().setAmpAlpha(0.90f);
 
         // Bind to scene to make it part of the 3D world.
-        mScene.bindWidget(hotspot);
+        mScene.bindSceneItem(hotspot);
 
         return hotspot;
     }
@@ -489,17 +502,17 @@ public class Touch extends OrionActivity {
         TouchControllerWidget(OrionCamera camera) {
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
+            mTouchPincher = new TouchPincher(mOrionContext);
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
+            mTouchRotater = new TouchRotater(mOrionContext);
             mTouchRotater.bindControllable(camera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
+            mRotationAligner = new RotationAligner(mOrionContext);
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
             mRotationAligner.bindControllable(camera);
@@ -511,17 +524,17 @@ public class Touch extends OrionActivity {
         @Override
         public void onBindWidget(OrionScene scene) {
             // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
+            scene.bindRoutine(mTouchPincher);
+            scene.bindRoutine(mTouchRotater);
+            scene.bindRoutine(mRotationAligner);
         }
 
         @Override
         public void onReleaseWidget(OrionScene scene) {
             // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
+            scene.releaseRoutine(mTouchPincher);
+            scene.releaseRoutine(mTouchRotater);
+            scene.releaseRoutine(mRotationAligner);
         }
     }
 
@@ -552,20 +565,12 @@ public class Touch extends OrionActivity {
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Designate each viewport to render content for either left or right eye.
             mView.getViewports()[0].setVRMode(OrionViewport.VRMode.VR_LEFT);
             mView.getViewports()[1].setVRMode(OrionViewport.VRMode.VR_RIGHT);
-
-            // Compensate for VR frame lens distortion using barrel distortion FX.
-            BarrelDistortion barrelFx = new BarrelDistortion();
-            barrelFx.setDistortionFillScale(1.0f);
-            barrelFx.setDistortionCenterOffset(0, 0);
-            barrelFx.setDistortionCoeffs(new float[] { 1.0f, 0.39f, -0.35f, 0.19f} );
-            mView.getViewports()[0].bindFX(barrelFx);
-            mView.getViewports()[1].bindFX(barrelFx);
 
             // Re-configure camera for VR mode.
             mCamera.setVRCameraDistance(0.035f);
@@ -587,8 +592,8 @@ public class Touch extends OrionActivity {
             mPanorama.bindTextureFull(0, mPanoramaTexture);
 
             // Bind one new viewport to landscape orientation.
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Re-configure camera.
             mCamera.setZoom(1.0f);
@@ -655,12 +660,8 @@ public class Touch extends OrionActivity {
      */
     public void showNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.VISIBLE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+        v.setSystemUiVisibility(uiOptions);
         mIsNavigationBarShowing = true;
     }
 
@@ -669,13 +670,9 @@ public class Touch extends OrionActivity {
      */
     public void hideNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.GONE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        v.setSystemUiVisibility(uiOptions);
         mIsNavigationBarShowing = false;
     }
 

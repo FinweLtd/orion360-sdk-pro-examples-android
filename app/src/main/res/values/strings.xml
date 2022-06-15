@@ -62,8 +62,8 @@
     <string name="sprite_layout_bottom_center">BC</string>
     <string name="sprite_layout_bottom_right">BR</string>
     <string name="sprite_layout_swap_texture">Swap texture</string>
-    <string name="sprite_layout_long_side">Long side</string>
-    <string name="sprite_layout_short_side">Short side</string>
+    <string name="sprite_layout_outside">Outside</string>
+    <string name="sprite_layout_inside">Inside</string>
     <string name="sprite_layout_short_width">Width</string>
     <string name="sprite_layout_short_height">Height</string>
     <string name="sprite_layout_crop">Crop</string>

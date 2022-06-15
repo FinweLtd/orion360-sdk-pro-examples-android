@@ -34,18 +34,17 @@ import android.util.Log;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.variable.BasicFunction;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
-import fi.finwe.orion360.sdk.pro.variable.Float1ToFloat1Function;
-import fi.finwe.orion360.sdk.pro.variable.TimedFloatFunction;
-import fi.finwe.orion360.sdk.pro.variable.TimedVariable;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.variable.TimedFloat1ToFloat1Function;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -69,7 +68,10 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
  */
 public class CrossFade extends OrionActivity {
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama spheres will be added to. */
@@ -88,7 +90,7 @@ public class CrossFade extends OrionActivity {
     protected OrionTexture mPanoramaImageTexture;
 
     /** The animator that creates cross-fade FX by adjusting image panorama alpha value. */
-    protected TimedVariable mAlphaAnimator;
+    protected TimedFloat1ToFloat1Function mAlphaAnimator;
 
     /** The camera which will project our 3D scene to a 2D (view) surface. */
     protected OrionCamera mCamera;
@@ -103,19 +105,19 @@ public class CrossFade extends OrionActivity {
 		setContentView(R.layout.activity_main);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanoramaVideo = new OrionPanorama();
+        mPanoramaVideo = new OrionPanorama(mOrionContext);
 
         // Set video panorama size to the usual radius.
         mPanoramaVideo.setScale(1.0f);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaVideoTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaVideoTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Listen for video texture events.
@@ -142,14 +144,14 @@ public class CrossFade extends OrionActivity {
         mScene.bindSceneItem(mPanoramaVideo);
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanoramaImage = new OrionPanorama();
+        mPanoramaImage = new OrionPanorama(mOrionContext);
 
         // Set image panorama size slightly smaller than video panorama, so that when
         // it becomes partially transparent the other panorama can be seen through it.
         mPanoramaImage.setScale(0.9f);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaImageTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaImageTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_PREVIEW_IMAGE_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -161,7 +163,7 @@ public class CrossFade extends OrionActivity {
         mScene.bindSceneItem(mPanoramaImage);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -175,8 +177,12 @@ public class CrossFade extends OrionActivity {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for our content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -186,13 +192,13 @@ public class CrossFade extends OrionActivity {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
         // Create a new timed variable for alpha animation. Here we want to adjust alpha
         // in the range [0.0-1.0] to cross-fade between two panoramas using linear interpolation.
-        mAlphaAnimator = TimedFloatFunction.fromRange(0.0f, 1.0f,
-                Float1ToFloat1Function.Function.LINEAR);
+        mAlphaAnimator = TimedFloat1ToFloat1Function.fromRange(mOrionContext,
+                0.0f, 1.0f, BasicFunction.LINEAR);
 
         // We start from opaque (1.0).
         mAlphaAnimator.setInputValue(1.0f);
@@ -201,10 +207,10 @@ public class CrossFade extends OrionActivity {
         mAlphaAnimator.setDurationMs(3000);
 
         // Bind animator as a shared variable to the inner (image) panorama.
-        mPanoramaImage.bindSharedVariable(OrionSceneItem.VAR_FLOAT1_AMP_ALPHA, mAlphaAnimator);
+        mPanoramaImage.getColorFx().bindAmpAlpha(mAlphaAnimator);
 
         // Set up a listener to act when the animation is finished.
-        mAlphaAnimator.setListener((phase, value) ->
+        mAlphaAnimator.setListener((phase, wrappedPhase, value) ->
                 Log.v(TAG, "Cross-fade finished. Phase = " + phase + ", value = " + value));
 	}
 }

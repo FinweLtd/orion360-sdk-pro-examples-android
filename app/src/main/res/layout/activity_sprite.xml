@@ -7,8 +7,8 @@
     android:background="@color/pure_black"
 	tools:ignore="UsingOnClickInXml">
 
-	<fi.finwe.orion360.sdk.pro.view.OrionView
-	    android:id="@+id/orion_view"
+	<fi.finwe.orion360.sdk.pro.view.OrionViewContainer
+	    android:id="@+id/orion_view_container"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent" />
 
@@ -157,21 +157,21 @@
             android:checkedButton="@+id/radio_long_side">
 
             <RadioButton
-                android:id="@+id/radio_long_side"
+                android:id="@+id/radio_outside"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onFitLongClicked"
+                android:onClick="onFitOutsideClicked"
                 android:textColor="@color/light_gray"
-                android:text="@string/sprite_layout_long_side"
+                android:text="@string/sprite_layout_outside"
                 android:textSize="@dimen/sprite_layout_button_text_size"/>
 
             <RadioButton
-                android:id="@+id/radio_short_side"
+                android:id="@+id/radio_inside"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onFitShortClicked"
+                android:onClick="onFitInsideClicked"
                 android:textColor="@color/light_gray"
-                android:text="@string/sprite_layout_short_side"
+                android:text="@string/sprite_layout_inside"
                 android:textSize="@dimen/sprite_layout_button_text_size" />
 
             <RadioButton

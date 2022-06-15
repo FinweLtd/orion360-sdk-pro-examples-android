@@ -44,11 +44,12 @@ import fi.finwe.orion360.sdk.pro.licensing.LicenseSource;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseStatus;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseVerifier;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 
 /**
  * An example of a minimal Orion360 video player, implemented as a custom activity.
@@ -83,10 +84,13 @@ public class CustomActivity extends Activity {
     protected OrionContext mOrionContext;
 
     /**
-     * OrionView is an Android SurfaceView that Orion360 uses for presenting rendered content
-     * on the device's display. Different types of OrionViews exist for the purpose of rendering
-     * content using a particular external library, such as Oculus GearVR (OrionOvrView) or
-     * Google DayDream (OrionGvrView).
+     * The Android view (SurfaceView), where our 3D scene (OrionView) will be added to.
+     */
+    protected OrionViewContainer mViewContainer;
+
+    /**
+     * OrionView is an internal Orion360 class that it uses for presenting rendered content
+     * on the device's display.
      *
      * Further, OrionViewport defines a part of an OrionView that is used for rendering an
      * OrionScene using an OrionCamera, on that particular area of the OrionView.
@@ -152,7 +156,7 @@ public class CustomActivity extends Activity {
      */
     protected TouchControllerWidget mTouchController;
 
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -235,16 +239,16 @@ public class CustomActivity extends Activity {
         mOrionContext.getSensorFusion().setMagnetometerEnabled(false);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-		mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+		mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -256,7 +260,7 @@ public class CustomActivity extends Activity {
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Define maximum limit for zooming. As an example, at value 1.0 (100%) zooming in is
         // disabled. At 3.0 (300%) camera will never reduce the FOV below 1/3 of the base FOV.
@@ -276,8 +280,12 @@ public class CustomActivity extends Activity {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -287,7 +295,7 @@ public class CustomActivity extends Activity {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 }

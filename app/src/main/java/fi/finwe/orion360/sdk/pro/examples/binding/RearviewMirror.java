@@ -34,7 +34,8 @@ import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
 import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
@@ -42,7 +43,7 @@ import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
@@ -67,7 +68,10 @@ import fi.finwe.util.ContextUtil;
  */
 public class RearviewMirror extends OrionActivity {
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scenes where our panorama spheres will be added to. */
@@ -97,18 +101,18 @@ public class RearviewMirror extends OrionActivity {
 		setContentView(R.layout.activity_main);
 
         // Create new scenes. These represent 3D worlds where various objects can be placed.
-        mScene = new OrionScene();
-        mSceneRearview = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
+        mSceneRearview = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create new panoramas. These are 3D objects that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
-        mPanoramaRearview = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
+        mPanoramaRearview = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama textures to the panorama objects. Here we assume full spherical
@@ -122,13 +126,13 @@ public class RearviewMirror extends OrionActivity {
         mSceneRearview.bindSceneItem(mPanoramaRearview);
 
         // Create a new camera (main view). This will become the end-user's eyes into the 3D world.
-        mMainViewCamera = new OrionCamera();
+        mMainViewCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mMainViewCamera.setDefaultRotationYaw(0);
 
         // Create a new camera (rear-view). This will become the end-user's eyes into the 3D world.
-        mRearViewCamera = new OrionCamera();
+        mRearViewCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'back' direction.
         mRearViewCamera.setDefaultRotationYaw(180.0f);
@@ -146,8 +150,12 @@ public class RearviewMirror extends OrionActivity {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport, and
@@ -157,7 +165,7 @@ public class RearviewMirror extends OrionActivity {
                 // above: Main view covers the whole view
                 new RectF(0.25F, 0.95F, 0.75F, 0.75F) },
                 // above: Rear-view covers small area on top
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
         // Notice the viewport rect coordinate system. The viewport coordinates are relative
         // to its parent view, whose left edge is 0.0 and right edge 1.0, bottom edge is 0.0
@@ -202,19 +210,19 @@ public class RearviewMirror extends OrionActivity {
 
             // Create pinch-to-zoom/pinch-to-rotate handler for the main camera only.
             // Notice that we do not want zooming to rear-view mirror, hence no binding.
-            mTouchPincher = new TouchPincher();
+            mTouchPincher = new TouchPincher(mOrionContext);
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(mainCamera, OrionCamera.VAR_FLOAT1_ZOOM);
 
             // Create drag-to-pan handler.
             // Notice that we want panning to affect to both main and rear-view cameras.
-            mTouchRotater = new TouchRotater();
+            mTouchRotater = new TouchRotater(mOrionContext);
             mTouchRotater.bindControllable(mainCamera);
             mTouchRotater.bindControllable(rearViewCamera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
+            mRotationAligner = new RotationAligner(mOrionContext);
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
             mRotationAligner.bindControllable(mainCamera);
@@ -231,17 +239,17 @@ public class RearviewMirror extends OrionActivity {
         @Override
         public void onBindWidget(OrionScene scene) {
             // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
+            scene.bindRoutine(mTouchPincher);
+            scene.bindRoutine(mTouchRotater);
+            scene.bindRoutine(mRotationAligner);
         }
 
         @Override
         public void onReleaseWidget(OrionScene scene) {
             // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
+            scene.releaseRoutine(mTouchPincher);
+            scene.releaseRoutine(mTouchRotater);
+            scene.releaseRoutine(mRotationAligner);
         }
     }
 }

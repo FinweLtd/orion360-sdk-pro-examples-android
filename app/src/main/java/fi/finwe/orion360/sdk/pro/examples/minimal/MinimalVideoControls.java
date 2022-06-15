@@ -38,7 +38,7 @@ import android.widget.MediaController;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, with minimal video controls.
@@ -89,7 +89,7 @@ public class MinimalVideoControls extends SimpleOrionActivity {
 		setContentView(R.layout.activity_video_player);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Initialize Orion360 video view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
@@ -114,11 +114,13 @@ public class MinimalVideoControls extends SimpleOrionActivity {
         mMediaController.setMediaPlayer(
                 ((OrionVideoTexture)getOrionTexture()).getMediaPlayerControl());
 
-        // Set Orion360 view as anchor view (media controller positions itself on top of anchor).
-        mMediaController.setAnchorView(getOrionView());
+        // Set Orion360 view container as anchor view (media controller positions itself
+        // on top of anchor).
+        mMediaController.setAnchorView(findViewById(R.id.orion_view_container));
 
         // Propagate all touch events from the Orion view to a gesture detector.
-        getOrionView().setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
+        findViewById(R.id.orion_view_container).setOnTouchListener(
+                (v, event) -> mGestureDetector.onTouchEvent(event));
 
         // Toggle media controls by tapping the screen.
         mGestureDetector = new GestureDetector(this,

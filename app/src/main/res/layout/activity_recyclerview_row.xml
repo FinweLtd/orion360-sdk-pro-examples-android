@@ -18,8 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="200dp">
 
-            <fi.finwe.orion360.sdk.pro.view.OrionView
-                android:id="@+id/orion_view"
+            <fi.finwe.orion360.sdk.pro.view.OrionViewContainer
+                android:id="@+id/orion_view_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
@@ -37,7 +37,8 @@
                 android:layout_height="60dp"
                 android:scaleType="centerCrop"
                 android:layout_centerInParent="true"
-                android:src="@drawable/play_overlay"/>
+                android:src="@drawable/play_overlay"
+                android:contentDescription="dummy" />
 
         </RelativeLayout>
 

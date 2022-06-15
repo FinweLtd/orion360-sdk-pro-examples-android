@@ -62,7 +62,7 @@ This repository contains a set of examples for creating a 360 photo/video player
 >
 > If you still need to support *x86* target please use Orion360 v. 3.1.02.001 to create a separate .apk file for these targets. If you are not sure, then almost certainly you do not need it.
 >
-> The difference between Orion360 v. 3.1.02.002 and v. 3.1.02.001 is different build targets. There are some minor bugfixes that were backported from newer internal builds, but no API or feature changes.
+> The difference between Orion360 v. 3.1.02.002 and v. 3.1.02.001 is different build targets. There are some minor bugfixes that were back-ported from newer internal builds, but no API or feature changes.
 
 
 Preface
@@ -86,7 +86,7 @@ Table of Contents
 -----------------
 1. [Preface](#preface)
 2. [Table of Contents](#table-of-contents)
-3. [Prerequisities](#prerequisities)
+3. [Prerequisites](#prerequisites)
 4. [Cloning and Running the Project](#cloning-and-running-the-project)
 5. [Minimal](#minimal)
    1. [Minimal Video Stream Player](#minimal-video-stream-player)
@@ -103,8 +103,9 @@ Table of Contents
 7. [Engine](#engine)
    1. [Android MediaPlayer](#android-mediaplayer)
    2. [Google ExoPlayer](#google-exoplayer)
-   3. [Custom ExoPlayer](#custom-exoplayer)
-8. [Binding](#binding)
+8. [Fx](#fx)
+   1. [Barrel Correction](#barrel-correction)
+9. [Binding](#binding)
    1. [Mono Panorama](#mono-panorama)
    2. [Mono Panorama VR](#mono-panorama-vr)
    3. [Stereo Panorama](#stereo-panorama)
@@ -117,37 +118,37 @@ Table of Contents
    10. [Blending](#blending)
    11. [Video Ball](#video-ball)
    12. [Tiled](#tiled)
-9. [Projection](#projection)
-   1. [Rectilinear](#rectilinear)
-   2. [Source](#source)
-   3. [Little Planet](#little-planet)
-   4. [Perfect Diamond](#perfect-diamond)
-9. [Layout](#layout)
-   1. [RecyclerView Layout](#recyclerview-layout)
-9. [Input](#input)
-   1. [Sensors](#sensors)
-   2. [Touch](#touch)
-9. [Streaming](#streaming)
-    1. [Buffering Indicator](#buffering-indicator)
-    2. [Player State](#player-state)
-9. [Sprite](#sprite)
-    1. [Image Sprite](#image-sprite)
-    2. [Video Sprite](#video-sprite)
-    3. [Sprite Layout](#sprite-layout)
-9. [Widget](#widget)
-    1. [Video Controls](#video-controls)
-    2. [Interactive Hotspots](#interactive-hotspots)
-9. [Polygon](#polygon)
-    1. [Textured Cube](#textured-cube)
-    2. [Orion Figure](#orion-figure)
-9. [Animation](#animation)
-    1. [Cross-fade](#cross-fade)
-9. [Gallery](#gallery)
-    1. [Thumbnail Pager](#thumbnail-pager)
+10. [Projection](#projection)
+    1. [Rectilinear](#rectilinear)
+    2. [Source](#source)
+    3. [Little Planet](#little-planet)
+    4. [Perfect Diamond](#perfect-diamond)
+11. [Layout](#layout)
+    1. [RecyclerView Layout](#recyclerview-layout)
+12. [Input](#input)
+    1. [Sensors](#sensors)
+    2. [Touch](#touch)
+13. [Streaming](#streaming)
+     1. [Buffering Indicator](#buffering-indicator)
+     2. [Player State](#player-state)
+14. [Sprite](#sprite)
+     1. [Image Sprite](#image-sprite)
+     2. [Video Sprite](#video-sprite)
+     3. [Sprite Layout](#sprite-layout)
+15. [Widget](#widget)
+     1. [Video Controls](#video-controls)
+     2. [Interactive Hotspots](#interactive-hotspots)
+16. [Polygon](#polygon)
+     1. [Textured Cube](#textured-cube)
+     2. [Orion Figure](#orion-figure)
+17. [Animation](#animation)
+     1. [Cross-fade](#cross-fade)
+18. [Gallery](#gallery)
+     1. [Thumbnail Pager](#thumbnail-pager)
 
 
-Prerequisities
---------------
+Prerequisites
+-------------
 
 Basic Android software development skills are enough for understanding, modifying and running the examples.
 
@@ -241,7 +242,7 @@ Playing adaptive HLS streams can be surprisingly easy with Orion360 - simply use
 
 An example of a minimal Orion360 video player, for downloading a video file before playback.
 
-Available network bandwith often becomes an issue when streaming video over the network (especially true with high-resolution 4k content). Unfortunately, saving a copy of a video file while streaming it is not possible with Android MediaPlayer as a video backend. Hence, if you need to obtain a local copy of a video file that resides in the network either for offline use or to be cached, download it separately as shown in this example.
+Available network bandwidth often becomes an issue when streaming video over the network (especially true with high-resolution 4k content). Unfortunately, saving a copy of a video file while streaming it is not possible with Android MediaPlayer as a video backend. Hence, if you need to obtain a local copy of a video file that resides in the network either for offline use or to be cached, download it separately as shown in this example.
 
 Since downloading a large file will take a considerable amount of time, it needs to be done asynchronously. Here we use Android's DownloadManager service, which is recommended for video files (as an alternative, _MinimalImageDownloadPlayer_ shows how to download a file with own code). In this simple example, user needs to wait for the download to complete and the playback to begin as there is nothing else to do. However, you should consider placing a small download indicator somewhere in your app and allowing the user to continue using the app while the download is in progress. A high quality app has a download queue for downloading multiple files sequentially, is able to continue a download if it gets terminated early for example because of a network issue, allows user to cancel ongoing downloads, and uses platform notifications for indicating download progress and completion of a download. These features go beyond this example.
 
@@ -259,7 +260,7 @@ This example showcases all supported file system locations and file access metho
 
 1. Application installation package's _/assets_ folder
 
-   Private assets folder allows playing content embedded to the apps's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds video files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery).
+   Private assets folder allows playing content embedded to the app's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds video files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery).
 
 2. Application installation package's _/res/raw_ folder
 
@@ -360,7 +361,7 @@ This example showcases all supported file system locations and file access metho
 
 1. Application installation package's _/assets_ folder
 
-   Private assets folder allows playing content embedded to the apps's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds image files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery), or contains only a few images.
+   Private assets folder allows playing content embedded to the app's own installation package (.apk). Notice 100MB .apk size limit in Google Play store. This is the recommended location when the application embeds image files to the installation package and _is NOT_ distributed via Google Play store (single large .apk file delivery), or contains only a few images.
 
 2. Application installation package's _/res/raw_ folder
 
@@ -466,15 +467,16 @@ An example of using Google ExoPlayer (that used to be embedded to Orion360) as t
 
 > This wrapper works with ExoPlayer version 2.4.1. If you choose to use different ExoPlayer version, you probably need to modify this class according ExoPlayer's API changes.
 
-### Custom ExoPlayer
+Fx
+--
 
-![alt tag](https://cloud.githubusercontent.com/assets/12032146/20639984/37920482-b3dc-11e6-9fb0-8d42c26c50d4.png)
+### Barrel Correction
 
-[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/engine/CustomExoPlayer.java)
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640590/f3459640-b3ea-11e6-9e9a-bd9851d7ef11.png)
 
-An example of using a custom configuration for ExoPlayer as the audio/video player engine.
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/fx/BarrelCorrection.java)
 
->  This example is useful also when you want to use a custom or 3rd party audio/video player engine.
+An example of configuring lens distortion correction (barrel correction) for Google Cardboard style VR headsets.
 
 Binding
 -------
@@ -611,7 +613,7 @@ In this example, the video player is otherwise typical but configured for doughn
 - Get _SensorFusion_ in Java code. That will rotate the camera according to device orientation. Bind it to _OrionScene_ AND _OrionCamera_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND _OrionCamera_.
 
-> Since the aspect ratio of a doughnut shape video is exceptionally wide, the maximum video resolution or the maximum texture size can become a limiting factor. One solution is to horizontally split the doughnut video to left and right halfs, and stack these into the video frame on top of each other (left=top, right=bottom). It is easy to re-combine the parts in the app by using Orion360 to map them onto the doughnut surface. A tiny seam may appear as a result.
+> Since the aspect ratio of a doughnut shape video is exceptionally wide, the maximum video resolution or the maximum texture size can become a limiting factor. One solution is to horizontally split the doughnut video to left and right halves, and stack these into the video frame on top of each other (left=top, right=bottom). It is easy to re-combine the parts in the app by using Orion360 to map them onto the doughnut surface. A tiny seam may appear as a result.
 
 ### Rear-view Mirror
 
@@ -621,7 +623,7 @@ In this example, the video player is otherwise typical but configured for doughn
 
 An example of bindings for creating a player with a rear-view mirror.
 
-In this example, two viewports and two cameras are used for simultanouesly showing two different views to the same equirectangular mono panorama video. In short, this configuration requires the following steps:
+In this example, two viewports and two cameras are used for simultaneously showing two different views to the same equirectangular mono panorama video. In short, this configuration requires the following steps:
 
 - Define one _OrionView_ in XML layout. This is where Orion360 will render its output.
 - Create two _OrionViewports_ in Java code. This will define the internal layout of the _OrionView_ so that one viewport covers the whole _OrionView_ and another smaller one is put on top of it. Bind them to _OrionView_. Map the first viewport to the main camera and the second viewport to the rear-view camera.
@@ -632,7 +634,7 @@ In this example, two viewports and two cameras are used for simultanouesly showi
 - Get _SensorFusion_ in Java code. That will rotate both cameras according to device orientation. Bind it to _OrionScene_ AND both _OrionCameras_.
 - Create one _TouchControllerWidget_ in Java code. This will map touch gestures to camera control. Bind it to _OrionScene_ AND both _OrionCameras_. Notice that zooming feature is disabled from rear-view camera.
 
-> Here the focus is in the use of the binding mechanism, hence a couple of details have been obmitted compared to how a real mirror works: in reality when the user looks up the rear-view image should reflect bottom direction (here: top direction), and the actual mirror effect is also missing i.e. texts should show up backwards in the mirror-view (here: not mirrored).
+> Here the focus is in the use of the binding mechanism, hence a couple of details have been omitted compared to how a real mirror works: in reality when the user looks up the rear-view image should reflect bottom direction (here: top direction), and the actual mirror effect is also missing i.e. texts should show up backwards in the mirror-view (here: not mirrored).
 
 ### Overview
 
@@ -811,7 +813,7 @@ In short, the example shows how to:
 - Manually configure pinch zoom gesture limit, or disable pinch zoom feature altogether
 - Listen for device orientation changes (sensor fusion events), to implement custom features
 
-> In mathematics, there are multiple alternatives for describing rotations. Probably the most well-known is Euler angles (yaw, pitch, roll). Unfortunately, Euler angle representation has severe issues, and thus professionally written algorithms typically use quaternions or rotation matrixes instead. Also the rotation order is very significant. Hence, it is quite common to get more than confused when trying to figure out rotations! As a developer, you don't need to worry about these much as Orion360 SDK handles all the complexity on behalf of you. In addition, this example shows how to convert a quaternion representation of the current device rotation to angle degrees, which can be understood much more easily.
+> In mathematics, there are multiple alternatives for describing rotations. Probably the most well-known is Euler angles (yaw, pitch, roll). Unfortunately, Euler angle representation has severe issues, and thus professionally written algorithms typically use quaternions or rotation matrices instead. Also the rotation order is very significant. Hence, it is quite common to get more than confused when trying to figure out rotations! As a developer, you don't need to worry about these much as Orion360 SDK handles all the complexity on behalf of you. In addition, this example shows how to convert a quaternion representation of the current device rotation to angle degrees, which can be understood much more easily.
 
 ### Touch
 
@@ -827,7 +829,7 @@ This example uses single tapping for toggling between normal and full screen vie
 
 In most video player applications, user is offered an option to toggle between a normal view with controls and another, occlusion-free view where all widgets are hidden. Some applications implement this with a maximize-button and a notification telling how to return from the full-screen view. That is all good, but it is easy to miss or forget the instructions, and what users tend to try first is tapping the screen. Thus, it is a good idea to map single tapping for toggling between normal and full-screen view. On Android, this means showing and hiding together 1) video controls, 2) system navigation bar, 3) system title bar, 4) system action bar, 5) custom application title bar. Of course, most applications use only some of these elements. The complexity increases when video controls are hidden with a timer, and some elements use transition animation. Notice that this example focuses on demonstrating the feature, not on user experience.
 
-When something doesn't seem to work, users tend to try again with an amplified manner and multiple times. Since toggling between play and pause states are the most common control operation in a video player application, we recommend mapping double tapping events for this purpose. This allows controlling play/pause state even in full-screen mode (without bringing the controls in view), is easy to learn, and quicly becomes very natural. However, it is crucial to add a short animation that indicates the state change when the double tapping event has been recognized. A professionally made application also shows a hint about this hidden feature when user is learning to use the app.
+When something doesn't seem to work, users tend to try again with an amplified manner and multiple times. Since toggling between play and pause states are the most common control operation in a video player application, we recommend mapping double tapping events for this purpose. This allows controlling play/pause state even in full-screen mode (without bringing the controls in view), is easy to learn, and quickly becomes very natural. However, it is crucial to add a short animation that indicates the state change when the double tapping event has been recognized. A professionally made application also shows a hint about this hidden feature when user is learning to use the app.
 
 When user enters VR mode, all standard controls must be hidden and the whole screen reserved for split screen rendering. But when it is time to exit VR mode, it is not at all obvious to user how to do that! She will probably try to tap the screen, but we recommend not to exit VR mode from single tapping event, as it is very easy to accidentally tap the screen already when sliding the smartphone inside a VR frame. Instead, use single tapping event for showing a short-lived notification that hints about using long tapping for exiting VR mode - this prevents exiting VR mode accidentally, but allows users to find the way to exit VR mode with ease. Additional benefit is that long tapping can be used as a shortcut also for enabling VR mode (same gesture should always work both ways).
 
@@ -947,7 +949,7 @@ An example of creating custom video controls.
 
 The MinimalVideoControls example already showed how easy it is to add video controls to Orion360 view with just a couple of lines of code. However, the app developer frequently wants to customize the controls, for example to add a button for toggling video looping, full-screen view, VR mode, or projection. Also the buttons and seekbar look & feel are usually customized to reflect brand colors and style. This example showcases how a custom controller class can be written from scratch.
 
-Typically the custom controls class would be in its own source code file, but here it is placed as an inner class to the player activity to keep the whole example code in one place. The custom controls class uses the same principles for integrating with the video view than Android's own MediaController class: controllable media player is given as a parameter (here _OrionVideoTexture_), as well as an anchor view for positioniong the controls (container viewgroup from XML layout).
+Typically the custom controls class would be in its own source code file, but here it is placed as an inner class to the player activity to keep the whole example code in one place. The custom controls class uses the same principles for integrating with the video view than Android's own MediaController class: controllable media player is given as a parameter (here _OrionVideoTexture_), as well as an anchor view for positioning the controls (container view group from XML layout).
 
 The implementation contains a play/pause button, a seekbar, elapsed and total time labels, an audio mute on/off button, and VR mode button. In addition, a separate title bar is created. All graphical elements are custom made, and interaction is built on top of the available APIs. You will find it easy to further customize and develop this controller for your own needs.
 
@@ -1032,13 +1034,13 @@ This example creates a gallery of video items by scanning a specific directory i
 
 Pros:
 
-- Scalability: pager style navigation scales in theory indefinetly
+- Scalability: pager style navigation scales in theory indefinitely
 - Efficiency: runs well on low-end devices with weak CPU and small amount of memory
 - Usability: end-user does not need to turn around to browse the gallery
-- Visuality: looks good even if there is only a few items; allows using large size thumbnails
+- Look & feel: looks good even if there is only a few items; allows using large size thumbnails
 
 Cons:
 
-- Scalability: not really suitable for multi-level (hierarchical) navitation 
+- Scalability: not really suitable for multi-level (hierarchical) navigation 
 - Efficiency: Slow to navigate; practical for only a small amount of content (1-10 items)
 - Usability: Only one item is in view at a time; difficult to get an overview of available content

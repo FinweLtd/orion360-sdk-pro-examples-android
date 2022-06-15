@@ -106,7 +106,7 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
 		setContentView(R.layout.activity_image_player);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Download the image file, then play it.
         downloadAndPlay(
@@ -153,8 +153,6 @@ public class MinimalImageDownloadPlayer extends SimpleOrionActivity {
         private final ExecutorService executors;
         private final Activity activity;
         private final ProgressDialog progress;
-
-        @SuppressWarnings("FieldCanBeLocal")
         private boolean cancelled = false;
 
         public DownloadFileTask(Activity activity, ProgressDialog progress) {

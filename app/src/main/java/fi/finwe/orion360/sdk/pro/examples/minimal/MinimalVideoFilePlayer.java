@@ -114,7 +114,7 @@ public class MinimalVideoFilePlayer extends SimpleOrionActivity {
 		setContentView(R.layout.activity_video_player);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Try different locations by commenting out all but one from below:
         String video;
