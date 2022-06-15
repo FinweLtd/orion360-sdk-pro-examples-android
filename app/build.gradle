@@ -48,8 +48,8 @@ dependencies {
 
     // From Finwe maven repo at GitHub.
 //    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
-    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.001-debug'
-    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.001'
+    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.002-debug'
+    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.002'
 
     // ExoPlayer as an alternative video engine.
     //noinspection GradleDependency

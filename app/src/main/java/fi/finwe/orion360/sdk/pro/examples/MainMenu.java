@@ -355,7 +355,7 @@ public class MainMenu extends FragmentActivity {
 
 			// Parse each activity's name, package and full name, and store them into the list.
 			for (ActivityInfo activityInfo : packageInfo.activities) {
-				if (activityInfo.name.equals(this.getClass().getName()))
+				if (activityInfo.name.equals(MainMenu.class.getName()))
 					continue; // Skip self.
 
 				ActivityData activityData = new ActivityData();
