@@ -2,7 +2,7 @@
 
 # Migration Guide for Orion360 SDK (Pro) for Android
 
-This repository contains instructions for migrating from one Orion360 SDK (Pro) version to another.
+This file contains instructions for migrating from one Orion360 SDK (Pro) version to another.
 
 ## From 3.x to 4.x
 
