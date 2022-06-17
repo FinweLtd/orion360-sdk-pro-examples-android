@@ -309,4 +309,7 @@ Next, let's try again with CloudFront URL using our signed cookies. Notice that 
 
 ## Client app modifications
 
-TODO
+See example streaming/SecuredStreaming for working examples of streaming protected content from S3 via CloudFront using:
+- plain Android MediaPlayer (multiple approaches demonstrated)
+- Orion360 SDK Pro with Android MediaPlayer as video engine
+
