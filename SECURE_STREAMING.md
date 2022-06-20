@@ -11,24 +11,26 @@ Sometimes, a client application needs to access content that is not publicly ava
 2. There is user account specific private content that should be available only to the original creator and a few selected user accounts (privacy reason).
 3. There is content that is made available based on users' region or age (legal reasons).
 
-To enforce content availability restrictions, users need to be authenticated. Typically, this is done with user accounts: to access protected content, users log in with personal username and password. Once the user is authenticated and access to protected content is granted by the web application, the client application uses secured streaming for accessing protected content files.
-
 ## Overview
 
+To enforce content availability restrictions, users need to be authenticated. Typically, this is done with user accounts: to access protected content, users log in with personal username and password. Once the user is authenticated and access to protected content is granted by the web application, the client application uses secured streaming for accessing protected content files.
+
 This document focuses on the following approach for secured streaming:
-* Protected content (a video file) is stored in Amazon AWS S3 bucket.
+* Protected content (e.g. a video file) is stored in Amazon AWS S3 bucket.
 * The video file is accessed *only* via AWS CloudFront CDN, not directly via S3 public link.
 * CloudFront is configured to limit access rights by requiring *signed cookies* from the viewers.
 * The client application (a video player app) passes the signed cookies when it attempts to play protected content.
-* CloudFront will check the cookies and either grant or deny access.
+* CloudFront will check the cookies and either grant or deny (HTTP error 403) access.
 
 Typically, a full solution includes a web application and user account database. An individual user must have a personal user account to access protected content, and s/he needs to log in to view any protected content. Once a user logs in, the web application generates and offers signed cookies to the client application, which uses them to retrieve content via CloudFront.
 
 In this simple example, we don't create a web application nor a user account database. Instead, we create long-term signed cookies offline and bundle them with the client application. From security point of view‚ this is a very bad idea! Use this approach only for testing purposes. Read the warnings below and implement a proper web application and user authentication solution.
 
-> You can find files related to this document under /cookies subdirectory in this repository. Normally you don't share the private key with anyone. Since this is only an example and we don't really need to protected access to the demo video file, we share also the private key, so that you can test and debug each step. When you create your own key pair, do not push the private key to code repository.
+> You can find files related to this document under /cookies subdirectory in this repository. Normally you don't share the private key with anyone. Since this is only an example and we don't really need to protected access to the demo content, we share also the private key, so that you can test and debug each step. When you create your own key pair, do not push the private key to code repository!
 
-For more information, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html
+> You can find a working example under /streaming/SecuredStreaming. There are multiple approaches and you can choose which one to use by editing the example's source code (uncomment).
+
+> Also, read official documentation Amazon AWS, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html
 
 ## AWS Preparations
 
@@ -89,7 +91,7 @@ In order to sign cookies, we need a *signer*. This can be either a *trusted key 
 
 The signer will use a public-private key pair as follows: the signer uses private key to sign the URL or cookie, and CloudFront uses the public key to verify the signature. Thus, when you give a signed cookie to your client application and it then passes the cookie along with a content request, CloudFront can verify that the client indeed has a right to access the requested content.
 
-> Key pairs should be automatically rotated for better security. That is out of the scope of this article.
+> Key pairs should be automatically rotated for better security. That is out of the scope of this article. Read more about this in Amazon AWS documentation.
 
 #### Create a new key pair:
 
@@ -168,9 +170,9 @@ Instructions from AWS documentation:
 
 You can set different kinds of limitations in the cookies, for example start and expiration dates and accepted IP address/range. These are out of the scope of this document, but you are free to use these features. They simply change the content of the signed cookies.
 
-There are also various ways to create and transmit signed cookies from your web app to the viewer app (here: an Android application running Orion360 SDK Pro). In this example we don't have a web app to communicate with, so we will simply create the necessary signed cookies offline and bundle them directly to the app (ouch! You should not do that!)
+There are also various ways to create and transmit signed cookies from your web app to the client/viewer app (here: an Android application running Orion360 SDK Pro). In this example we don't have a web app to communicate with, so we will simply create the necessary signed cookies offline and bundle them directly to the app (ouch! You should not do that!)
 
-WARNING: Don't do these things in a real app:
+**WARNING: Don't do these things in a real app**:
 - Don't put your private key to the app and sign cookies within the app (a hacker can extract your private key from your app's .apk).
 - Don't bundle pre-created signed cookies with the app like we do in this example (a hacker can extract the cookies from your app's apk).
 - Don't sign cookies offline with an expiration date set very far to the future like we do in this example (if a hacker gets the cookies, they will work for him a long time).
@@ -306,10 +308,182 @@ Next, let's try again with CloudFront URL using our signed cookies. Notice that 
 
 > We have now confirmed that our protected video file can be accessed only when proper signed cookies are included to the request.
 
+## Protecting multiple files
+
+Next, we will expand the solution to protect multiple files.
+
+### Add an image file to S3 bucket
+
+1. Log in to AWS management console using your AWS account credentials.
+2. Navigate to Amazon S3 / Buckets list.
+3. Select your content bucket (here: *orion360sdk-protected-content*).
+4. Click 'Upload' and drag n drop a demo image file to upload it to S3 (here: *demo_image.jpg*).
+5. Once the upload completes, click the file to check its cloud URL (here: *https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/demo_image.jpg*)
+
+> Notice that you don't need to make the file public in order to access it via CloudFront / signed cookies.
+
+### Creating the signature (canned policy)
+
+Content in our S3 bucket is available only via CloudFront and signed cookies, therefore these URLs do not work for the image file:
+```
+> curl https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/demo_image.jpg
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>AccessDenied</Code><Message>Access Denied</Message><RequestId>4FE4ZGR1FC7MFVEN</RequestId><HostId>k3IrJhJkf1p3v78XftSX2wTmpP1R/cJSlRh7dxxM+IXe8KhLPB5PuXrkZsB2fsrxx+NgAuLPc9c=</HostId></Error>
+```
+
+```
+> curl https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg
+
+<?xml version="1.0" encoding="UTF-8"?><Error><Code>MissingKey</Code><Message>Missing Key-Pair-Id query parameter or cookie value</Message></Error>
+```
+
+However, accessing the file with signed cookies we already generated also fails:
+```
+> curl --cookie "CloudFront-Expires=2147483647; CloudFront-Signature=uI3ott-V5IiFW-ZTgXg7AAN0iIC4Y2dnz0BLCLrPs7icTx3qghkz1HqZ9p0LnHShdEg8awMEsg5ev~ClXGBu52x80jIxI6tjBoH8ivZ3Ddt09TvNq95Q0ij2-1TsbHyxevJ3Iex29TCTMEG7Y36AWf9~IJzzJHKzp~SiflEAn-sPR0Z-9hdrQmkgalx5qSiu~Und7GM6qV2WMxwzrcGd7q8AV9N7IKnyJR-fqjOA7mEmOnQrT4iCCdkEcxmlgBxC3wRpmw53mbPP2OVr4c~b~dwB7XYr-gDbjtoSXCFwb6Ds~SdXx0hjmCbY1EynN8wGslfsYpHmiuyLFUnABOhzNQ__; CloudFront-Key-Pair-Id=K37HI3P0TW0W7Q; Domain=d15i6zsi2io35f.cloudfront.net; Path=/*; Secure; HttpOnly" https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg
+
+<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access denied</Message></Error>
+```
+
+This happens, because our signature cookie was created from a JSON policy that contains the full resource URL - but it is to the video file, not to this new image file! We need to create a new policy with a resource URL for the image file.
+
+cookie_policy_image.json:
+```
+{"Statement":[{"Resource":"https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg","Condition":{"DateLessThan":{"AWS:EpochTime":2147483647}}}]}
+```
+
+Signature for the image file:
+```
+> cat cookie_policy_image.json | openssl sha1 -sign cookie_private_key.pem | base64 | tr '+=/' '-_~'
+
+qS4fd54zfyGdMuHsOfVYZuX3EmOhcsbqMqtiPptdLXd50otUlfSLi3m~CN2AEvBDNDUAtKEjn4t2ffG5HEP~TS5~lMzZFOIxq3hEmot0lVGz6wurezxV1f4GDPBptsPkoLNNZkj7UYJjjwsC-ELejJYSBx5J6TTKVgUQ0nCmHlQNsAywj4XKKVpMKBRTW0x0II~vM0vC-M~Kt4N~ZUDcbwx8fTBmfgdeBicm2PnItPkje3YTkVNYor64cnNfY7W9fv1jDrpN9ZcX8PCNtDbxPndosenDxkFOB9A7CbeSrdxN25P2ZTy~MHXZBJ5w0tFhbhzj2JBp3bXNIMs-Cf1m1w__
+```
+
+Test:
+```
+curl --cookie "CloudFront-Expires=2147483647; CloudFront-Signature=qS4fd54zfyGdMuHsOfVYZuX3EmOhcsbqMqtiPptdLXd50otUlfSLi3m~CN2AEvBDNDUAtKEjn4t2ffG5HEP~TS5~lMzZFOIxq3hEmot0lVGz6wurezxV1f4GDPBptsPkoLNNZkj7UYJjjwsC-ELejJYSBx5J6TTKVgUQ0nCmHlQNsAywj4XKKVpMKBRTW0x0II~vM0vC-M~Kt4N~ZUDcbwx8fTBmfgdeBicm2PnItPkje3YTkVNYor64cnNfY7W9fv1jDrpN9ZcX8PCNtDbxPndosenDxkFOB9A7CbeSrdxN25P2ZTy~MHXZBJ5w0tFhbhzj2JBp3bXNIMs-Cf1m1w__; CloudFront-Key-Pair-Id=K37HI3P0TW0W7Q; Domain=d15i6zsi2io35f.cloudfront.net; Path=/*; Secure; HttpOnly" https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg --output test.jpg
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1747k  100 1747k    0     0  2406k      0 --:--:-- --:--:-- --:--:-- 2403k
+```
+
+The image file was successfully loaded.
+
+> When using canned policy, you must create a *separate signature* for each protected file, as the signature contains the file's URL. Typically, this is not a problem, as your web application can create the necessary signed cookies on request. You can, for example, set up a REST API to query cookies for a particular file that your viewer client wants to access. However, in a more dynamic case, such as adaptive video streaming with HLS, you should use more flexible *custom policy* instead of canned policy. See the next example for details.
+
+### Add an adaptive HLS video stream
+
+#### Convert .mp4 video to adaptive HLS video stream (.m3u8)
+
+We can use, for example, FFMPEG with the following command to create a playlist (.m3u8) and a sequence of video files (.ts):
+
+```
+> ffmpeg -i Orion360_test_video_1920x960.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls Orion360_test_video_1920x960.m3u8
+```
+
+The folder now contains these new files:
+* Orion360_test_video_1920x960.m3u8
+* Orion360_test_video_1920x9600.ts
+* Orion360_test_video_1920x9601.ts
+* Orion360_test_video_1920x9602.ts
+
+Contents of the generated *Orion360_test_video_1920x960.m3u8* file:
+```
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:17
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:16.666667,
+Orion360_test_video_1920x9600.ts
+#EXTINF:8.333333,
+Orion360_test_video_1920x9601.ts
+#EXTINF:4.966667,
+Orion360_test_video_1920x9602.ts
+#EXT-X-ENDLIST
+```
+
+> When using HSL, there is no single video file. Instead, there is an .m3u8 file that contains a playlist with references to multiple video clip files (.ts). These are 10 second long video clips (there will be as many as needed to cover the whole source video length). The video player will automatically play them in sequence, as instructed in the playlist file. We also could have generated multiple *qualities*, for example different video resolutions. In that case, a single 10-second clip would be available as multiple .ts clips (variants), each offering one quality / resolution. The player would automatically choose which one to play, for example based on current measured network speed, and therefore could adapt to network conditions be changing video quality on the fly, at each 10 second clip boundary. 
+
+#### Add HLS video to S3 bucket
+
+1. Log in to AWS management console using your AWS account credentials.
+2. Navigate to Amazon S3 / Buckets list.
+3. Select your content bucket (here: *orion360sdk-protected-content*).
+4. Click 'Upload' and drag n drop .m3u8 file as well as .ts files to S3.
+5. Once the upload completes, click the .m3u8 file to check its cloud URL (here: *https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/Orion360_test_video_1920x960.m3u8*)
+
+> You will need to give the URL of the .m3u8 file to the video player, not the first .ts file.
+
+### Creating the signature (custom policy)
+
+Content in our S3 bucket is available only via CloudFront and signed cookies, therefore these URLs do not work for the video file:
+```
+> curl https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/Orion360_test_video_1920x960.m3u8
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>AccessDenied</Code><Message>Access Denied</Message><RequestId>4FE4ZGR1FC7MFVEN</RequestId><HostId>k3IrJhJkf1p3v78XftSX2wTmpP1R/cJSlRh7dxxM+IXe8KhLPB5PuXrkZsB2fsrxx+NgAuLPc9c=</HostId></Error>
+```
+
+```
+> curl https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.m3u8
+
+<?xml version="1.0" encoding="UTF-8"?><Error><Code>MissingKey</Code><Message>Missing Key-Pair-Id query parameter or cookie value</Message></Error>
+```
+
+In theory, we could create a separate signature for each of the four files, just like we did for the first demo video (.mp4) and demo image (.jpg) above. However, with longer videos and multiple qualities, the number of .ts clips can be quite large. This is where *custom policy* becomes much more handy than the simple *canned policy*. With custom policy, we can use for example wildcards '*' in the resource URL:
+
+cookie_policy_directory.json:
+```
+{"Statement":[{"Resource":"https://d15i6zsi2io35f.cloudfront.net/*","Condition":{"DateLessThan":{"AWS:EpochTime":2147483647}}}]}
+```
+
+Signature that works for the whole S3 bucket root:
+```
+> cat cookie_policy_directory.json | openssl sha1 -sign cookie_private_key.pem | base64 | tr '+=/' '-_~'
+
+Lc6cKuiY6wFqY7Gz7PEMdI7ZCeYgc9HazxgVP4xwtNzSWy0j3nwUeQtom15sG2JyX51v9h-BEAWBbH2buPIcaZp2FyOKOZBDd3~R-Wzk7lKHtCqakUCL8BSXtiDqCrCK9kR8gyqXDQLC6RId2QRKCt7hQTnR81pGWYZ8DOwXIKGop9PGoogPGmUBlj1pMN0OvDNtQBlK~W2vNfBl~bruZqNq798PbfJD-mQNB9Ohan67~3E-pMMk9MajeJ5Paxm04hk67xl0WorHyK7NCBn8wE~6KsTOvApbKlBInga8Q80hYwhYMOZmJU-6Z2GzviwqVdWIfmQuG8I~lpNLMBSbxg__
+```
+
+> Notice that you can't simply use this signature with canned policy, where one of the cookies is *CloudFront-Expires* with expiration timestamp. Instead, you must replace this cookie with *CloudFront-Policy* cookie, whose value contains base64 encoded version of the policy statement (not signed in this cookie!)
+
+Base64 encoded policy:
+```
+> cat cookie_policy_directory.json | base64 | tr '+=/' '-_~'
+
+eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMTVpNnpzaTJpbzM1Zi5jbG91ZGZyb250Lm5ldC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoyMTQ3NDgzNjQ3fX19XX0_
+```
+
+Test directory signature with test image file:
+```
+curl --cookie "CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMTVpNnpzaTJpbzM1Zi5jbG91ZGZyb250Lm5ldC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoyMTQ3NDgzNjQ3fX19XX0_; CloudFront-Signature=Lc6cKuiY6wFqY7Gz7PEMdI7ZCeYgc9HazxgVP4xwtNzSWy0j3nwUeQtom15sG2JyX51v9h-BEAWBbH2buPIcaZp2FyOKOZBDd3~R-Wzk7lKHtCqakUCL8BSXtiDqCrCK9kR8gyqXDQLC6RId2QRKCt7hQTnR81pGWYZ8DOwXIKGop9PGoogPGmUBlj1pMN0OvDNtQBlK~W2vNfBl~bruZqNq798PbfJD-mQNB9Ohan67~3E-pMMk9MajeJ5Paxm04hk67xl0WorHyK7NCBn8wE~6KsTOvApbKlBInga8Q80hYwhYMOZmJU-6Z2GzviwqVdWIfmQuG8I~lpNLMBSbxg__; CloudFront-Key-Pair-Id=K37HI3P0TW0W7Q; Domain=d15i6zsi2io35f.cloudfront.net; Path=/*; Secure; HttpOnly" https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg --output test.jpg
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1747k  100 1747k    0     0  2406k      0 --:--:-- --:--:-- --:--:-- 2403k
+```
+
+Test same signature with .m3u8 playlist file:
+```
+curl --cookie "CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMTVpNnpzaTJpbzM1Zi5jbG91ZGZyb250Lm5ldC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoyMTQ3NDgzNjQ3fX19XX0_; CloudFront-Signature=Lc6cKuiY6wFqY7Gz7PEMdI7ZCeYgc9HazxgVP4xwtNzSWy0j3nwUeQtom15sG2JyX51v9h-BEAWBbH2buPIcaZp2FyOKOZBDd3~R-Wzk7lKHtCqakUCL8BSXtiDqCrCK9kR8gyqXDQLC6RId2QRKCt7hQTnR81pGWYZ8DOwXIKGop9PGoogPGmUBlj1pMN0OvDNtQBlK~W2vNfBl~bruZqNq798PbfJD-mQNB9Ohan67~3E-pMMk9MajeJ5Paxm04hk67xl0WorHyK7NCBn8wE~6KsTOvApbKlBInga8Q80hYwhYMOZmJU-6Z2GzviwqVdWIfmQuG8I~lpNLMBSbxg__; CloudFront-Key-Pair-Id=K37HI3P0TW0W7Q; Domain=d15i6zsi2io35f.cloudfront.net; Path=/*; Secure; HttpOnly" https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.m3u8
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:17
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:16.666667,
+Orion360_test_video_1920x9600.ts
+#EXTINF:8.333333,
+Orion360_test_video_1920x9601.ts
+#EXTINF:4.966667,
+Orion360_test_video_1920x9602.ts
+#EXT-X-ENDLIST
+```
+
+> Now we have a capability to access *any* file in the S3 bucket using the same 3 cookies. In your own application, you probably want to set more limitations by planning a proper directory structure and using less capable wildcard schemes. Nevertheless, using custom policy makes it easy to stream protected HLS video content.
 
 ## Client app modifications
 
 See example streaming/SecuredStreaming for working examples of streaming protected content from S3 via CloudFront using:
 - plain Android MediaPlayer (multiple approaches demonstrated)
 - Orion360 SDK Pro with Android MediaPlayer as video engine
-
+- plain Google ExoPlayer (multiple approaches demonstrated)
+- Orion360 SDK Pro with Google ExoPlayer as video engine

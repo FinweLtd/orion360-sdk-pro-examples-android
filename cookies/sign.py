@@ -64,6 +64,6 @@ if __name__ == '__main__':
     #print(f'using signed cookie: {obj_key}, {r.status_code}, {r.content}')
 
     # signed url
-    signed_url = cfu.generate_presigned_url(url, expire_at)
+    #signed_url = cfu.generate_presigned_url(url, expire_at)
     #r = requests.get(signed_url)
     #print(f'\nusing signed url: {obj_key}, {r.status_code}, {r.content}')

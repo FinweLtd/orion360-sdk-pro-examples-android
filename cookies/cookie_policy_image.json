@@ -1,0 +1,1 @@
+{"Statement":[{"Resource":"https://d15i6zsi2io35f.cloudfront.net/demo_image.jpg","Condition":{"DateLessThan":{"AWS:EpochTime":2147483647}}}]}

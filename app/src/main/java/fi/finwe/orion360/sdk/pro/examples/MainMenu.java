@@ -120,14 +120,18 @@ public class MainMenu extends FragmentActivity {
 	public static final String TEST_VIDEO_URI_1920x720 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_video_2d_equi_360x135deg_1920x720pix_30fps_30sec_x264.mp4";
 
-	/** Test video URI for direct unsecure access to a protected video stream that can be found from AWS S3. */
+	/** Test video URI for direct unsecure access to a protected MP4 video stream that can be found from AWS S3. */
 	@SuppressWarnings("unused")
 	public static final String TEST_VIDEO_URI_NON_SECURED_S3 =
 			"https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/Orion360_test_video_1920x960.mp4";
 
 	/** Test video URI for CloudFront CDN secure access to a protected video stream that can be found from AWS S3. */
-	public static final String TEST_VIDEO_URI_SECURED_CLOUD_FRONT =
+	public static final String TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT =
 			"https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.mp4";
+
+	/** Test video URI for CloudFront CDN secure access to a protected HLS video stream that can be found from AWS S3. */
+	public static final String TEST_VIDEO_URI_SECURED_HLS_CLOUD_FRONT =
+			"https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.m3u8";
 
 	/** Test image URI for low quality image that can be found from the network. */
 	@SuppressWarnings("unused")
