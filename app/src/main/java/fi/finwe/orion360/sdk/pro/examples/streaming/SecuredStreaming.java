@@ -35,6 +35,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +48,7 @@ import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
@@ -243,16 +245,21 @@ public class SecuredStreaming extends OrionActivity {
 //        );
 
         // Example 3: Play the protected .m3u8 HLS stream directly with Google Exoplayer.
-        playVideoWithExoPlayer(
-                MainMenu.TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT,
-                //MainMenu.TEST_VIDEO_URI_SECURED_HLS_CLOUD_FRONT,
-                Method.HEADER_COOKIE,
-                //Method.COOKIE_MANAGER,
-                Policy.CUSTOM
-        );
+//        playVideoWithExoPlayer(
+//                //MainMenu.TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT,
+//                MainMenu.TEST_VIDEO_URI_SECURED_HLS_CLOUD_FRONT,
+//                //Method.HEADER_COOKIE,
+//                Method.COOKIE_MANAGER,
+//                Policy.CUSTOM
+//        );
 
         // Example 4: Play the protected file using Orion360 SDK Pro with ExoPlayer engine.
-//        playVideoWithOrion360_ExoPlayer(videoUrl);
+        playVideoWithOrion360_ExoPlayer(
+                //MainMenu.TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT,
+                MainMenu.TEST_VIDEO_URI_SECURED_HLS_CLOUD_FRONT,
+                //Policy.CANNED
+                Policy.CUSTOM
+        );
 	}
 
     @Override
@@ -469,7 +476,7 @@ public class SecuredStreaming extends OrionActivity {
         SimpleExoPlayerView exoPlayerView = new SimpleExoPlayerView(this);
         replaceView(mViewContainer, exoPlayerView);
 
-        // Create ExoPlayer instance and play the content with it.
+        // Create ExoPlayer instance and play content with it.
         try {
             BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
             TrackSelector trackSelector = new DefaultTrackSelector(
@@ -501,8 +508,19 @@ public class SecuredStreaming extends OrionActivity {
                     Logger.logD(TAG, "You must select a method for passing signed cookies!");
             }
 
-            MediaSource mediaSource = new ExtractorMediaSource(videoUri,
-                    dataSourceFactory, extractorsFactory, null, null);
+            MediaSource mediaSource;
+            if (videoUrl.endsWith(".mp4")) {
+                mediaSource = new ExtractorMediaSource(videoUri,
+                        dataSourceFactory, extractorsFactory, null, null);
+                Logger.logD(TAG, "ExoPlayer playing .mp4 video file");
+            } else if (videoUrl.endsWith(".m3u8")) {
+                mediaSource = new HlsMediaSource(videoUri,
+                        dataSourceFactory, new Handler(), null);
+                Logger.logD(TAG, "ExoPlayer playing .m3u8 HLS video stream");
+            } else {
+                Logger.logE(TAG, "Unsupported format: " + videoUrl);
+                return;
+            }
             exoPlayerView.setPlayer(mExoPlayer);
             mExoPlayer.prepare(mediaSource);
             mExoPlayer.setPlayWhenReady(true);
@@ -515,12 +533,13 @@ public class SecuredStreaming extends OrionActivity {
      * An example of playing a protected video file with Orion360 SDK Pro + ExoPlayer engine.
      *
      * @param videoUrl the URL of the video to play.
+     * @param policy the policy for access control (canned/custom).
      */
-    @SuppressWarnings("unused")
-    private void playVideoWithOrion360_ExoPlayer(@NonNull String videoUrl) {
+    @SuppressWarnings({"unused", "SameParameterValue"})
+    private void playVideoWithOrion360_ExoPlayer(@NonNull String videoUrl, Policy policy) {
 
         // This approach uses CookieManager. No need for access to ExoPlayer.
-        List<HttpCookie> cookies = createCloudFrontHttpCookies(Policy.CANNED);
+        List<HttpCookie> cookies = createCloudFrontHttpCookies(policy);
         setCookiesViaCookieManager("https://" + DOMAIN_VALUE, cookies);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
