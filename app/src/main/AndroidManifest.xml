@@ -6,6 +6,9 @@
     <!-- For downloading/streaming content from the network. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- For Google IMA SDK (serving ads). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <!-- For playing content from external storage locations. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -41,6 +44,11 @@
         </activity>
 
         <!-- Examples: -->
+        <activity
+            android:name=".ads.GoogleImaIntegration"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <activity
             android:name=".minimal.MinimalVideoStreamPlayer"
             android:configChanges="orientation|screenSize"

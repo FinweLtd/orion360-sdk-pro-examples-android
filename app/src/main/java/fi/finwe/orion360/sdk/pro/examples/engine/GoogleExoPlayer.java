@@ -33,7 +33,6 @@ import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.texture.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
 import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
@@ -106,8 +105,7 @@ public class GoogleExoPlayer extends OrionActivity {
         mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video player that uses Google ExoPlayer as an audio/video engine.
-        // NOTE: Currently, the embedded ExoPlayer has a configuration ONLY for HLS streams.
-        //       Other videos (such as plain .mp4 files) should be played using MediaPlayer.
+        // NOTE: Currently, the included ExoPlayerWrapper has a configuration ONLY for HLS streams.
         // NOTE: HLS streams that contain 4096x2048 resolution do not play properly on some old
         //       Android devices. Use 3840x1920 as the maximum resolution instead.
         mVideoPlayer = new ExoPlayerWrapper(this);

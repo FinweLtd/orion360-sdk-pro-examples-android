@@ -492,6 +492,9 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     public void onVideoReleased(OrionVideoTexture texture) {}
 
     @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {}
+
+    @Override
     public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long l) {}
 
     @Override

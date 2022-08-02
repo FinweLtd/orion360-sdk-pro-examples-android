@@ -362,6 +362,11 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     }
 
     @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
+        logMessage("onVideoPlayerDestroyed");
+    }
+
+    @Override
     public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long positionMs) {
         logMessage("onVideoSeekStarted: " + positionMs);
     }

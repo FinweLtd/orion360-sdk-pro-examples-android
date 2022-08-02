@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable/main_menu_list_selector.xml" value="0.2815" />
         <entry key="app/src/main/res/drawable/player_controls_seekbar.xml" value="0.2815" />
+        <entry key="app/src/main/res/layout/activity_ads.xml" value="0.4015625" />
         <entry key="app/src/main/res/layout/activity_image_player.xml" value="0.34872979214780603" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.34872979214780603" />
         <entry key="app/src/main/res/layout/activity_main_menu.xml" value="0.4015625" />

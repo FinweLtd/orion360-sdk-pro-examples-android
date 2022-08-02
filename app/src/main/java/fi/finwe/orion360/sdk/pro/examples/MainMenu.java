@@ -126,6 +126,7 @@ public class MainMenu extends FragmentActivity {
 			"https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/Orion360_test_video_1920x960.mp4";
 
 	/** Test video URI for CloudFront CDN secure access to a protected video stream that can be found from AWS S3. */
+	@SuppressWarnings("unused")
 	public static final String TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT =
 			"https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.mp4";
 

@@ -6,6 +6,7 @@ android {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
         minSdkVersion 21
         targetSdkVersion 32
+        multiDexEnabled true
         versionCode 1200400
         versionName "1.2.00.40"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -22,16 +23,11 @@ android {
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    configurations {
-        all*.exclude module: 'exoplayer-core'
-        all*.exclude module: 'exoplayer-dash'
-        all*.exclude module: 'exoplayer-hls'
-        all*.exclude module: 'exoplayer-smoothstreaming'
-    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
@@ -54,18 +50,12 @@ dependencies {
 
     // From Finwe maven repo at GitHub.
 //    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
-    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.002-debug'
-    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.12.002'
+    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.000-debug'
+    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.000'
 
     // ExoPlayer as an alternative video engine.
+    api 'com.google.android.exoplayer:exoplayer:2.18.1'
+
     //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-core:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-dash:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-hls:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-ui:r2.4.1'
+    //implementation 'com.google.android.exoplayer:extension-ima:2.17.1'
 }

@@ -4,14 +4,45 @@
 
 This file contains instructions for migrating from one Orion360 SDK (Pro) version to another.
 
-## From 3.x to 4.x
+
+## From 4.0.12.x to 4.0.13.x
+
+### ExoPlayer
+
+ExoPlayer support has been updated to version 2.18.
+
+ExoPlayer is now separate from Orion360 SDK binaries. You can choose ExoPlayer version that you want to use and define it in your .gradle file. For example:
+```
+dependencies {
+
+    api 'com.google.android.exoplayer:exoplayer:2.18.1'
+
+}
+```
+
+You must use a wrapper that is compatible with your selected ExoPlayer version. This example project contains an example wrapper under /engine/ExoPlayerWrapper.java, which you are free to use and modify in your own app.
+
+### OrionVideoTexture.Listener
+
+1. Implement new callback:
+```
+@Override
+public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
+    
+}
+```
+
+> VideoPlayerWrappers now post the onVideoReleased / onVideoPlayerDestroyed callback *before* deleting anything
+
+
+## From 3.x to 4.0.12.x
 
 ### Gradle file
 
 1. Change Orion 360 SDK (Pro) dependency from 3.x to Orion 4.x. For example:
 ```
 //  implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
-    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.12.001'
+    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.12.002'
 ```
 
 2. Change FinweUtil dependency from 1.x to FinweUtil 2.x. For example:

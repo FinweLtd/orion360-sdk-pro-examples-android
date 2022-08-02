@@ -30,7 +30,7 @@ In this simple example, we don't create a web application nor a user account dat
 
 > You can find a working example under /streaming/SecuredStreaming. There are multiple approaches and you can choose which one to use by editing the example's source code (uncomment).
 
-> Also, read official documentation Amazon AWS, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html
+> Also, read official documentation from Amazon AWS, see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html
 
 ## AWS Preparations
 

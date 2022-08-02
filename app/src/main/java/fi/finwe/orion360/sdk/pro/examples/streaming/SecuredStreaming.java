@@ -35,28 +35,34 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.util.Clock;
+import com.google.android.exoplayer2.util.Util;
 
 import java.io.IOException;
 import java.net.CookieHandler;
@@ -75,10 +81,10 @@ import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
+import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.texture.AndroidMediaPlayerWrapper;
-import fi.finwe.orion360.sdk.pro.texture.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.texture.VideoPlayerWrapper;
@@ -178,7 +184,7 @@ public class SecuredStreaming extends OrionActivity {
     protected MediaPlayer mMediaPlayer;
 
     /** Google ExoPlayer. */
-    protected SimpleExoPlayer mExoPlayer;
+    protected ExoPlayer mExoPlayer;
 
     /** The Android view where our 3D scene (OrionView) will be added to. */
     protected OrionViewContainer mViewContainer;
@@ -473,19 +479,36 @@ public class SecuredStreaming extends OrionActivity {
     private void playVideoWithExoPlayer(@NonNull String videoUrl, Method method, Policy policy) {
 
         // Replace Orion player view with ExoPlayer player view in the layout.
-        SimpleExoPlayerView exoPlayerView = new SimpleExoPlayerView(this);
+        StyledPlayerView exoPlayerView = new StyledPlayerView(this);
         replaceView(mViewContainer, exoPlayerView);
 
         // Create ExoPlayer instance and play content with it.
         try {
-            BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-            TrackSelector trackSelector = new DefaultTrackSelector(
-                    new AdaptiveTrackSelection.Factory(bandwidthMeter));
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
+            DefaultRenderersFactory defaultRenderersFactory =
+                    new DefaultRenderersFactory(this);
+            DefaultMediaSourceFactory defaultMediaSourceFactory =
+                    new DefaultMediaSourceFactory(this,
+                            new DefaultExtractorsFactory());
+            AdaptiveTrackSelection.Factory videoTrackSelectionFactory =
+                    new AdaptiveTrackSelection.Factory();
+            TrackSelector trackSelector = new DefaultTrackSelector(this,
+                    videoTrackSelectionFactory);
+            DefaultLoadControl defaultLoadControl = new DefaultLoadControl();
+            BandwidthMeter bandwidthMeter =
+                    new DefaultBandwidthMeter.Builder(this).build();
+            DefaultAnalyticsCollector defaultAnalyticsCollector =
+                    new DefaultAnalyticsCollector(Clock.DEFAULT);
+
+            ExoPlayer.Builder exoplayerBuilder = new ExoPlayer.Builder(this,
+                    defaultRenderersFactory, defaultMediaSourceFactory, trackSelector,
+                    defaultLoadControl, bandwidthMeter, defaultAnalyticsCollector);
+            mExoPlayer = exoplayerBuilder.build();
 
             Uri videoUri = Uri.parse(videoUrl);
-            DefaultHttpDataSourceFactory dataSourceFactory =
-                    new DefaultHttpDataSourceFactory("exoplayer_example");
+
+            String userAgent = Util.getUserAgent(this, "exoplayer_example");
+            DefaultHttpDataSource.Factory defaultHttpDataSourceFactory =
+                    new DefaultHttpDataSource.Factory().setUserAgent(userAgent);
             ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 
             // Pass CloudFront signed cookies using selected method.
@@ -494,10 +517,10 @@ public class SecuredStreaming extends OrionActivity {
                     // This approach uses HTTP request headers to pass signed cookies.
                     // We need access to DefaultHttpDataSourceFactory or a possibility
                     // to pass custom headers to the request.
-                    HttpDataSource.RequestProperties requestProperties =
-                            dataSourceFactory.getDefaultRequestProperties();
                     String cookieValue = createCloudFrontHeaderCookie(Policy.CUSTOM);
-                    requestProperties.set(COOKIE_KEY, cookieValue);
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put(COOKIE_KEY, cookieValue);
+                    defaultHttpDataSourceFactory.setDefaultRequestProperties(headers);
                     break;
                 case COOKIE_MANAGER:
                     // This approach uses CookieManager. No need for access to ExoPlayer.
@@ -508,21 +531,25 @@ public class SecuredStreaming extends OrionActivity {
                     Logger.logD(TAG, "You must select a method for passing signed cookies!");
             }
 
+            DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(
+                    this, defaultHttpDataSourceFactory);
             MediaSource mediaSource;
+            MediaItem mediaItem = MediaItem.fromUri(videoUrl);
             if (videoUrl.endsWith(".mp4")) {
-                mediaSource = new ExtractorMediaSource(videoUri,
-                        dataSourceFactory, extractorsFactory, null, null);
+                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory,
+                        extractorsFactory).createMediaSource(mediaItem);
                 Logger.logD(TAG, "ExoPlayer playing .mp4 video file");
             } else if (videoUrl.endsWith(".m3u8")) {
-                mediaSource = new HlsMediaSource(videoUri,
-                        dataSourceFactory, new Handler(), null);
+                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
                 Logger.logD(TAG, "ExoPlayer playing .m3u8 HLS video stream");
             } else {
                 Logger.logE(TAG, "Unsupported format: " + videoUrl);
                 return;
             }
             exoPlayerView.setPlayer(mExoPlayer);
-            mExoPlayer.prepare(mediaSource);
+            mExoPlayer.setMediaSource(mediaSource);
+            mExoPlayer.prepare();
             mExoPlayer.setPlayWhenReady(true);
         } catch (Exception e) {
             e.printStackTrace();

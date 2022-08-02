@@ -987,6 +987,11 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     }
 
     @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
+        Logger.logD(TAG, "onVideoPlayerDestroyed()");
+    }
+
+    @Override
     public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long ms) {
         Logger.logD(TAG, "onVideoSeekStarted() " + ms);
     }
