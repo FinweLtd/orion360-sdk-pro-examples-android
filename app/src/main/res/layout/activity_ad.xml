@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE RelativeLayout>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main_container"
+	android:id="@+id/main_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/pure_black" >
 
-	<fi.finwe.orion360.sdk.pro.view.OrionViewContainer
-	    android:id="@+id/orion_view_container"
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent" />
+	<fi.finwe.orion360.sdk.pro.examples.ads.OrionViewContainerIma
+		android:id="@+id/orion_view_container_ima"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent" />
 
 </RelativeLayout>

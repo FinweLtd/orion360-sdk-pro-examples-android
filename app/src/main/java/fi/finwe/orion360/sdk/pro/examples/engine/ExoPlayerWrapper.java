@@ -30,6 +30,7 @@
 package fi.finwe.orion360.sdk.pro.examples.engine;
 
 import android.content.Context;
+import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
@@ -55,6 +56,8 @@ import com.google.android.exoplayer2.source.MediaLoadData;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.source.ads.AdsLoader;
+import com.google.android.exoplayer2.source.ads.AdsMediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -63,7 +66,9 @@ import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.ui.AdViewProvider;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
@@ -111,7 +116,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
     private ExoPlayer mExoPlayer;
 
     private final DataSource.Factory mDataSourceFactory;
-    private final MediaSource.Factory mMediaSourceFactory;
+    private final DefaultMediaSourceFactory mMediaSourceFactory;
 
     private DefaultTrackSelector mTrackSelector;
 
@@ -127,6 +132,11 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
     /** Task that handles video buffer update notifications. */
     private final VideoBufferUpdateTask mBufferUpdater = new VideoBufferUpdateTask();
 
+    private String mAdTag = null;
+    private AdsLoader mAdsLoader = null;
+    private AdViewProvider mAdViewProvider = null;
+
+
     public ExoPlayerWrapper(Context context) {
         mContext = context;
 
@@ -135,7 +145,10 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
         // Produces DataSource instances through which media data is loaded.
 //		mDataSourceFactory = buildDataSourceFactory(true);
         mDataSourceFactory = buildDataSourceFactory();
-        mMediaSourceFactory = new DefaultMediaSourceFactory(mContext, new DefaultExtractorsFactory());
+        mMediaSourceFactory = new DefaultMediaSourceFactory(
+                mDataSourceFactory
+                //mContext, new DefaultExtractorsFactory()
+        );
 
         updateState();
     }
@@ -184,6 +197,22 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
     // The player is created just before the call to onVideoPlayerCreated callback until just after the call to onVideoPlayerReleased
     public ExoPlayer getExoPlayer() {
         return mExoPlayer;
+    }
+
+    public DefaultMediaSourceFactory getDefaultMediaSourceFactory() {
+        return mMediaSourceFactory;
+    }
+
+    public void setAdTag(@Nullable String adTag) {
+        mAdTag = adTag;
+    }
+
+    public void setAdsLoader(AdsLoader loader) {
+        mAdsLoader = loader;
+    }
+
+    public void setAdViewProvider(AdViewProvider provider) {
+        mAdViewProvider = provider;
     }
 
     @Override
@@ -242,7 +271,9 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
 
                 ExoPlayer.Builder exoplayerBuilder = new ExoPlayer.Builder(mContext, defaultRenderersFactory, mMediaSourceFactory, mTrackSelector, new DefaultLoadControl(), BANDWIDTH_METER, defaultAnalyticsCollector);
                 mExoPlayer = exoplayerBuilder.build();
-
+                if (null != mAdsLoader) {
+                    mAdsLoader.setPlayer(mExoPlayer);
+                }
                 mExoPlayer.addListener(this);
                 mExoPlayer.addAnalyticsListener(mAnalyticsListener);
 
@@ -271,36 +302,109 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Liste
             }
 
             // Deduce the type of data source we need to set, branch accordingly
-            MediaItem mediaItem = MediaItem.fromUri(mTargetStatus.uri);
+            MediaItem mediaItem;
+            if (null != mAdTag && !mAdTag.isEmpty()) {
+                mediaItem = new MediaItem.Builder()
+                        .setUri(mTargetStatus.uri)
+                        .setAdsConfiguration(
+                                new MediaItem.AdsConfiguration.Builder(Uri.parse(mAdTag)).build())
+                        .build();
+                Logger.logD(TAG, "Using ad tag: " + mAdTag);
+            } else {
+                mediaItem = MediaItem.fromUri(mTargetStatus.uri);
+            }
+
             int type;
             if (mOverrideExtension.length() == 0) {
                 type = Util.inferContentType(mTargetStatus.uri);
             } else {
                 type = Util.inferContentTypeForExtension(mOverrideExtension);
             }
+            DataSource.Factory factory;
             switch (type) {
                 case C.CONTENT_TYPE_SS:
-                    mMediaSource = new SsMediaSource.Factory(
-                            new DefaultSsChunkSource.Factory(mDataSourceFactory),
+                    SsMediaSource.Factory ssMediaSourceFactory = new SsMediaSource.Factory(
+                        new DefaultSsChunkSource.Factory(mDataSourceFactory),
 //							buildDataSourceFactory(false)
-                            buildDataSourceFactory()
-                    ).createMediaSource(mediaItem);
+                        buildDataSourceFactory());
+                    SsMediaSource ssMediaSource =
+                            ssMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                ssMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                ssMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = ssMediaSource;
+                    }
                     mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
                 case C.CONTENT_TYPE_DASH:
-                    mMediaSource = new DashMediaSource.Factory(
+                    DashMediaSource.Factory dashMediaSourceFactory = new DashMediaSource.Factory(
                             new DefaultDashChunkSource.Factory(mDataSourceFactory),
 //							buildDataSourceFactory(false)
-                            buildDataSourceFactory()
-                    ).createMediaSource(mediaItem);
+                            buildDataSourceFactory());
+                    DashMediaSource dashMediaSource =
+                            dashMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                dashMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                dashMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = dashMediaSource;
+                    }
                     mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
                 case C.CONTENT_TYPE_HLS:
-                    mMediaSource = new HlsMediaSource.Factory(mDataSourceFactory).createMediaSource(mediaItem);
+                    HlsMediaSource.Factory hlsMediaSourceFactory = new HlsMediaSource.Factory(
+                            mDataSourceFactory);
+                    HlsMediaSource hlsMediaSource =
+                            hlsMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                hlsMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                hlsMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = hlsMediaSource;
+                    }
                     mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
                 case C.CONTENT_TYPE_OTHER:
-                    mMediaSource = new ProgressiveMediaSource.Factory(mDataSourceFactory, new DefaultExtractorsFactory()).createMediaSource(mediaItem);
+                    ProgressiveMediaSource.Factory progressiveMediaSourceFactory =
+                            new ProgressiveMediaSource.Factory(mDataSourceFactory,
+                                    new DefaultExtractorsFactory());
+                    ProgressiveMediaSource progressiveMediaSource =
+                            progressiveMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                progressiveMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                progressiveMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = progressiveMediaSource;
+                    }
                     mMediaSource.addEventListener(mMainHandler, new MediaSourceEventListener() {
                         @Override
                         public void onLoadError(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo,

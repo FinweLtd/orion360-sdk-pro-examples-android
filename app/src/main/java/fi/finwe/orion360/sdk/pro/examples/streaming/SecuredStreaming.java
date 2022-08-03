@@ -268,8 +268,10 @@ public class SecuredStreaming extends OrionActivity {
         );
 	}
 
+    // For simplicity, we omit the usual onStart/onStop, onPause/onResume handling for video player.
+
     @Override
-    public void onPause() {
+    public void onDestroy() {
         if (null != mMediaPlayer) {
             mMediaPlayer.stop();
             mMediaPlayer.release();
@@ -281,7 +283,7 @@ public class SecuredStreaming extends OrionActivity {
             mExoPlayer = null;
         }
 
-        super.onPause();
+        super.onDestroy();
     }
 
     /**
