@@ -46,7 +46,17 @@
 
         <!-- Examples: -->
         <activity
-            android:name=".ads.GoogleImaIntegration"
+            android:name=".ads.GoogleImaStandalonePlayer"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
+            android:name=".ads.GoogleImaOnTopOfOrion"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
+            android:name=".ads.GoogleImaViaOrion"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>

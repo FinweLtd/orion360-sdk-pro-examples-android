@@ -92,7 +92,7 @@ import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class GoogleImaIntegration extends OrionActivity implements AdEvent.AdEventListener {
+public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventListener {
 
     /** Google ExoPlayer. */
     protected ExoPlayer mExoPlayer;

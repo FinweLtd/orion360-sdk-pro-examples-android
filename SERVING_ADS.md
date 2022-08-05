@@ -127,4 +127,24 @@ In fact, using the extension requires a few other changes to the project. Follow
 * Strings
   - Add an ad tag. This is important for your final app, as you need to use a proper tag from your own account, not ours or Google's sample tag!
 
-Then, see example ads/GoogleImaIntegration.java for source code example.
+### Example 1: Google IMA Standalone Player
+
+Source code: ads/GoogleImaStandalonePlayer.java
+
+This example mostly follows Google IMA's official example. It shows how easily you can use ExoPlayer's StyledPlayerView in a layout and integrate ads to your app by using ImaAdsLoader component and a few small extra steps when configuring an ExoPlayer instance.
+
+> Note: This example does not use Orion360 at all, and therefore renders 360° content flat. The purpose of this example is to show the minimal setup required for Google IMA.
+
+### Example 2: Google IMA on top of Orion
+
+Source code: ads/GoogleImaOnTopOfOrion.java
+
+WIP
+
+
+### Example 3: Google IMA via Orion
+
+Source code: ads/GoogleImaViaOrion.java
+
+WIP
+
