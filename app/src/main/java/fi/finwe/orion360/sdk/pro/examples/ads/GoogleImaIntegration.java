@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import com.google.ads.interactivemedia.v3.api.AdEvent;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -64,6 +65,7 @@ import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
+import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -90,7 +92,7 @@ import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class GoogleImaIntegration extends OrionActivity {
+public class GoogleImaIntegration extends OrionActivity implements AdEvent.AdEventListener {
 
     /** Google ExoPlayer. */
     protected ExoPlayer mExoPlayer;
@@ -145,7 +147,9 @@ public class GoogleImaIntegration extends OrionActivity {
         mViewContainer = mViewContainerIma.getOrionViewContainer();
 
         // Create an AdsLoader.
-        mImaAdsLoader = new ImaAdsLoader.Builder(this).build();
+        mImaAdsLoader = new ImaAdsLoader.Builder(this)
+                .setAdEventListener(this)
+                .build();
 	}
 
     /**
@@ -390,10 +394,10 @@ public class GoogleImaIntegration extends OrionActivity {
         // Create a new video player that uses Google ExoPlayer as an audio/video engine.
         mVideoPlayer = new ExoPlayerWrapper(this);
 
-        // Configurations to enable playing ads.                        // IMPORTANT
-        mVideoPlayer.setAdTag(adTag);
-        mVideoPlayer.setAdsLoader(mImaAdsLoader);
-        mVideoPlayer.setAdViewProvider(mViewContainerIma);
+        // Configurations to enable playing ads.
+        mVideoPlayer.setAdTag(adTag);                           // IMPORTANT
+        mVideoPlayer.setAdsLoader(mImaAdsLoader);               // IMPORTANT
+        mVideoPlayer.setAdViewProvider(mViewContainerIma);      // IMPORTANT
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = new OrionVideoTexture(mOrionContext,
@@ -454,6 +458,29 @@ public class GoogleImaIntegration extends OrionActivity {
             parent.addView(newView, position);
         } else {
             Logger.logE(TAG, "Failed to replace view: parent is NULL!");
+        }
+    }
+
+    @Override
+    public void onAdEvent(AdEvent adEvent) {
+        //Logger.logF();
+        Logger.logD(TAG, "onAdEvent(): " + adEvent);
+
+        switch (adEvent.getType()) {
+            case CONTENT_PAUSE_REQUESTED:
+                // Switch to 2D projection for playing the ad.
+                if (null != mPanorama) {
+                    mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
+                    mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+                }
+                break;
+            case CONTENT_RESUME_REQUESTED:
+                // Switch back 360 rectilinear projection for playing the content.
+                if (null != mPanorama) {
+                    mPanorama.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
+                    mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
+                }
+                break;
         }
     }
 }

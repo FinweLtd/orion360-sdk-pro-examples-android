@@ -105,10 +105,12 @@ public class OrionViewContainerIma extends FrameLayout implements AdViewProvider
                 R.id.orion_view_container);
         mAdOverlay = (FrameLayout) this.findViewById(
                 R.id.orion_ad_overlay);
+        /*
         mTransparentOverlay = (FrameLayout) this.findViewById(
                 R.id.orion_transparent_overlay);
         mControlOverlay = (FrameLayout) this.findViewById(
                 R.id.orion_control_overlay);
+         */
     }
 
     public OrionViewContainer getOrionViewContainer() {

@@ -15,31 +15,35 @@
     <fi.finwe.orion360.sdk.pro.view.OrionViewContainer
         android:id="@+id/orion_view_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
 
     <!-- Google IMA will show any ad UIs here. This ViewGroup must appear on top of
         OrionViewContainer and its ID must be 'orion_ad_overlay'. -->
     <FrameLayout
         android:id="@+id/orion_ad_overlay"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
 
     <!-- Orion360 or your app can use this transparent overlay for capturing touch
          events etc. This layout must be fully transparent so that it does not affect
          to ad viewability. This optional ViewGroup, if present, must appear on top
          of orion_ad_overlay and its ID must be 'orion_transparent_overlay'.-->
+    <!--
     <FrameLayout
         android:id="@+id/orion_transparent_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
+    -->
     <!-- Orion360 or your app can render here transient mandatory UI components,
          such as play/pause and full screen toggle buttons. This optional ViewGroup,
          if present, must appear on top of orion_transparent_overlay/orion_ad_overlay
          and its ID must be 'orion_control_overlay'.-->
+    <!--
     <FrameLayout
         android:id="@+id/orion_control_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
+    -->
 </FrameLayout>
