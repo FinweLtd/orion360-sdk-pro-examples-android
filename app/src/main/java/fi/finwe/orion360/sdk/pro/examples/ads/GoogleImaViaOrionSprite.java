@@ -29,31 +29,15 @@
 
 package fi.finwe.orion360.sdk.pro.examples.ads;
 
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 
 import com.google.ads.interactivemedia.v3.api.AdEvent;
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector;
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader;
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
 
 import fi.finwe.log.Logger;
+import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
@@ -62,7 +46,7 @@ import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
+import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
 import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -70,7 +54,7 @@ import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
 import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 
 /**
- * An example of using Google ExoPlayer and Google IMA SDK with Orion360 (shared player, two views).
+ * An example of using Google ExoPlayer and Google IMA SDK with Orion360 (ad placed in Orion world).
  * <p/>
  * Read SERVING_ADS.md for more information and detailed explanation.
  * <p/>
@@ -89,8 +73,7 @@ import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
-        implements AdEvent.AdEventListener {
+public class GoogleImaViaOrionSprite extends OrionActivity implements AdEvent.AdEventListener {
 
     /** Tag for logging. */
     public static final String TAG = GoogleImaSharedPlayerSeparateViews.class.getSimpleName();
@@ -98,11 +81,11 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     /** Google ExoPlayer. */
     protected ExoPlayer mExoPlayer;
 
-    /** ExoPlayer's own styled player view. */
-    protected StyledPlayerView mStyledPlayerView;
-
     /** Google IMA ad loader. */
     protected ImaAdsLoader mImaAdsLoader;
+
+    /** The view group where Orion and ad related views will be added to as layers. */
+    protected OrionViewContainerIma mViewContainerIma;
 
     /** The Android view where our 3D scene (OrionView) will be added to. */
     protected OrionViewContainer mViewContainer;
@@ -122,6 +105,15 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     /** The video texture where our decoded video frames will be updated to. */
     protected OrionTexture mPanoramaTexture;
 
+    /** The panorama sphere where our ad background texture will be mapped to. */
+    protected OrionPanorama mPanoramaAdBackground;
+
+    /** The image texture for our ad background. */
+    protected OrionTexture mPanoramaAdBackgroundTexture;
+
+    /** The sprite where our video texture for the ads will be mapped to. */
+    protected OrionSprite mSprite;
+
     /** The camera which will project our 3D scene to a 2D (view) surface. */
     protected OrionCamera mCamera;
 
@@ -132,16 +124,16 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        Logger.logF();
 
-        // Layout for IMA example.
-        setContentView(R.layout.activity_ad_on_top);
+        // Use special layout that supports ad overlay.
+        setContentView(R.layout.activity_ad_via_orion);
 
-        // Find Orion view container view. This is where media content will appear.
-        mViewContainer = findViewById(R.id.orion_view_container);
+        // Find view group for Orion and ad player views.
+        mViewContainerIma = findViewById(R.id.orion_view_container_ima);
 
-        // Find styled player view. This is where ads will appear.
-        mStyledPlayerView = findViewById(R.id.exoplayer_styled_player_view);
+        // Get Orion360 view container from the inflated XML layout.
+        // This is where both ads and media content will appear.
+        mViewContainer = mViewContainerIma.getOrionViewContainer();
 
         // Create an AdsLoader and set us as a listener to its events.
         mImaAdsLoader = new ImaAdsLoader.Builder(this)
@@ -165,14 +157,12 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
         mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video player that uses Google ExoPlayer as an audio/video engine.
-        // Notice that in this example, we could use also Android MediaPlayer as video backend
-        // for Orion360, since content player is separate from the ad player.
         mVideoPlayer = new ExoPlayerWrapper(this);
 
         // Configurations to enable playing ads.
         mVideoPlayer.setAdTag(getString(R.string.ad_tag_url));      // IMPORTANT
         mVideoPlayer.setAdsLoader(mImaAdsLoader);                   // IMPORTANT
-        mVideoPlayer.setAdViewProvider(mStyledPlayerView);          // IMPORTANT
+        mVideoPlayer.setAdViewProvider(mViewContainerIma);          // IMPORTANT
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = new OrionVideoTexture(mOrionContext,
@@ -190,104 +180,6 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
                 mExoPlayer = mVideoPlayer.getExoPlayer();
             }
 
-
-            @Override
-            public void onException(OrionTexture orionTexture, Exception e) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoSourceURISet(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoBufferingStart(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-
-            }
-
-            @Override
-            public void onVideoBufferingEnd(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoBufferingUpdate(OrionVideoTexture orionVideoTexture,
-                                               int fromPercent, int toPercent) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoPrepared(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoRenderingStart(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoStarted(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoPaused(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoStopped(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long positionMs) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoSeekCompleted(OrionVideoTexture orionVideoTexture, long positionMs) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoPositionChanged(OrionVideoTexture orionVideoTexture, long positionMs) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoDurationUpdate(OrionVideoTexture orionVideoTexture, long durationMs) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoSizeChanged(OrionVideoTexture orionVideoTexture, int width, int height) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoError(OrionVideoTexture orionVideoTexture, int what, int extra) {
-                Logger.logF();
-            }
-
-            @Override
-            public void onVideoInfo(OrionVideoTexture orionVideoTexture, int what, String message) {
-                Logger.logF();
-            }
-
         });
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -295,8 +187,40 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
         // If you have stereoscopic content or doughnut shape video, use other method variants.
         mPanorama.bindTextureFull(0, mPanoramaTexture);
 
+        // Create a new panorama. This is a 3D object that will represent a spherical video/image.
+        mPanoramaAdBackground = new OrionPanorama(mOrionContext);
+
+        // Create a new video (or image) texture from a video (or image) source URI.
+        mPanoramaAdBackgroundTexture = OrionTexture.createTextureFromURI(mOrionContext,
+                this,MainMenu.PRIVATE_ASSET_FILES_PATH
+                        + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
+
+        // Bind the panorama texture to the panorama object. Here we assume full spherical
+        // equirectangular monoscopic source, and wrap the complete texture around the sphere.
+        // If you have stereoscopic content or doughnut shape video, use other method variants.
+        mPanoramaAdBackground.bindTextureFull(0, mPanoramaAdBackgroundTexture);
+
+        // Bind the panorama to the scene. This will make it part of our 3D world.
+        mScene.bindSceneItem(mPanoramaAdBackground);
+
+        // Create a new sprite. This is a 2D plane in the 3D world for our planar video.
+        mSprite = new OrionSprite(mOrionContext);
+
+        // Set sprite location in the 3D world. Here we place the video on the white screen.
+        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
+
+        // Set sprite size in the 3D world. Here we make it fit on the white screen.
+        mSprite.setScale(0.42f);
+
+        // Bind the video texture to the sprite object. Here we use the same texture
+        // where both ad and media content will be decoded to from ExoPlayer.
+        mSprite.bindTexture(mPanoramaTexture);
+
         // Bind the panorama to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mPanorama);
+
+        // Bind the sprite to the scene. This will make it part of our 3D world.
+        mScene.bindSceneItem(mSprite);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
         mCamera = new OrionCamera(mOrionContext);
@@ -339,12 +263,6 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
             mImaAdsLoader.setPlayer(null);
         }
 
-        // ExoPlayer:
-
-        if (null != mStyledPlayerView) {
-            mStyledPlayerView.setPlayer(null);
-        }
-
         // Orion360:
 
         if (null != mPanoramaTexture) {
@@ -362,6 +280,24 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
             mPanorama.releaseTextures();
             mPanorama.destroy();
             mPanorama = null;
+        }
+
+        if (null != mPanoramaAdBackgroundTexture) {
+            mPanoramaAdBackgroundTexture.release();
+            mPanoramaAdBackgroundTexture.destroy();
+            mPanoramaAdBackground = null;
+        }
+
+        if (null != mPanoramaAdBackground) {
+            mPanoramaAdBackground.releaseTextures();
+            mPanoramaAdBackground.destroy();
+            mPanoramaAdBackground = null;
+        }
+
+        if (null != mSprite) {
+            mSprite.releaseTexture();
+            mSprite.destroy();
+            mSprite = null;
         }
 
         if (null != mCamera) {
@@ -396,47 +332,37 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     @Override
     public void onStart() {
         super.onStart();
-        Logger.logF();
 
         if (Util.SDK_INT > 23) {
             initializePlayer();
-
-            if (mStyledPlayerView != null) {
-                mStyledPlayerView.onResume();
-            }
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Logger.logF();
 
-        if (Util.SDK_INT <= 23 || mStyledPlayerView == null) {
+        if (Util.SDK_INT <= 23) {
             initializePlayer();
-
-            if (mStyledPlayerView != null) {
-                mStyledPlayerView.onResume();
-            }
         }
 
-        // If we resume the app and ad is being played, we must ensure that
-        // video frames are directed to ad view.
-        if (null != mExoPlayer && mExoPlayer.isPlayingAd() && null != mPanorama) {
-            //mStyledPlayerView.setPlayer(mExoPlayer);
+        // Ensure add sprite is visible when app is resumed while playing an ad.
+        if (null != mExoPlayer && mExoPlayer.isPlayingAd()) {
+            mSprite.setVisible(true);
+            mPanoramaAdBackground.setVisible(true);
+            mPanorama.setVisible(false);
+        } else {
+            mSprite.setVisible(false);
+            mPanoramaAdBackground.setVisible(false);
+            mPanorama.setVisible(true);
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Logger.logF();
 
         if (Util.SDK_INT <= 23) {
-            if (mStyledPlayerView != null) {
-                mStyledPlayerView.onPause();
-            }
-
             releasePlayer();
         }
     }
@@ -444,13 +370,8 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     @Override
     public void onStop() {
         super.onStop();
-        Logger.logF();
 
         if (Util.SDK_INT > 23) {
-            if (mStyledPlayerView != null) {
-                mStyledPlayerView.onPause();
-            }
-
             releasePlayer();
         }
     }
@@ -458,7 +379,6 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Logger.logF();
 
         mImaAdsLoader.release();
     }
@@ -469,35 +389,20 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
         Logger.logD(TAG, "onAdEvent(): " + adEvent);
 
         // ImaAdsLoader provides a number of events that we can listen to. Here we use
-        // two of them, which are called when the media content should play/pause.
-        // We will use the events for controlling to which view the shared ExoPlayer's
-        // video content will be directed to.
-
-        // When the app is resumed after pause, Orion360 will become ExoPlayer's output
-        // surface again. Here we use RESUMED event for swapping ExoPlayer's output
-        // surface to the ad view again. RESUMED is called when ad playback is resumed,
-        // but not when media content playback is resumed.
+        // only two of them, which are called when the media content should play/pause.
+        // We will use the events for controlling component visibilities.
 
         switch (adEvent.getType()) {
-            case RESUMED:
             case CONTENT_PAUSE_REQUESTED:
-                // Swap surface from Orion360 view to ad view.
-                // StyledPlayerView will set its own surface to ExoPlayer when ExoPlayer
-                // is given to it. Video content (ad) will now appear in StyledPlayerView.
-                mStyledPlayerView.setPlayer(mExoPlayer);
-
-                // Make the ad player visible.
-                mStyledPlayerView.setVisibility(View.VISIBLE);
+                mSprite.setVisible(true);
+                mPanoramaAdBackground.setVisible(true);
+                mPanorama.setVisible(false);
                 break;
             case CONTENT_RESUME_REQUESTED:
-                // Swap surface from ad view to Orion360 view.
-                // Request Orion360 to restore its surface to ExoPlayer via our video texture.
-                // Video content (360 media) will now appear in Orion360 view.
-                ((OrionVideoTexture)mPanoramaTexture).restoreSurface();
-
-                // Make the ad player invisible.
-                mStyledPlayerView.setVisibility(View.INVISIBLE);
+                mSprite.setVisible(false);
+                mPanoramaAdBackground.setVisible(false);
+                mPanorama.setVisible(true);
                 break;
         }
-     }
+    }
 }

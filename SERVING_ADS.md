@@ -157,3 +157,11 @@ This example uses Orion360 and its ExoPlayer for both ad and media content playb
 
 > This approach requires using a special layout instead of the usual OrionViewContainer, since Google IMA uses 
 > callback to retrieve a handle to a view hierarchy where it can add views that are related to ads. The example contains such layout, which app developers are free to customize.
+
+### Example 5: Google IMA via Orion Sprite
+
+Source code: ads/GoogleImaViaOrionSprite.java
+
+This example uses Orion360 and its ExoPlayer for both ad and media content playback, and renders both within Orion360's own view. However, instead of switching projection for the ad, the example uses a separate sprite object as an ad surface, positioned inside the 3D world. It also uses another 360 panorama, where an image is loaded, as a background when the ad sprite is visible.
+
+> This approach could be used for example if user is viewing content in VR mode when an ad must be played. Notice that there great possibilities in combining 360° background image and one or more video sprite panels, where the ads will be shown. You could also utilize animations for smooth switching between ads and video content. There is one drawback, though: Google IMA ads its own UI layer on top of Orion360's view, which is not aware of the 3D world. This layer also captures touch input during the time that an ad is being played.

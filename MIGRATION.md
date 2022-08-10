@@ -32,7 +32,7 @@ public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
 }
 ```
 
-> VideoPlayerWrappers now post the onVideoReleased / onVideoPlayerDestroyed callback *before* deleting anything
+> VideoPlayerWrappers now post onVideoPlayerDestroyed callback *before* deleting anything
 
 
 ## From 3.x to 4.0.12.x
@@ -297,8 +297,7 @@ mBackgroundSprite.getColorFx().bindAmpAlpha(errorAnimator);
 2. Implement new callback:
 ```
 @Override
-public void onVideoReleased(OrionVideoTexture texture) {
-    
+public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
 }
 ```
 
