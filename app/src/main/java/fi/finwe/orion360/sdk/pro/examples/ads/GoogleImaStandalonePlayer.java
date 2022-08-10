@@ -55,7 +55,6 @@ import com.google.android.exoplayer2.util.Util;
 import fi.finwe.log.Logger;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 
 /**
  * An example of using Google ExoPlayer and Google IMA SDK *without* Orion360 (standalone).
@@ -65,7 +64,7 @@ import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 public class GoogleImaStandalonePlayer extends Activity {
 
     /** Tag for logging. */
-    public static final String TAG = ExoPlayerWrapper.class.getSimpleName();
+    public static final String TAG = GoogleImaStandalonePlayer.class.getSimpleName();
 
     /** Google ExoPlayer. */
     protected ExoPlayer mExoPlayer;
@@ -80,14 +79,15 @@ public class GoogleImaStandalonePlayer extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Logger.logF();
 
-        // Layout for IMA standalone example.
+        // Layout for IMA example.
         setContentView(R.layout.activity_ad_standalone);
 
         // Find styled player view. This is where both ads and media content will appear.
         mStyledPlayerView = findViewById(R.id.exoplayer_styled_player_view);
 
-        // Create an AdsLoader. This will handle everything related to ads.
+        // Create ImaAdsLoader. This component will handle everything related to ads.
         mImaAdsLoader = new ImaAdsLoader.Builder(this).build();
 	}
 
@@ -97,7 +97,7 @@ public class GoogleImaStandalonePlayer extends Activity {
     private void initializePlayer() {
         Logger.logF();
 
-        // Create ExoPlayer instance and play content with it. Parts related to ads
+        // Create an ExoPlayer instance and play content with it. Parts related to ads
         // are marked with IMPORTANT comment.
         try {
             DefaultRenderersFactory defaultRenderersFactory =
@@ -168,7 +168,6 @@ public class GoogleImaStandalonePlayer extends Activity {
         }
         if (null != mStyledPlayerView) {
             mStyledPlayerView.setPlayer(null);
-            mStyledPlayerView = null;
         }
         if (null != mExoPlayer) {
             mExoPlayer.release();
@@ -179,6 +178,7 @@ public class GoogleImaStandalonePlayer extends Activity {
     @Override
     public void onStart() {
         super.onStart();
+        Logger.logF();
 
         if (Util.SDK_INT > 23) {
             initializePlayer();
@@ -192,6 +192,7 @@ public class GoogleImaStandalonePlayer extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        Logger.logF();
 
         if (Util.SDK_INT <= 23 || mStyledPlayerView == null) {
             initializePlayer();
@@ -204,7 +205,7 @@ public class GoogleImaStandalonePlayer extends Activity {
 
     @Override
     public void onPause() {
-        super.onPause();
+        Logger.logF();
 
         if (Util.SDK_INT <= 23) {
             if (mStyledPlayerView != null) {
@@ -213,11 +214,13 @@ public class GoogleImaStandalonePlayer extends Activity {
 
             releasePlayer();
         }
+
+        super.onPause();
     }
 
     @Override
     public void onStop() {
-        super.onStop();
+        Logger.logF();
 
         if (Util.SDK_INT > 23) {
             if (mStyledPlayerView != null) {
@@ -226,12 +229,16 @@ public class GoogleImaStandalonePlayer extends Activity {
 
             releasePlayer();
         }
+
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        Logger.logF();
 
         mImaAdsLoader.release();
+
+        super.onDestroy();
     }
 }

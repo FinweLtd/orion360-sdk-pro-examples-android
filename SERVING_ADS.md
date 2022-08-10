@@ -102,7 +102,7 @@ We encourage you to read the documentation.
 
 ### ExoPlayer IMA extension
 
-The IMA SDK for Android uses Google ExoPlayer for video playback, not Android MediaPlayer. Hence, we too use ExoPlayer. Moreover, there is an **ExoPlayer IMA extension**, which wraps the IMA SDK and makes everything a bit easier. We will use that by including the extension via .gradle file:
+The IMA SDK for Android uses Google ExoPlayer for video playback, not Android MediaPlayer. Hence, we too use ExoPlayer in this document. Moreover, there is an **ExoPlayer IMA extension**, which wraps the IMA SDK and makes everything easier. We will use that by including the extension via .gradle file:
 ```
 dependencies {
     implementation 'com.google.android.exoplayer:extension-ima:2.18.1'
@@ -122,12 +122,12 @@ In fact, using the extension requires a few other changes to the project. Follow
   
 * Layout file
   - Create a layout file that contains com.google.android.exoplayer2.ui.StyledPlayerView view, if you want to test Google IMA without Orion360 / have a separate ad player on top of Orion360 view.
-  - For playing ads via Orion360, you can't use OrionViewContainer as-is. See orion_view_container_ima.xml for video player layout and check activity_ad.xml as an example how it is applied to a view hierarchy.
+  - For playing ads via Orion360, you can't use OrionViewContainer as-is. See orion_view_container_ima.xml for a working video player layout, and check activity_ad.xml as an example how it is applied to a view hierarchy.
   
 * Strings
   - Add an ad tag. This is important for your final app, as you need to use a proper tag from your own account, not ours or Google's sample tag!
 
-### Example 1: Google IMA Standalone Player
+### Example 1: Google IMA standalone player
 
 Source code: ads/GoogleImaStandalonePlayer.java
 
@@ -135,16 +135,25 @@ This example mostly follows Google IMA's official example. It shows how easily y
 
 > Note: This example does not use Orion360 at all, and therefore renders 360° content flat. The purpose of this example is to show the minimal setup required for Google IMA.
 
-### Example 2: Google IMA on top of Orion
+### Example 2: Two isolated players
 
-Source code: ads/GoogleImaOnTopOfOrion.java
+Source code: ads/GoogleImaTwoIsolatedPlayers.java
 
-WIP
+This example shows the most simplistic way of combining Google IMA ad playback with Orion360 based media content playback: the ad player is completely separate and simply drawn on top of Orion360's video player. An event listener is used for toggling player visibilities and play/pause states.
 
+> This approach works fairly well with pre-roll ads, but is not a good choice for mid-roll and post-roll ads if you want to let Google IMA decide when to play an ad: you have to manually maintain two separate players in sync. In addition, this approach may result into buffering the media content twice because of the two players, unless you use a dummy video URL/file for the ad player.
 
-### Example 3: Google IMA via Orion
+### Example 3: Shared player, separate views
+
+Source code: ads/GoogleImaSharedPlayerSeparateViews.java
+
+This example shows a more capable integration, where a single ExoPlayer instance plays both ads and media content. The output (decoded video frames) are passed either to ExoPlayer's StyledPlayerView (ads) or Orion360 (media content). An event listener is used for swapping the target surface.
+
+### Example 4: Google IMA via Orion
 
 Source code: ads/GoogleImaViaOrion.java
 
-WIP
+This example uses Orion360 and its ExoPlayer for both ad and media content playback, and renders both within Orion360's own view. To be specific: Orion360 plays flat 2D 16:9 aspect ratio ads as well as wide-angle 360° media content. It could play 360° ads, too, if such ads existed. An event listener is used for swapping active projection.
 
+> This approach requires using a special layout instead of the usual OrionViewContainer, since Google IMA uses 
+> callback to retrieve a handle to a view hierarchy where it can add views that are related to ads. The example contains such layout, which app developers are free to customize.

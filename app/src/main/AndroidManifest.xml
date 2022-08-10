@@ -51,7 +51,12 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
         <activity
-            android:name=".ads.GoogleImaOnTopOfOrion"
+            android:name=".ads.GoogleImaTwoIsolatedPlayers"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+        <activity
+            android:name=".ads.GoogleImaSharedPlayerSeparateViews"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>

@@ -29,11 +29,28 @@
 
 package fi.finwe.orion360.sdk.pro.examples.ads;
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.ads.interactivemedia.v3.api.AdEvent;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector;
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
 
 import fi.finwe.log.Logger;
@@ -45,7 +62,6 @@ import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
@@ -53,7 +69,7 @@ import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
 import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 
 /**
- * An example of using Google ExoPlayer and Google IMA SDK with Orion360 (ads played via Orion).
+ * An example of using Google ExoPlayer and Google IMA SDK with Orion360 (shared player, two views).
  * <p/>
  * Read SERVING_ADS.md for more information and detailed explanation.
  * <p/>
@@ -72,7 +88,8 @@ import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventListener {
+public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
+        implements AdEvent.AdEventListener {
 
     /** Tag for logging. */
     public static final String TAG = GoogleImaSharedPlayerSeparateViews.class.getSimpleName();
@@ -80,11 +97,11 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
     /** Google ExoPlayer. */
     protected ExoPlayer mExoPlayer;
 
+    /** ExoPlayer's own styled player view. */
+    protected StyledPlayerView mStyledPlayerView;
+
     /** Google IMA ad loader. */
     protected ImaAdsLoader mImaAdsLoader;
-
-    /** The view group where Orion and ad related views will be added to as layers. */
-    protected OrionViewContainerIma mViewContainerIma;
 
     /** The Android view where our 3D scene (OrionView) will be added to. */
     protected OrionViewContainer mViewContainer;
@@ -115,15 +132,14 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        // Use special layout that supports ad overlay.
-        setContentView(R.layout.activity_ad_via_orion);
+        // Layout for IMA example.
+        setContentView(R.layout.activity_ad_on_top);
 
-        // Find view group for Orion and ad player views.
-        mViewContainerIma = findViewById(R.id.orion_view_container_ima);
+        // Find Orion view container view. This is where media content will appear.
+        mViewContainer = findViewById(R.id.orion_view_container);
 
-        // Get Orion360 view container from the inflated XML layout.
-        // This is where both ads and media content will appear.
-        mViewContainer = mViewContainerIma.getOrionViewContainer();
+        // Find styled player view. This is where ads will appear.
+        mStyledPlayerView = findViewById(R.id.exoplayer_styled_player_view);
 
         // Create an AdsLoader and set us as a listener to its events.
         mImaAdsLoader = new ImaAdsLoader.Builder(this)
@@ -147,12 +163,14 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
         mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video player that uses Google ExoPlayer as an audio/video engine.
+        // Notice that in this example, we could use also Android MediaPlayer as video backend
+        // for Orion360, since content player is separate from the ad player.
         mVideoPlayer = new ExoPlayerWrapper(this);
 
         // Configurations to enable playing ads.
         mVideoPlayer.setAdTag(getString(R.string.ad_tag_url));      // IMPORTANT
         mVideoPlayer.setAdsLoader(mImaAdsLoader);                   // IMPORTANT
-        mVideoPlayer.setAdViewProvider(mViewContainerIma);          // IMPORTANT
+        mVideoPlayer.setAdViewProvider(mStyledPlayerView);          // IMPORTANT
 
         // Create a new video (or image) texture from a video (or image) source URI.
         mPanoramaTexture = new OrionVideoTexture(mOrionContext,
@@ -221,6 +239,12 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
             mImaAdsLoader.setPlayer(null);
         }
 
+        // ExoPlayer:
+
+        if (null != mStyledPlayerView) {
+            mStyledPlayerView.setPlayer(null);
+        }
+
         // Orion360:
 
         if (null != mPanoramaTexture) {
@@ -275,6 +299,10 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
 
         if (Util.SDK_INT > 23) {
             initializePlayer();
+
+            if (mStyledPlayerView != null) {
+                mStyledPlayerView.onResume();
+            }
         }
     }
 
@@ -282,14 +310,12 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
     public void onResume() {
         super.onResume();
 
-        if (Util.SDK_INT <= 23) {
+        if (Util.SDK_INT <= 23 || mStyledPlayerView == null) {
             initializePlayer();
-        }
 
-        // Ensure source projection is used if an ad is being played when the app is resumed.
-        if (null != mExoPlayer && mExoPlayer.isPlayingAd() && null != mPanorama) {
-            mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
-            mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+            if (mStyledPlayerView != null) {
+                mStyledPlayerView.onResume();
+            }
         }
     }
 
@@ -298,6 +324,10 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
         super.onPause();
 
         if (Util.SDK_INT <= 23) {
+            if (mStyledPlayerView != null) {
+                mStyledPlayerView.onPause();
+            }
+
             releasePlayer();
         }
     }
@@ -307,6 +337,10 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
         super.onStop();
 
         if (Util.SDK_INT > 23) {
+            if (mStyledPlayerView != null) {
+                mStyledPlayerView.onPause();
+            }
+
             releasePlayer();
         }
     }
@@ -325,23 +359,51 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
 
         // ImaAdsLoader provides a number of events that we can listen to. Here we use
         // only two of them, which are called when the media content should play/pause.
-        // We will use the events for controlling Orion360's projection. Here we assume
-        // that media content needs 360° rectilinear projection and ads are flat 2D videos.
+        // We will use the events for controlling the ad player's visibility and both
+        // players' play/pause states.
 
         switch (adEvent.getType()) {
             case CONTENT_PAUSE_REQUESTED:
-                // Switch to 2D projection for playing the ad.
-                if (null != mPanorama) {
-                    mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
-                    mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
-                }
+
+                mVideoPlayer.setSurface(null);
+                mStyledPlayerView.setPlayer(mExoPlayer);
+
                 break;
             case CONTENT_RESUME_REQUESTED:
-                // Switch back to 360° rectilinear projection for playing the media content.
-                if (null != mPanorama) {
-                    mPanorama.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
-                    mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
+
+                mStyledPlayerView.setPlayer(null);
+
+                //mVideoPlayer.setSurface(mPanoramaTexture);
+
+                /*
+                if (null != mPanoramaTexture) {
+                    String url = mPanoramaTexture.getTextureURI();
+
+                    mPanoramaTexture.release();
+                    mPanoramaTexture.destroy();
+                    mPanoramaTexture = null;
+                    mPanorama.releaseTextures();
+
+                    mPanoramaTexture = new OrionVideoTexture(mOrionContext,
+                            mVideoPlayer, url);
+
+                    ((OrionVideoTexture)mPanoramaTexture).addTextureListener(new OrionVideoTexture.ListenerBase() {
+
+                        @Override
+                        public void onVideoPlayerCreated(OrionVideoTexture texture) {
+                            Logger.logF();
+
+                            mExoPlayer = mVideoPlayer.getExoPlayer();
+                        }
+
+                    });
+
+                    mPanorama.bindTextureFull(0, mPanoramaTexture);
+
+                    mPanoramaTexture.play();
                 }
+                 */
+
                 break;
         }
     }

@@ -6,7 +6,10 @@
         <entry key="app/src/main/res/drawable/main_menu_list_selector.xml" value="0.2815" />
         <entry key="app/src/main/res/drawable/player_controls_seekbar.xml" value="0.2815" />
         <entry key="app/src/main/res/layout/activity_ad.xml" value="0.196048632218845" />
+        <entry key="app/src/main/res/layout/activity_ad_on_top.xml" value="0.18396226415094338" />
+        <entry key="app/src/main/res/layout/activity_ad_ontopof.xml" value="0.196048632218845" />
         <entry key="app/src/main/res/layout/activity_ad_standalone.xml" value="0.403125" />
+        <entry key="app/src/main/res/layout/activity_ad_via_orion.xml" value="0.18396226415094338" />
         <entry key="app/src/main/res/layout/activity_ads.xml" value="0.4015625" />
         <entry key="app/src/main/res/layout/activity_ima.xml" value="0.19947916666666668" />
         <entry key="app/src/main/res/layout/activity_image_player.xml" value="0.34872979214780603" />

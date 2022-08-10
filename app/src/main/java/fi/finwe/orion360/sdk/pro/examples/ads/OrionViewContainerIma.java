@@ -55,18 +55,18 @@ import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
 public class OrionViewContainerIma extends FrameLayout implements AdViewProvider {
 
     /** Actual OrionViewContainer. */
-    private OrionViewContainer mOrionViewContainer;
+    private final OrionViewContainer mOrionViewContainer;
 
-    /** This overlay is mandatory and will show the ads. */
-    private FrameLayout mAdOverlay;
+    /** This overlay is mandatory and will show ad links/info. */
+    private final FrameLayout mAdOverlay;
 
-    /** This overlay, if present, is transparent and may capture touch events etc. */
+    /** This optional overlay, if present, is transparent and may capture touch events etc. */
     @Nullable
-    private FrameLayout mTransparentOverlay;
+    private final FrameLayout mTransparentOverlay;
 
-    /** This overlay, if present, may contain transient mandatory controls. */
+    /** This optional overlay, if present, may contain transient mandatory video controls. */
     @Nullable
-    private FrameLayout mControlOverlay;
+    private final FrameLayout mControlOverlay;
 
 
     /**
@@ -75,7 +75,7 @@ public class OrionViewContainerIma extends FrameLayout implements AdViewProvider
      * @param context the context.
      */
     public OrionViewContainerIma(Context context) {
-        this(context, (AttributeSet) null);
+        this(context, null);
     }
 
     /**
@@ -98,28 +98,26 @@ public class OrionViewContainerIma extends FrameLayout implements AdViewProvider
     public OrionViewContainerIma(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        int playerLayoutId = R.layout.orion_view_container_ima;
-        LayoutInflater.from(context).inflate(playerLayoutId, this);
+        LayoutInflater.from(context).inflate(R.layout.orion_view_container_ima, this);
 
-        mOrionViewContainer = (OrionViewContainer) this.findViewById(
-                R.id.orion_view_container);
-        mAdOverlay = (FrameLayout) this.findViewById(
-                R.id.orion_ad_overlay);
-        /*
-        mTransparentOverlay = (FrameLayout) this.findViewById(
-                R.id.orion_transparent_overlay);
-        mControlOverlay = (FrameLayout) this.findViewById(
-                R.id.orion_control_overlay);
-         */
+        mOrionViewContainer = this.findViewById(R.id.orion_view_container);
+        mAdOverlay = this.findViewById(R.id.orion_ad_overlay);
+        mTransparentOverlay = this.findViewById(R.id.orion_transparent_overlay);
+        mControlOverlay = this.findViewById(R.id.orion_control_overlay);
     }
 
+    /**
+     * Get Orion view container.
+     *
+     * @return the Orion view container.
+     */
     public OrionViewContainer getOrionViewContainer() {
         return mOrionViewContainer;
     }
 
     @Override
     public ViewGroup getAdViewGroup() {
-        return (ViewGroup)Assertions.checkStateNotNull(mAdOverlay,
+        return Assertions.checkStateNotNull(mAdOverlay,
                 "orion_ad_overlay must be present for ad playback");
     }
 
