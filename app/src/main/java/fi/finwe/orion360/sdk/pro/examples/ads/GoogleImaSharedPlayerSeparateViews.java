@@ -187,9 +187,10 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
             public void onVideoPlayerCreated(OrionVideoTexture texture) {
                 Logger.logF();
 
-                mExoPlayer = mVideoPlayer.getExoPlayer();
+                if (null != mVideoPlayer) {
+                    mExoPlayer = mVideoPlayer.getExoPlayer();
+                }
             }
-
 
             @Override
             public void onException(OrionTexture orionTexture, Exception e) {
@@ -422,9 +423,15 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
 
         // If we resume the app and ad is being played, we must ensure that
         // video frames are directed to ad view.
-        if (null != mExoPlayer && mExoPlayer.isPlayingAd() && null != mPanorama) {
-            //mStyledPlayerView.setPlayer(mExoPlayer);
+        /*
+        if (null != mExoPlayer && mExoPlayer.isPlayingAd()) {
+            mStyledPlayerView.setPlayer(mExoPlayer);
+            mViewContainer.setVisibility(View.INVISIBLE);
+            mStyledPlayerView.setVisibility(View.VISIBLE);
+            mExoPlayer.play();
+            mStyledPlayerView.onResume();
         }
+         */
     }
 
     @Override
@@ -479,14 +486,18 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
         // but not when media content playback is resumed.
 
         switch (adEvent.getType()) {
-            case RESUMED:
             case CONTENT_PAUSE_REQUESTED:
                 // Swap surface from Orion360 view to ad view.
                 // StyledPlayerView will set its own surface to ExoPlayer when ExoPlayer
                 // is given to it. Video content (ad) will now appear in StyledPlayerView.
                 mStyledPlayerView.setPlayer(mExoPlayer);
 
-                // Make the ad player visible.
+                // Make Orion invisible. We don't want it to appear and pause ad playback
+                // when it is ready and texture gets initialized.
+                mViewContainer.setVisibility(View.INVISIBLE);
+                break;
+            case STARTED:
+                // Make the ad player visible now.
                 mStyledPlayerView.setVisibility(View.VISIBLE);
                 break;
             case CONTENT_RESUME_REQUESTED:
@@ -497,6 +508,9 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
 
                 // Make the ad player invisible.
                 mStyledPlayerView.setVisibility(View.INVISIBLE);
+
+                // Make Orion visible.
+                mViewContainer.setVisibility(View.VISIBLE);
                 break;
         }
      }

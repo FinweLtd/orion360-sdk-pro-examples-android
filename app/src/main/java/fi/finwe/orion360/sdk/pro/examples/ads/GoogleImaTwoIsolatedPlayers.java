@@ -440,12 +440,16 @@ public class GoogleImaTwoIsolatedPlayers extends OrionActivity implements AdEven
                 // Pause media content.
                 mPanoramaTexture.pause();
 
+                // Make Orion invisible.
+                mViewContainer.setVisibility(View.INVISIBLE);
+
                 // Resume ad.
                 mExoPlayer.play();
 
+                break;
+            case STARTED:
                 // Make the ad player visible.
                 mStyledPlayerView.setVisibility(View.VISIBLE);
-
                 break;
             case CONTENT_RESUME_REQUESTED:
 
@@ -457,6 +461,9 @@ public class GoogleImaTwoIsolatedPlayers extends OrionActivity implements AdEven
 
                 // Make the ad player invisible.
                 mStyledPlayerView.setVisibility(View.INVISIBLE);
+
+                // Make Orion visible.
+                mViewContainer.setVisibility(View.VISIBLE);
 
                 break;
         }
@@ -477,5 +484,9 @@ public class GoogleImaTwoIsolatedPlayers extends OrionActivity implements AdEven
         // Therefore, while the approach shown in this example works OK for pre-roll ads,
         // other examples that use *the same ExoPlayer instance* for ads and media content are
         // probably more suitable for mid-roll and post-roll ads, and other more complex cases.
+
+        // Moreover, some old devices cannot decode and play two videos simultaneously.
+        // This approach may not work on these devices at all. For example, EGL_BAD_DISPLAY
+        // error might appear in LogCat.
     }
 }

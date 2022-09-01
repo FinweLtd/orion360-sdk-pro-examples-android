@@ -167,7 +167,9 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
             public void onVideoPlayerCreated(OrionVideoTexture texture) {
                 Logger.logF();
 
-                mExoPlayer = mVideoPlayer.getExoPlayer();
+                if (null != mVideoPlayer) {
+                    mExoPlayer = mVideoPlayer.getExoPlayer();
+                }
             }
 
         });
