@@ -7,8 +7,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 32
         multiDexEnabled true // required by ExoPlayer and Google IMA extension
-        versionCode 1200400
-        versionName "1.2.00.40"
+        versionCode 4000400
+        versionName "4.0.00.400"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -46,17 +46,24 @@ dependencies {
     // Debug version of FinweUtil enables debug logs from Orion360.
     //noinspection GradleDependency
 //    debugImplementation 'fi.finwe.util:finwe-util-public:1.0.04-debug'
-    debugImplementation 'fi.finwe.util:finwe-util:2.0.00-debug'
+//    debugImplementation 'fi.finwe.util:finwe-util:2.0.00-debug'
+//    debugImplementation 'fi.finwe.util:finwe-util-public:2.0.01-debug-logfile'
+    debugImplementation 'fi.finwe.util:finwe-util-public:2.0.01-debug'
 
     // Release version of FinweUtil should be used for all releases (no debug logs).
     //noinspection GradleDependency
 //    releaseImplementation 'fi.finwe.util:finwe-util-public:1.0.04'
-    releaseImplementation 'fi.finwe.util:finwe-util:2.0.00'
+//    releaseImplementation 'fi.finwe.util:finwe-util:2.0.00'
+    releaseImplementation 'fi.finwe.util:finwe-util-public:2.0.01'
 
-    // From Finwe maven repo at GitHub.
+    // From Finwe maven repo at GitHub (private repo).
+//    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001-debug'
+//    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001'
+
+    // From Finwe maven repo at GitHub (public repo).
 //    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
-    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001-debug'
-    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001'
+    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.13.003-debug'
+    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.13.003'
 
     // ExoPlayer as an alternative video engine.
     api 'com.google.android.exoplayer:exoplayer:2.18.1'
