@@ -6,6 +6,15 @@ This repository contains a set of examples for creating a 360 photo/video player
 
 > Before using the SDK, read [Licence Agreement](https://github.com/FinweLtd/orion360-sdk-pro-examples-android/blob/master/Finwe_Orion360_SDK_Pro_Evaluation_Kit_License_en_US-20161212_1500.pdf)
 
+> ORION 4.0
+> 
+> After a long period of development and testing in various internal and customer projects, Orion360 Pro 4.0 for Android has been released. Please read [migration guide](MIGRATION.md) for instruction on updating your existing project from v3.x to v4.x. There are breaking changes.
+>
+> New examples: Read about [serving ads with Google IMA](SERVING_ADS.md) and [playing secured streams from AWS](SECURE_STREAMING.md).
+>
+> Also notice that ExoPlayer is now external to Orion360. You can more easily change to new ExoPlayer versions as they published (modify ExoPlayerWrapper if necessary). It is also now possible to get direct access to ExoPlayer instance, for example to listen for various events that the player produces.
+
+
 > IMPORTANT NOTE
 >
 > Starting May 1st, 2021, Bintray is sunsetting their repositories, including the popular jcenter and also Finwe's bintray repository.
