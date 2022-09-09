@@ -7,7 +7,7 @@
 	<fi.finwe.orion360.sdk.pro.view.OrionViewContainer
 		android:id="@+id/orion_view_container"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent" />
+		android:layout_height="match_parent"/>
 
 	<com.google.android.exoplayer2.ui.StyledPlayerView
 		android:id="@+id/exoplayer_styled_player_view"

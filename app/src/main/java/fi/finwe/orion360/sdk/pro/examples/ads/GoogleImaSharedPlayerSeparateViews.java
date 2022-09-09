@@ -345,6 +345,10 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
         if (null != mStyledPlayerView) {
             mStyledPlayerView.setPlayer(null);
         }
+        if (null != mExoPlayer) {
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
 
         // Orion360:
 
@@ -420,18 +424,6 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
                 mStyledPlayerView.onResume();
             }
         }
-
-        // If we resume the app and ad is being played, we must ensure that
-        // video frames are directed to ad view.
-        /*
-        if (null != mExoPlayer && mExoPlayer.isPlayingAd()) {
-            mStyledPlayerView.setPlayer(mExoPlayer);
-            mViewContainer.setVisibility(View.INVISIBLE);
-            mStyledPlayerView.setVisibility(View.VISIBLE);
-            mExoPlayer.play();
-            mStyledPlayerView.onResume();
-        }
-         */
     }
 
     @Override
@@ -473,7 +465,10 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
     @Override
     public void onAdEvent(AdEvent adEvent) {
         //Logger.logF();
-        Logger.logD(TAG, "onAdEvent(): " + adEvent);
+        //Logger.logD(TAG, "onAdEvent(): " + adEvent);
+        if (adEvent.getType() != AdEvent.AdEventType.AD_PROGRESS) {
+            Logger.logD(TAG, "onAdEvent(): " + adEvent);
+        }
 
         // ImaAdsLoader provides a number of events that we can listen to. Here we use
         // two of them, which are called when the media content should play/pause.
@@ -493,7 +488,7 @@ public class GoogleImaSharedPlayerSeparateViews extends OrionActivity
                 mStyledPlayerView.setPlayer(mExoPlayer);
 
                 // Make Orion invisible. We don't want it to appear and pause ad playback
-                // when it is ready and texture gets initialized.
+                // when it is ready and texture gets initialized and paused.
                 mViewContainer.setVisibility(View.INVISIBLE);
                 break;
             case STARTED:
