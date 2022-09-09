@@ -4,10 +4,11 @@ android {
     compileSdkVersion 32
     defaultConfig {
         applicationId "fi.finwe.orion360.sdk.pro.examples"
-        minSdkVersion 18
+        minSdkVersion 21
         targetSdkVersion 32
-        versionCode 1200400
-        versionName "1.2.00.40"
+        multiDexEnabled true // required by ExoPlayer and Google IMA extension
+        versionCode 4000400
+        versionName "4.0.00.400"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -20,12 +21,18 @@ android {
         }
     }
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
+        // below: Java 8 is required for example by ExoPlayer:
+        //targetCompatibility JavaVersion.VERSION_1_8
+
+        // below: Java 11 is required by Google IMA extension (showing ads):
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.multidex:multidex:2.0.1' // required by ExoPlayer and Google IMA extension
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
@@ -38,24 +45,29 @@ dependencies {
 
     // Debug version of FinweUtil enables debug logs from Orion360.
     //noinspection GradleDependency
-    debugImplementation 'fi.finwe.util:finwe-util-public:1.0.04-debug'
+//    debugImplementation 'fi.finwe.util:finwe-util-public:1.0.04-debug'
+//    debugImplementation 'fi.finwe.util:finwe-util:2.0.00-debug'
+//    debugImplementation 'fi.finwe.util:finwe-util-public:2.0.01-debug-logfile'
+    debugImplementation 'fi.finwe.util:finwe-util-public:2.0.01-debug'
 
     // Release version of FinweUtil should be used for all releases (no debug logs).
     //noinspection GradleDependency
-    releaseImplementation 'fi.finwe.util:finwe-util-public:1.0.04'
+//    releaseImplementation 'fi.finwe.util:finwe-util-public:1.0.04'
+//    releaseImplementation 'fi.finwe.util:finwe-util:2.0.00'
+    releaseImplementation 'fi.finwe.util:finwe-util-public:2.0.01'
 
-    // From Finwe maven repo at GitHub.
-    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
+    // From Finwe maven repo at GitHub (private repo).
+//    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001-debug'
+//    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro:4.0.13.001'
+
+    // From Finwe maven repo at GitHub (public repo).
+//    implementation 'fi.finwe.orion360:orion360-sdk-pro-public:3.1.02.100'
+    debugImplementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.13.003-debug'
+    releaseImplementation 'fi.finwe.orion360:orion360-sdk-pro-public:4.0.13.003'
 
     // ExoPlayer as an alternative video engine.
+    api 'com.google.android.exoplayer:exoplayer:2.18.1'
+
     //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-core:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-dash:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-hls:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:r2.4.1'
-    //noinspection GradleDependency
-    implementation 'com.google.android.exoplayer:exoplayer-ui:r2.4.1'
+    implementation 'com.google.android.exoplayer:extension-ima:2.18.1'
 }

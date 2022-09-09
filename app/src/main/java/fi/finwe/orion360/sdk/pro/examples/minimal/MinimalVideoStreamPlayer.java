@@ -36,7 +36,7 @@ import android.widget.ProgressBar;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, for streaming an MP4 video file over the network.
@@ -79,7 +79,7 @@ public class MinimalVideoStreamPlayer extends SimpleOrionActivity {
         mBufferingIndicator.setVisibility(View.VISIBLE);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Set a URI that points to an .mp4 video-on-demand stream in the network.
         // Encode video with web/progressive setting enabled for best performance.

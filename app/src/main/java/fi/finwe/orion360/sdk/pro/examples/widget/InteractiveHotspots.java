@@ -34,13 +34,14 @@ import android.util.Log;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.SelectablePointerIcon;
 
@@ -76,7 +77,10 @@ public class InteractiveHotspots extends OrionActivity {
     /** When focused the hotspot selection will trigger after this many frames rendered (~60FPS). */
     protected final static int HOTSPOT_TRIGGER_DELAY_IN_FRAMES = 120;
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere and hotspots will be added to. */
@@ -113,23 +117,23 @@ public class InteractiveHotspots extends OrionActivity {
 		setContentView(R.layout.activity_main);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Pause video playback until user triggers one of the 'Start' hotspots.
         mPanoramaTexture.pause();
 
         // Dim video until playback starts, helps to make end-user focus to 'Start' hotspots.
-        mPanorama.setAmpAlpha(0.2f);
+        mPanorama.getColorFx().setAmpAlpha(0.2f);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
         // equirectangular monoscopic source, and wrap the complete texture around the sphere.
@@ -140,7 +144,7 @@ public class InteractiveHotspots extends OrionActivity {
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -170,8 +174,12 @@ public class InteractiveHotspots extends OrionActivity {
         mHotspotBack = createStartHotSpot(180.0f, 0.0f, 0.0f);
         mScene.bindWidget(mHotspotBack);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -181,8 +189,8 @@ public class InteractiveHotspots extends OrionActivity {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 	}
 
     /**
@@ -196,26 +204,26 @@ public class InteractiveHotspots extends OrionActivity {
     protected SelectablePointerIcon createStartHotSpot(float yawDeg, float pitchDeg, float rollDeg) {
 
         // Create a new hotspot as a selectable pointer icon widget.
-        SelectablePointerIcon hotspot = new SelectablePointerIcon();
+        SelectablePointerIcon hotspot = new SelectablePointerIcon(mOrionContext);
 
         // Set the location of the hotspot using Euler angles.
-        hotspot.setLocationPolarZXYDeg(yawDeg, pitchDeg, rollDeg, HOTSPOT_LAYER_RADIUS);
+        hotspot.setWorldTransformFromPolarZXY(yawDeg, pitchDeg, rollDeg, HOTSPOT_LAYER_RADIUS);
 
         // Set the size of the hotspot as a scale factor relative to image asset size.
         hotspot.setScale(HOTSPOT_SCALE_FACTOR, HOTSPOT_SCALE_FOCUSED_MAX);
 
         // Set the icon for the hotspot as a PNG image. */
-        hotspot.getIcon().bindTexture(OrionTexture.createTextureFromURI(this,
+        hotspot.getIcon().bindTexture(OrionTexture.createTextureFromURI(mOrionContext, this,
                 getString(R.string.asset_hotspot_start)));
 
         // Adjust hotspot icon's alpha value to make it a little bit transparent.
-        hotspot.getIcon().setAmpAlpha(0.90f);
+        hotspot.getIcon().getColorFx().setAmpAlpha(0.90f);
 
         // Set the pie (selection) animation for the hotspot as a PNG image.
         // A pie animation image is drawn as a pie chart whose angle grows steadily, resulting
         // to a clock hand type movement that is suitable for illustrating timed triggering.
-        hotspot.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(this,
-                getString(R.string.asset_hotspot_pie)));
+        hotspot.getPieSprite().bindTexture(OrionTexture.createTextureFromURI(mOrionContext,
+                this, getString(R.string.asset_hotspot_pie)));
 
         // Set the pointer (typically the camera). Now we know if user is looking at the hotspot.
         hotspot.setPointer(mCamera);
@@ -225,7 +233,8 @@ public class InteractiveHotspots extends OrionActivity {
         // hotspot focus is lost, we do not immediately reset the count but start decreasing it
         // slowly so end-user can focus on the hotspot again if she accidentally moved away.
         // The rendering runs at 60 frames per second (FPS), if not limited by weak hardware.
-        hotspot.setSelectionTriggerFrameCount(HOTSPOT_TRIGGER_DELAY_IN_FRAMES);
+        hotspot.setTriggerOnMaxFrameCount(true);
+        hotspot.setSelectionMaxFrameCount(HOTSPOT_TRIGGER_DELAY_IN_FRAMES);
 
         // Create a listener so that we can respond to selection events.
         // Notice that these callbacks will be run on the UI thread, not on the GL thread whose
@@ -265,7 +274,7 @@ public class InteractiveHotspots extends OrionActivity {
         mHotspotBack.setEnabled(false);
 
         // Make the panorama fully opaque (remove dimming).
-        mPanorama.setAmpAlpha(1.0f);
+        mPanorama.getColorFx().setAmpAlpha(1.0f);
 
         // Start video playback.
         mPanoramaTexture.play();

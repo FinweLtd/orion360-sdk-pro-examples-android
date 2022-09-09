@@ -58,41 +58,66 @@ public class TouchControllerWidget implements OrionWidget {
      *
      * @param camera The camera to be controlled by this widget.
      */
+    @SuppressWarnings("CommentedOutCode")
     public TouchControllerWidget(OrionContext orionContext, OrionCamera camera) {
 
         // Create pinch-to-zoom/pinch-to-rotate handler.
-        mTouchPincher = new TouchPincher();
+        mTouchPincher = new TouchPincher(orionContext);
         mTouchPincher.setMinimumDistanceDp(orionContext.getActivity(), 20);
         mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
 
         // Create drag-to-pan handler.
-        mTouchRotater = new TouchRotater();
+        mTouchRotater = new TouchRotater(orionContext);
         mTouchRotater.bindControllable(camera);
 
         // Create the rotation aligner, responsible for rotating the view so that the horizon
         // aligns with the user's real-life horizon when the user is not looking up or down.
-        mRotationAligner = new RotationAligner();
+        mRotationAligner = new RotationAligner(orionContext);
         mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                 orionContext.getActivity()));
         mRotationAligner.bindControllable(camera);
 
         // Rotation aligner needs sensor fusion data in order to do its job.
         orionContext.getSensorFusion().bindControllable(mRotationAligner);
+
+        // If you want to fine-tune touch control, see example below.
+
+        // Tune rotation aligner less aggressive. It should take action when the speed is
+        // approaching to zero ie. when we are soon stopping and there is a clear risk that
+        // horizon will be left unaligned if we don't correct it.
+        //mRotationAligner.setRotationSpeedLimits(0.5f, 1.5f);
+
+        // Set rotation aligner dead zone width (in degrees). This defines how far behind
+        // the nadir or zenith the user can pan until the rotation aligner takes action.
+        // Here we use a value that allows examining nadir and zenith quite freely.
+        //mRotationAligner.setDeadZoneDeg(30.0f);
+
+        // The approach above has a serious problem: It is common that user holds the device
+        // slightly tilted down, for example pitch = -45 degrees (typical reading position).
+        // Then, he wants to rotate the view horizontally (pan along the yaw angle). So he
+        // swipes to left or right. Instead of rotating the yaw angle (only), the view is
+        // rotated along a plane that is tilted -45 degrees and user ends up viewing the roof.
+
+        // This can be solved by using a different configuration for the rotation aligner:
+        // We must disable speed limits so that the rotation aligner is always active, and
+        // expand coverage by making the dead zone areas smaller:
+        //mRotationAligner.setRotationSpeedLimits(-1, -1);
+        //mRotationAligner.setDeadZoneDeg(20.0f);
     }
 
     @Override
     public void onBindWidget(OrionScene scene) {
         // When widget is bound to scene, bind the controllers to it to make them functional.
-        scene.bindController(mTouchPincher);
-        scene.bindController(mTouchRotater);
-        scene.bindController(mRotationAligner);
+        scene.bindRoutine(mTouchPincher);
+        scene.bindRoutine(mTouchRotater);
+        scene.bindRoutine(mRotationAligner);
     }
 
     @Override
     public void onReleaseWidget(OrionScene scene) {
         // When widget is released from scene, release the controllers as well.
-        scene.releaseController(mTouchPincher);
-        scene.releaseController(mTouchRotater);
-        scene.releaseController(mRotationAligner);
+        scene.releaseRoutine(mTouchPincher);
+        scene.releaseRoutine(mTouchRotater);
+        scene.releaseRoutine(mRotationAligner);
     }
 }

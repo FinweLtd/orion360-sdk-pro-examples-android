@@ -62,8 +62,8 @@
     <string name="sprite_layout_bottom_center">BC</string>
     <string name="sprite_layout_bottom_right">BR</string>
     <string name="sprite_layout_swap_texture">Swap texture</string>
-    <string name="sprite_layout_long_side">Long side</string>
-    <string name="sprite_layout_short_side">Short side</string>
+    <string name="sprite_layout_outside">Outside</string>
+    <string name="sprite_layout_inside">Inside</string>
     <string name="sprite_layout_short_width">Width</string>
     <string name="sprite_layout_short_height">Height</string>
     <string name="sprite_layout_crop">Crop</string>
@@ -80,5 +80,8 @@
     <string name="asset_icon_home">asset://icon/home.png</string>
     <string name="asset_icon_arrow_left">asset://icon/arrow_left.png</string>
     <string name="asset_icon_arrow_right">asset://icon/arrow_right.png</string>
+
+    <!-- Google IMA ads -->
+    <string name="ad_tag_url"><![CDATA[https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=]]></string>
 
 </resources>

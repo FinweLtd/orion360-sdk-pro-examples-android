@@ -120,6 +120,20 @@ public class MainMenu extends FragmentActivity {
 	public static final String TEST_VIDEO_URI_1920x720 =
 			"https://s3.amazonaws.com/orion360-us/Orion360_test_video_2d_equi_360x135deg_1920x720pix_30fps_30sec_x264.mp4";
 
+	/** Test video URI for direct unsecure access to a protected MP4 video stream that can be found from AWS S3. */
+	@SuppressWarnings("unused")
+	public static final String TEST_VIDEO_URI_NON_SECURED_S3 =
+			"https://orion360sdk-protected-content.s3.eu-north-1.amazonaws.com/Orion360_test_video_1920x960.mp4";
+
+	/** Test video URI for CloudFront CDN secure access to a protected video stream that can be found from AWS S3. */
+	@SuppressWarnings("unused")
+	public static final String TEST_VIDEO_URI_SECURED_MP4_CLOUD_FRONT =
+			"https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.mp4";
+
+	/** Test video URI for CloudFront CDN secure access to a protected HLS video stream that can be found from AWS S3. */
+	public static final String TEST_VIDEO_URI_SECURED_HLS_CLOUD_FRONT =
+			"https://d15i6zsi2io35f.cloudfront.net/Orion360_test_video_1920x960.m3u8";
+
 	/** Test image URI for low quality image that can be found from the network. */
 	@SuppressWarnings("unused")
 	public static final String TEST_IMAGE_URI_1280x640 =
@@ -244,7 +258,7 @@ public class MainMenu extends FragmentActivity {
     protected static final int DOUBLE_BACK_TO_EXIT_TIME_WINDOW = 2000;
 
     /** Flag for enabling double back to exit -feature. */
-    protected boolean mDoubleBackToExitEnabled = true;
+    protected final boolean mDoubleBackToExitEnabled = true;
 
     /** Flag for counting two back presses for exit. */
     protected boolean mDoubleBackToExitPressedOnce = false;
@@ -355,7 +369,7 @@ public class MainMenu extends FragmentActivity {
 
 			// Parse each activity's name, package and full name, and store them into the list.
 			for (ActivityInfo activityInfo : packageInfo.activities) {
-				if (activityInfo.name.equals(this.getClass().getName()))
+				if (activityInfo.name.equals(MainMenu.class.getName()))
 					continue; // Skip self.
 
 				ActivityData activityData = new ActivityData();
@@ -974,10 +988,8 @@ public class MainMenu extends FragmentActivity {
         try {
             mmr.setDataSource(context, Uri.parse(videoUri));
             bitmap = mmr.getFrameAtTime(positionMs * 1000); // convert to microseconds
-        } catch (IllegalArgumentException iae) {
+        } catch (RuntimeException iae) {
             iae.printStackTrace();
-        } catch (RuntimeException re) {
-            re.printStackTrace();
         } finally {
             try { mmr.release(); } catch (RuntimeException re) {
 				Log.e(TAG, "MMR release failed.");}

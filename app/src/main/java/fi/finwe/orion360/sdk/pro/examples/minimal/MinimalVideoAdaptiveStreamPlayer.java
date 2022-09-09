@@ -36,7 +36,7 @@ import android.widget.ProgressBar;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 
 /**
  * An example of a minimal Orion360 video player, for playing a HLS stream over the network.
@@ -79,7 +79,7 @@ public class MinimalVideoAdaptiveStreamPlayer extends SimpleOrionActivity {
         mBufferingIndicator.setVisibility(View.INVISIBLE);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Set a URI that points to an .m3u8 adaptive HLS stream in the network.
         setContentUri(MainMenu.TEST_VIDEO_URI_HLS);

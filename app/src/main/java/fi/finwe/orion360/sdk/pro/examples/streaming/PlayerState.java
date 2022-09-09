@@ -39,15 +39,16 @@ import android.widget.TextView;
 import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.controllable.DisplayClickable;
 import fi.finwe.orion360.sdk.pro.controller.TouchDisplayClickListener;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -70,7 +71,10 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     /** Tag for logging. */
     public static final String TAG = PlayerState.class.getSimpleName();
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
@@ -127,10 +131,10 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
 
             // Set Orion360 view as anchor view (media controller positions itself
             // on top of anchor).
-            mMediaController.setAnchorView(mView);
+            mMediaController.setAnchorView(mViewContainer);
 
             // By default, controls disappear after 3 seconds. Show again when view is clicked.
-            TouchDisplayClickListener listener = new TouchDisplayClickListener();
+            TouchDisplayClickListener listener = new TouchDisplayClickListener(mOrionContext);
             listener.bindClickable(null, new TouchDisplayClickListener.Listener() {
 
                 @Override
@@ -152,7 +156,7 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
             });
 
             // Bind click listener to the scene to make it functional.
-            mScene.bindController(listener);
+            mScene.bindRoutine(listener);
         }
 
         // Configure how often video position changes are notified to us.
@@ -191,16 +195,16 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     protected void initOrion() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
 //                MainMenu.TEST_VIDEO_URI_1280x640,     // Ordinary .mp4 video file
                 MainMenu.TEST_VIDEO_URI_HLS,            // Adaptive HLS video stream.
                 OrionTexture.PlaybackState.PAUSED);
@@ -214,7 +218,7 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -222,8 +226,12 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -233,8 +241,8 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 
     /**
@@ -263,15 +271,6 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     }
 
     // From OrionVideoTexture.Listener:
-
-    @Override
-    public void onInvalidURI(OrionTexture orionTexture) {
-        logMessage("onInvalidURI");
-
-        // If the set video stream URI was invalid, we can't play it. Hide indicator.
-        hideBufferingIndicator();
-
-    }
 
     @Override
     public void onException(OrionTexture orionTexture, Exception e) {
@@ -355,6 +354,11 @@ public class PlayerState extends OrionActivity implements OrionVideoTexture.List
     @Override
     public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
         logMessage("onVideoCompleted");
+    }
+
+    @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
+        logMessage("onVideoPlayerDestroyed");
     }
 
     @Override

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- This ViewGroup contains multiple layers for content & controls on top of it.
+         Child ViewGroups must be listed here in certain order to create the desired Z-order
+         on screen. They must use resource IDs that match with the source code, so that they
+         can be found and provided to Orion and Google IMA. The key principle is that ads controls
+         must appear on top of Orion360's video player view and there should be nothing on top
+         that prevents ad viewability. However, certain control elements are valid exceptions. -->
+
+    <!-- Orion360 renders its video player view here. Both ads and media content are shown here. -->
+    <fi.finwe.orion360.sdk.pro.view.OrionViewContainer
+        android:id="@+id/orion_view_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Google IMA will show any ad UIs here, such as skip button, ad remaining time and info link.
+         This ViewGroup must appear on top of OrionViewContainer and its ID must be
+         'orion_ad_overlay'. -->
+    <FrameLayout
+        android:id="@+id/orion_ad_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
+
+    <!-- Orion360 or your app can use this transparent overlay for capturing touch
+         events etc. This layout must be fully transparent so that it does not affect
+         to ad viewability. This optional ViewGroup, if present, must appear on top
+         of orion_ad_overlay and its ID must be 'orion_transparent_overlay'.-->
+    <FrameLayout
+        android:id="@+id/orion_transparent_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Orion360 or your app can render here transient mandatory UI components,
+         such as play/pause and full screen toggle buttons. This optional ViewGroup,
+         if present, must appear on top of orion_transparent_overlay/orion_ad_overlay
+         and its ID must be 'orion_control_overlay'.-->
+    <FrameLayout
+        android:id="@+id/orion_control_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

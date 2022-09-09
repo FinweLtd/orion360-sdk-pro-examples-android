@@ -31,7 +31,6 @@ package fi.finwe.orion360.sdk.pro.examples.streaming;
 
 import android.annotation.SuppressLint;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -44,15 +43,16 @@ import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
+import fi.finwe.orion360.sdk.pro.viewport.OrionViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
 
 /**
  * An example of a buffering indicator for a streaming Orion360 video player.
@@ -101,6 +101,9 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     /** Tag for logging. */
     public static final String TAG = BufferingIndicator.class.getSimpleName();
 
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
     /** The Android view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
@@ -126,7 +129,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     private Handler mBufferingIndicatorHandler;
 
     /** Polling interval for buffering indicator handler, in ms. */
-    int mBufferingIndicatorIntervalMs = 500;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int mBufferingIndicatorIntervalMs = 500;
 
     /** Gesture detector for tapping events (used for toggling between normal and VR modes). */
     private GestureDetector mGestureDetector;
@@ -159,7 +163,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         // normal mode. Here we use touch events, as it is natural to try tapping the screen
         // if you don't know what else to do. Start by propagating touch events from the
         // Orion360 view to a gesture detector.
-        mView.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
+        mViewContainer.setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
 
         // Then, handle tap and long press events based on VR mode state. Typically you
         // want to associate long tap for entering/exiting VR mode and inform the user
@@ -227,7 +231,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     /**
      * Runnable for polling if video playback has already begun, and to hide buffering indicator.
      */
-    Runnable mBufferingIndicatorRunnable = new Runnable() {
+    final Runnable mBufferingIndicatorRunnable = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG, "Checking if playback has started...");
@@ -249,16 +253,16 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
     protected void initOrion() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.TEST_VIDEO_URI_1280x640);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -270,7 +274,7 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -278,8 +282,12 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -289,8 +297,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
     }
 
@@ -321,20 +329,12 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Designate each viewport to render content for either left or right eye.
             mView.getViewports()[0].setVRMode(OrionViewport.VRMode.VR_LEFT);
             mView.getViewports()[1].setVRMode(OrionViewport.VRMode.VR_RIGHT);
-
-            // Compensate for VR frame lens distortion using barrel distortion FX.
-            BarrelDistortion barrelFx = new BarrelDistortion();
-            barrelFx.setDistortionFillScale(1.0f);
-            barrelFx.setDistortionCenterOffset(0, 0);
-            barrelFx.setDistortionCoeffs(new float[] { 1.0f, 0.39f, -0.35f, 0.19f} );
-            mView.getViewports()[0].bindFX(barrelFx);
-            mView.getViewports()[1].bindFX(barrelFx);
 
             // Re-configure camera for VR mode.
             mCamera.setVRCameraDistance(0.035f);
@@ -356,8 +356,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
             mPanorama.bindTextureFull(0, mPanoramaTexture);
 
             // Bind one new viewport to landscape orientation.
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Re-configure camera.
             mCamera.setZoom(1.0f);
@@ -405,12 +405,8 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
      */
     protected void showNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.VISIBLE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+        v.setSystemUiVisibility(uiOptions);
     }
 
     /**
@@ -418,24 +414,12 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
      */
     protected void hideNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.GONE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        v.setSystemUiVisibility(uiOptions);
     }
 
     // From OrionVideoTexture.Listener:
-
-    @Override
-    public void onInvalidURI(OrionTexture orionTexture) {
-
-        // If the set video stream URI was invalid, we can't play it. Hide indicator.
-        hideBufferingIndicator();
-
-    }
 
     @Override
     public void onException(OrionTexture orionTexture, Exception e) {
@@ -503,6 +487,9 @@ public class BufferingIndicator extends OrionActivity implements OrionVideoTextu
 
     @Override
     public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {}
+
+    @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {}
 
     @Override
     public void onVideoSeekStarted(OrionVideoTexture orionVideoTexture, long l) {}

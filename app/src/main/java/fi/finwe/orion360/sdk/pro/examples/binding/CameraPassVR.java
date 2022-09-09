@@ -41,12 +41,13 @@ import android.widget.Toast;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
-import fi.finwe.orion360.sdk.pro.source.OrionCameraTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionCameraTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -65,7 +66,10 @@ public class CameraPassVR extends OrionActivity {
     /** Request code for camera access permission. */
     private static final int REQUEST_CAMERA = 112;
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our camera sprite will be added to. */
@@ -160,16 +164,17 @@ public class CameraPassVR extends OrionActivity {
     protected void initOrion() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Create a new sprite. This is a 3D object with a flat 2D surface for an image/video.
-        mCameraSprite = new OrionSprite();
+        mCameraSprite = new OrionSprite(mOrionContext);
 
         // We don't need perspective camera for viewing camera sprite.
         mCameraSprite.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
 
         // Create a new texture where frames will be captured from device's hardware camera.
-        mCameraTexture = new OrionCameraTexture(OrionCameraTexture.CameraFacing.BACK);
+        mCameraTexture = new OrionCameraTexture(mOrionContext,
+                OrionCameraTexture.CameraFacing.BACK);
 
         // Bind the camera texture to the camera sprite.
         mCameraSprite.bindTexture(mCameraTexture);
@@ -178,10 +183,14 @@ public class CameraPassVR extends OrionActivity {
         mScene.bindSceneItem(mCameraSprite);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -190,7 +199,7 @@ public class CameraPassVR extends OrionActivity {
         mView.bindDefaultCamera(mCamera);
 
         // In VR mode we have one viewport per eye, hence we use horizontal split viewport layout.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 }

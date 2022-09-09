@@ -33,12 +33,13 @@ import android.os.Bundle;
 
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -60,7 +61,10 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
  */
 public class MonoPanoramaVR extends OrionActivity {
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
@@ -82,16 +86,16 @@ public class MonoPanoramaVR extends OrionActivity {
 		setContentView(R.layout.activity_main);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -102,7 +106,7 @@ public class MonoPanoramaVR extends OrionActivity {
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -110,8 +114,12 @@ public class MonoPanoramaVR extends OrionActivity {
         // Bind camera as a controllable to sensor fusion. This will let sensors rotate the camera.
         mOrionContext.getSensorFusion().bindControllable(mCamera);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -120,7 +128,7 @@ public class MonoPanoramaVR extends OrionActivity {
         mView.bindDefaultCamera(mCamera);
 
         // In VR mode we have one viewport per eye, hence we use horizontal split viewport layout.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 }

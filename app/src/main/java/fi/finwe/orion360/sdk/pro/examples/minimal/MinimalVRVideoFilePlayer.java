@@ -77,7 +77,7 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
 		setContentView(R.layout.activity_video_player);
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view);
+        setOrionView(R.id.orion_view_container);
 
         // Initialize Orion360 view with a URI to a local .mp4 video file.
         setContentUri(MainMenu.PRIVATE_EXTERNAL_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
@@ -91,7 +91,8 @@ public class MinimalVRVideoFilePlayer extends SimpleOrionActivity {
         // normal mode. Here we use touch events, as it is natural to try tapping the screen
         // if you don't know what else to do. Start by propagating touch events from the
         // Orion360 view to a gesture detector.
-        getOrionView().setOnTouchListener((v, event) -> mGestureDetector.onTouchEvent(event));
+        findViewById(R.id.orion_view_container).setOnTouchListener(
+                (v, event) -> mGestureDetector.onTouchEvent(event));
 
         // Then, handle tap and long press events based on VR mode state. Typically you
         // want to associate long tap for entering/exiting VR mode and inform the user

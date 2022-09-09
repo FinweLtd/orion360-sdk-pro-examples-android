@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Finwe Ltd. All rights reserved.
+ * Copyright (c) 2022, Finwe Ltd. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -30,27 +30,34 @@
 package fi.finwe.orion360.sdk.pro.examples.engine;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.Surface;
+import android.net.Uri;
+
+import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.Tracks;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
+import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
+import com.google.android.exoplayer2.decoder.DecoderReuseEvaluation;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.google.android.exoplayer2.source.LoadEventInfo;
+import com.google.android.exoplayer2.source.MediaLoadData;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.MediaSourceEventListener;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.source.ads.AdsLoader;
+import com.google.android.exoplayer2.source.ads.AdsMediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -58,94 +65,109 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.ui.AdViewProvider;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
+import com.google.android.exoplayer2.video.VideoSize;
+import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import fi.finwe.log.Logger;
-import fi.finwe.orion360.sdk.pro.source.VideoPlayerWrapper;
+import fi.finwe.orion360.sdk.pro.texture.VideoPlayerWrapper;
 
 /**
  * Wrapper for Google ExoPlayer.
- *
- * This class used to be part of Orion360 engine. It was moved outside of Orion360 when
- * ExoPlayer dependency was changed from internal .jar package to optional gradle dependency.
- *
- * This solves dependency issue in case Orion360 SDK user wishes to use a different ExoPlayer
- * version or another 3rd party library that comes with built-in ExoPlayer.
- *
- * This wrapper works with ExoPlayer version 2.4.1. If you choose to use different ExoPlayer
- * version, you probably need to modify this class according ExoPlayer's API changes.
- *
- * See GoogleExoPlayer example to find out how to use this wrapper.
- *
- * There is also a simplified example CustomExoPlayer if you want to write your own wrapper
- * from scratch.
  */
-public class ExoPlayerWrapper extends VideoPlayerWrapper implements
-        ExoPlayer.EventListener
-{
+public class ExoPlayerWrapper extends VideoPlayerWrapper implements Player.Listener {
 
-    /** Tag for debug logging. */
-    public static String TAG = ExoPlayerWrapper.class.getSimpleName();
+    /** Tag for logging. */
+    public static final String TAG = ExoPlayerWrapper.class.getSimpleName();
 
     /** User agent string. */
-    private final static String USER_AGENT = "Finwe Ltd. Orion360 VR Video Player v3.0 (Android)";
+    private final static String USER_AGENT = "Finwe Ltd. Orion360 VR Video Player v4.0 (Android)";
+
+    private final DefaultBandwidthMeter BANDWIDTH_METER;
+
+    /** HLS filename extension. */
+    private final static String HLS_FILENAME_EXT = ".m3u8";
+
+    /** Buffer size for a single segment. */
+    private final static int BUFFER_SEGMENT_SIZE = 256 * 1024;
+    // above: in total 262144 bytes (256kB), value comes from ExoPlayer demo app.
+
+    /** Number of segments in the buffer. */
+    private final static int BUFFER_SEGMENTS = 64;
+    // above: in total 16777216 bytes (16MB), value comes from ExoPlayer demo app.
+
+    private static final long	DEFAULT_ALLOWED_JOINING_TIME_MS = 5000;
+    private static final int	DEFAULT_MAX_DROPPED_FRAME_COUNT_TO_NOTIFY = 50;
+
+//	private static final int ERROR_EXTRA_SECURITY_EXCEPTION_WHEN_SET_DATA_SOURCE= 0x1FF;
+//	private static final int ERROR_EXTRA_ILLEGAL_STATE= 0x2FF;
 
     /** Handle for ExoPlayer instance. */
-    private SimpleExoPlayer mExoPlayer;
-    //private FinweExoPlayer mExoPlayer;
+    private ExoPlayer mExoPlayer;
 
-    private final DefaultBandwidthMeter mDefaultBandwidthMeter;
-    DataSource.Factory mMediaDataSourceFactory;
+    private final DataSource.Factory mDataSourceFactory;
+    private final DefaultMediaSourceFactory mMediaSourceFactory;
+
+    private DefaultTrackSelector mTrackSelector;
 
     private MediaSource mMediaSource;
+    private String mOverrideExtension = "";  // Set to override media type inference from the uri
     private int	mAudioSessionID = 0;
 
-    /** Handler for video position updates. */
-    private Handler	mMainHandler;   // Handler in main ui thread
-
     /** Task that handles video position update notifications. */
-    private final VideoPositionUpdateTask	mPositionUpdater = new VideoPositionUpdateTask();
+    private final VideoPositionUpdateTask mPositionUpdater = new VideoPositionUpdateTask();
 
     private int	mPositionUpdateTimeoutMs = 200;
 
     /** Task that handles video buffer update notifications. */
     private final VideoBufferUpdateTask mBufferUpdater = new VideoBufferUpdateTask();
 
+    private String mAdTag = null;
+    private AdsLoader mAdsLoader = null;
+    private AdViewProvider mAdViewProvider = null;
 
-    /**
-     * Constructor.
-     *
-     * @param context the context.
-     */
+
     public ExoPlayerWrapper(Context context) {
         mContext = context;
 
-        // Measures bandwidth during playback. Can be null if not required.
-        mDefaultBandwidthMeter = new DefaultBandwidthMeter();
+        BANDWIDTH_METER = new DefaultBandwidthMeter.Builder(mContext).build();
+
         // Produces DataSource instances through which media data is loaded.
-        mMediaDataSourceFactory = createDataSourceFactory(true);
+//		mDataSourceFactory = buildDataSourceFactory(true);
+        mDataSourceFactory = buildDataSourceFactory();
+        mMediaSourceFactory = new DefaultMediaSourceFactory(
+                mDataSourceFactory
+                //mContext, new DefaultExtractorsFactory()
+        );
 
         updateState();
     }
 
-    DataSource.Factory createDataSourceFactory(boolean useBandwidthMeter) {
-        DefaultBandwidthMeter meter = useBandwidthMeter ? mDefaultBandwidthMeter : null;
+    // TODO: There seems to be nowhere to input the DefaultBandwidthMeter. Find out what happened to it.
+//	private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
+////		DefaultBandwidthMeter meter = useBandwidthMeter ? BANDWIDTH_METER : null;
+//
+//		String userAgent = Util.getUserAgent(mContext, USER_AGENT);
+//		DefaultHttpDataSource.Factory defaultHttpDataSourceFactory = new DefaultHttpDataSource.Factory()
+//				.setUserAgent(userAgent);
+//		return new DefaultDataSource.Factory(mContext, defaultHttpDataSourceFactory);
+//	}
+
+    private DataSource.Factory buildDataSourceFactory() {
         String userAgent = Util.getUserAgent(mContext, USER_AGENT);
-        return new DefaultDataSourceFactory(mContext, meter,
-                new DefaultHttpDataSourceFactory(userAgent, meter));
+        DefaultHttpDataSource.Factory defaultHttpDataSourceFactory = new DefaultHttpDataSource.Factory()
+                .setUserAgent(userAgent);
+        return new DefaultDataSource.Factory(mContext, defaultHttpDataSourceFactory);
     }
 
     private boolean isInPlaybackState() {
@@ -169,6 +191,28 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         synchronized (mCurrentStatus) {
             return mCurrentStatus.playerState == PlayerState.END;
         }
+    }
+
+    // Gets the ExoPlayer handle, if it happens to be created at call time. Use at own peril.
+    // The player is created just before the call to onVideoPlayerCreated callback until just after the call to onVideoPlayerReleased
+    public ExoPlayer getExoPlayer() {
+        return mExoPlayer;
+    }
+
+    public DefaultMediaSourceFactory getDefaultMediaSourceFactory() {
+        return mMediaSourceFactory;
+    }
+
+    public void setAdTag(@Nullable String adTag) {
+        mAdTag = adTag;
+    }
+
+    public void setAdsLoader(AdsLoader loader) {
+        mAdsLoader = loader;
+    }
+
+    public void setAdViewProvider(AdViewProvider provider) {
+        mAdViewProvider = provider;
     }
 
     @Override
@@ -211,164 +255,170 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
         mPositionUpdateTimeoutMs = timeoutMs;
     }
 
-    // Proceed toward releasing everything
-    @Override
-    protected boolean processRelease() {
-        // At this moment we can be in any state.
-        // Decide what to do depending on the current state.
-        boolean stop = false;
-        boolean reset = false;
-        boolean release = false;
-        boolean finished = true;
-        synchronized (mCurrentStatus) {
-            switch (mCurrentStatus.playerState) {
-                case STARTED:
-                case PAUSED:
-                case PLAYBACK_COMPLETED:
-                case PREPARED:
-                    stop = true;
-                    break;
-                case ERROR:
-                case INITIALIZED:
-                case STOPPED:
-                    reset = true;
-                    break;
-                case IDLE:
-                case PREPARING:
-                    release = true;
-                case END:
-                    break;
-            }
-        }
-        if (stop) {
-            doStop();
-            finished = false; // Return and come here once again.
-        } else if (reset) {
-            doReset();
-        } else if (release) {
-            doRelease();
-        }
-
-        return finished;
-    }
-
     @Override
     protected boolean processCreatePlayer() {
         // At this moment the player should be in the END state.
         synchronized (mCurrentStatus) {
             if (mCurrentStatus.playerState == PlayerState.END) {
-                mMainHandler = new Handler(Looper.getMainLooper());
                 mMainHandler.postDelayed(mPositionUpdater, mPositionUpdateTimeoutMs);
 
-                BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-                TrackSelection.Factory videoTrackSelectionFactory =	new AdaptiveTrackSelection.Factory(bandwidthMeter);
-                TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-                mExoPlayer = ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(mContext), trackSelector, new DefaultLoadControl());
-                //mExoPlayer = new FinweExoPlayer(new DefaultRenderersFactory(mContext), trackSelector, new DefaultLoadControl());
-                mExoPlayer.addListener(this);
+                DefaultRenderersFactory defaultRenderersFactory = new DefaultRenderersFactory(mContext);
 
-                // *Debug*Listener??
-                mExoPlayer.setAudioDebugListener(mAudioRendererEventListener);
-                mExoPlayer.setVideoDebugListener(mVideoRendererEventListener);
+                AdaptiveTrackSelection.Factory videoTrackSelectionFactory =	new AdaptiveTrackSelection.Factory();
+                mTrackSelector = new DefaultTrackSelector(mContext, videoTrackSelectionFactory);
+
+                DefaultAnalyticsCollector defaultAnalyticsCollector = new DefaultAnalyticsCollector(Clock.DEFAULT);
+
+                ExoPlayer.Builder exoplayerBuilder = new ExoPlayer.Builder(mContext, defaultRenderersFactory, mMediaSourceFactory, mTrackSelector, new DefaultLoadControl(), BANDWIDTH_METER, defaultAnalyticsCollector);
+                mExoPlayer = exoplayerBuilder.build();
+                if (null != mAdsLoader) {
+                    mAdsLoader.setPlayer(mExoPlayer);
+                }
+                mExoPlayer.addListener(this);
+                mExoPlayer.addAnalyticsListener(mAnalyticsListener);
 
                 mCurrentStatus.playerState = PlayerState.IDLE;
+                postVideoPlayerCreated();
             } else {
                 return false;
             }
         }
-        mUpdateListener.onVideoPlayerCreated(null);
         return true;
-    }
-
-    // Proceed toward resetting the player from any other state it might be in,
-    // except END, which shouldn't happen.
-    @Override
-    protected boolean processResetPlayer() {
-        // At this moment we can be in any state.
-        // Decide what to do depending on the current state.
-        boolean stop = false;
-        boolean reset = false;
-        synchronized (mCurrentStatus) {
-            switch (mCurrentStatus.playerState) {
-                case STARTED:
-                case PAUSED:
-                case PLAYBACK_COMPLETED:
-                    stop = true;
-                    break;
-                case ERROR:
-                case INITIALIZED:
-                case PREPARED:
-                case STOPPED:
-                case PREPARING:
-                    reset = true;
-                    break;
-                case IDLE:
-                case END:
-                    mCurrentStatus.uri = null;
-                    break;
-            }
-        }
-        if (stop) {
-            doStop();
-        } else if (reset) {
-            doReset();
-        }
-        return false;
     }
 
     @Override
     protected boolean processSetDataSource() {
         // At this point we know we are in the IDLE state.
+//		int notifyError = 0, errorextra = 0;
         synchronized (mCurrentStatus) {
             synchronized (mTargetStatus) {
                 if (mTargetStatus.uri == null) {
                     mCurrentStatus.uri = null;
                     return false;
                 }
-                if (Objects.equals(mCurrentStatus.uri, mTargetStatus.uri)) {
+                if (mCurrentStatus.uri == mTargetStatus.uri || (mCurrentStatus.uri != null && mCurrentStatus.uri.equals(mTargetStatus.uri))) {
                     return true;
                 }
             }
 
             // Deduce the type of data source we need to set, branch accordingly
-            if (mMediaSource != null) {
-                mMediaSource.releaseSource();
-                mMediaSource = null;
+            MediaItem mediaItem;
+            if (null != mAdTag && !mAdTag.isEmpty()) {
+                mediaItem = new MediaItem.Builder()
+                        .setUri(mTargetStatus.uri)
+                        .setAdsConfiguration(
+                                new MediaItem.AdsConfiguration.Builder(Uri.parse(mAdTag)).build())
+                        .build();
+                Logger.logD(TAG, "Using ad tag: " + mAdTag);
+            } else {
+                mediaItem = MediaItem.fromUri(mTargetStatus.uri);
             }
 
             int type;
-            type = Util.inferContentType(mTargetStatus.uri);
+            if (mOverrideExtension.length() == 0) {
+                type = Util.inferContentType(mTargetStatus.uri);
+            } else {
+                type = Util.inferContentTypeForExtension(mOverrideExtension);
+            }
+            DataSource.Factory factory;
             switch (type) {
-                case C.TYPE_SS:
-                    mMediaSource = new SsMediaSource(mTargetStatus.uri,
-                            createDataSourceFactory(false),
-                            new DefaultSsChunkSource.Factory(mMediaDataSourceFactory),
-                            mMainHandler, mAdaptiveMediaSourceEventListener);
+                case C.CONTENT_TYPE_SS:
+                    SsMediaSource.Factory ssMediaSourceFactory = new SsMediaSource.Factory(
+                        new DefaultSsChunkSource.Factory(mDataSourceFactory),
+//							buildDataSourceFactory(false)
+                        buildDataSourceFactory());
+                    SsMediaSource ssMediaSource =
+                            ssMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                ssMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                ssMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = ssMediaSource;
+                    }
+                    mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
-                case C.TYPE_DASH:
-                    mMediaSource = new DashMediaSource(mTargetStatus.uri,
-                            createDataSourceFactory(false),
-                            new DefaultDashChunkSource.Factory(mMediaDataSourceFactory),
-                            mMainHandler, mAdaptiveMediaSourceEventListener);
+                case C.CONTENT_TYPE_DASH:
+                    DashMediaSource.Factory dashMediaSourceFactory = new DashMediaSource.Factory(
+                            new DefaultDashChunkSource.Factory(mDataSourceFactory),
+//							buildDataSourceFactory(false)
+                            buildDataSourceFactory());
+                    DashMediaSource dashMediaSource =
+                            dashMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                dashMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                dashMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = dashMediaSource;
+                    }
+                    mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
-                case C.TYPE_HLS:
-                    mMediaSource = new HlsMediaSource(mTargetStatus.uri,
-                            mMediaDataSourceFactory,
-                            mMainHandler, mAdaptiveMediaSourceEventListener);
+                case C.CONTENT_TYPE_HLS:
+                    HlsMediaSource.Factory hlsMediaSourceFactory = new HlsMediaSource.Factory(
+                            mDataSourceFactory);
+                    HlsMediaSource hlsMediaSource =
+                            hlsMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                hlsMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                hlsMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = hlsMediaSource;
+                    }
+                    mMediaSource.addEventListener(mMainHandler, mAdaptiveMediaSourceEventListener);
                     break;
-                case C.TYPE_OTHER:
-                    mMediaSource = new ExtractorMediaSource(mTargetStatus.uri,
-                            mMediaDataSourceFactory,
-                            new DefaultExtractorsFactory(),
-                            mMainHandler,
-                            e -> {
-                                //Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString(), e.getCause());
-                                Logger.logE(TAG, "ExtractorMediaSource.EventListener.onLoadError(): " + e.toString());
-                                mUpdateListener.onException(null, e);
-                            }
-                    );
+                case C.CONTENT_TYPE_OTHER:
+                    ProgressiveMediaSource.Factory progressiveMediaSourceFactory =
+                            new ProgressiveMediaSource.Factory(mDataSourceFactory,
+                                    new DefaultExtractorsFactory());
+                    ProgressiveMediaSource progressiveMediaSource =
+                            progressiveMediaSourceFactory.createMediaSource(mediaItem);
+                    if (null != mAdTag && !mAdTag.isEmpty()) {
+                        DataSpec adTagDataSpec = new DataSpec(Uri.parse(mAdTag));
+                        Object adsId = mAdTag;
+                        mMediaSource = new AdsMediaSource(
+                                progressiveMediaSource,
+                                adTagDataSpec,
+                                adsId,
+                                progressiveMediaSourceFactory,
+                                mAdsLoader,
+                                mAdViewProvider);
+                    } else {
+                        mMediaSource = progressiveMediaSource;
+                    }
+                    mMediaSource.addEventListener(mMainHandler, new MediaSourceEventListener() {
+                        @Override
+                        public void onLoadError(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo,
+                                                MediaLoadData mediaLoadData, IOException error, boolean wasCanceled)
+                        {
+                            Logger.logE(TAG, "MediaSourceEventListener.onLoadError(): " + error.toString());
+                            postException(error);
+                            // FIXME this API does not work for ExoPlayer errors. We have an Exception, not error codes!
+                            postVideoError(0, 0);
+                        }
+                    });
                     break;
                 default: {
+                    mMediaSource = null;
                     throw new IllegalStateException("Unsupported type: " + type);
                 }
             }
@@ -376,9 +426,8 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             // No exceptions? Everything went better than expected
             mCurrentStatus.uri = mTargetStatus.uri;
             mCurrentStatus.playerState = PlayerState.INITIALIZED;
+            postVideoSourceUriSet();
         }
-        mUpdateListener.onVideoSourceURISet(null);
-
         return false;
     }
 
@@ -390,6 +439,8 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 case STARTED:
                 case PAUSED:
                 case PLAYBACK_COMPLETED:
+                    // stop = true;
+                    // break;
                 case STOPPED:
                 case INITIALIZED:
                 case PREPARED:
@@ -397,8 +448,10 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 case ERROR:
                 case IDLE:
                     if (mCurrentStatus.surface != null) {
+                        // TODO: Previously this was done with blockingSendMessage, do we need to block here as well?
                         mExoPlayer.setVideoSurface(null);
                         // note: above operation is synchronous, so we can release surface.
+                        // TODO: Really?
                         synchronized (mTargetStatus) {
                             if (mTargetStatus.surface != mCurrentStatus.surface) {
                                 mCurrentStatus.surface.release();
@@ -411,6 +464,9 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                     break;
             }
         }
+//		if (stop) {
+//			doStop();
+//		}
         return false;
     }
 
@@ -435,16 +491,15 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
 
     @Override
     protected boolean processPrepare() {
-        // This is easy: just prepare!
         synchronized (mCurrentStatus) {
             mCurrentStatus.playerState = PlayerState.PREPARING;
             if (mMediaSource == null) {
                 Logger.logW(TAG, "Cannot prepare ExoPlayer, MediaSource == null!");
                 return false;
             }
-            // Prepare the ExoPlayer. true, true -> reset the player position and state in the process
             mCurrentStatus.preparing = true;
-            mExoPlayer.prepare(mMediaSource, true, true);
+            mExoPlayer.setMediaSource(mMediaSource, true);
+            mExoPlayer.prepare();
             return true;
         }
     }
@@ -510,25 +565,27 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
 
     @Override
     protected boolean processStartPlayer() {
-        boolean notifyStarted = false;
+        boolean start = false;
         synchronized (mCurrentStatus) {
             switch (mCurrentStatus.playerState) {
                 case STARTED:
                     break;
                 case PLAYBACK_COMPLETED:
-                    // Don't start again, unless looping is set true, or the player has been sought after playback completion
-                    if (!mCurrentStatus.looping && mCurrentStatus.completionSeekRequired && !mCurrentStatus.completionSeekDone) {
+                    // Don't start again, unless looping is set true, or seek has been done after finishing the video
+                    if (mCurrentStatus.looping == false && mCurrentStatus.startAllowedInPlaybackCompleted == false) {
                         break;
                     }
+                    // Otherwise, restart the video by calling prepare again
                     mCurrentStatus.playerState = PlayerState.PREPARING;
                     mCurrentStatus.preparing = true;
-                    mExoPlayer.prepare(mMediaSource, true, false);  // Reset the position, but not the state (keep the same content)
+                    mExoPlayer.setMediaSource(mMediaSource, true);	 // Reset the position
+                    mExoPlayer.prepare();
                     return true;
                 case PREPARED:
                 case PAUSED:
                     mCurrentStatus.playerState = PlayerState.STARTED;
-                    // Start the player outside the synchronization block. See below.
-                    notifyStarted = true;
+                    mExoPlayer.setPlayWhenReady(true);
+                    postVideoStarted();
                     break;
                 // Illegal states. Re-evaluate the logic.
                 case STOPPED:
@@ -539,56 +596,19 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 case END:
                     return false;
             }
-        }
-        if (notifyStarted) {
-            // This call may implicitly call onPlayerStateChanged, so we must do it outside the synchronized block
-            mExoPlayer.setPlayWhenReady(true);
-            mUpdateListener.onVideoStarted(null);
-        }
-        return true;
-    }
-
-    @Override
-    protected boolean processStopPlayer() {
-        // At this moment we can be in a couple of states
-        boolean stop = false;
-        synchronized (mCurrentStatus) {
-            switch (mCurrentStatus.playerState) {
-                case STOPPED:
-                    break;
-                case PREPARED:
-                case STARTED:
-                case PAUSED:
-                case PLAYBACK_COMPLETED:
-                    stop = true;
-                    break;
-                // Illegal states
-                case ERROR:
-                case INITIALIZED:
-                case PREPARING:
-                case IDLE:
-                case END:
-                    break;
-            }
-        }
-        if (stop) {
-            doStop();
         }
         return true;
     }
 
     @Override
     protected boolean processPausePlayer() {
-        boolean notifyPaused = false;
         synchronized (mCurrentStatus) {
             switch (mCurrentStatus.playerState) {
+                case PLAYBACK_COMPLETED:
                 case PAUSED:
                     break;
                 case STARTED:
-                case PLAYBACK_COMPLETED:
-                    // Pause the player outside the synchronization block. See below.
-                    mCurrentStatus.playerState = PlayerState.PAUSED;
-                    notifyPaused = true;
+                    doPause();
                     break;
                 // Illegal states. Re-evaluate the logic.
                 case PREPARED:
@@ -601,66 +621,71 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                     return false;
             }
         }
-        if (notifyPaused) {
-            // This call may implicitly call onPlayerStateChanged, so we must do it outside the synchronized block
-            mExoPlayer.setPlayWhenReady(false);
-            mUpdateListener.onVideoPaused(null);
+        return true;
+    }
+
+    protected boolean processSystemPausePlayer() {
+        // If the playback has been paused by the system, pause the player only if it's in STARTED state,
+        // i.e. NOT in PLAYBACK_COMPLETED state
+        Logger.logD(TAG, "In processPausePlayer()");
+        synchronized (mCurrentStatus) {
+            if (mCurrentStatus.playerState == PlayerState.STARTED) {
+                doPause();
+            }
         }
         return true;
     }
 
-    private void doStop() {
-        synchronized (mCurrentStatus) {
-            mCurrentStatus.playerState = PlayerState.STOPPED;
-            if (mExoPlayer != null) {
-                mExoPlayer.stop();
-            } else {
-                Logger.logW(TAG, "Could not stop ExoPlayer in state "
-                        + mCurrentStatus.playerState.name()
-                        + ": ExoPlayer object was null. This could be due to failure to track state changes properly.");
-            }
-        }
-        mUpdateListener.onVideoStopped(null);
+    void doPause() {
+        mCurrentStatus.playerState = PlayerState.PAUSED;
+        mCurrentStatus.startAllowedInPlaybackCompleted = false;
+        mExoPlayer.setPlayWhenReady(false);
+        postVideoPaused();
     }
 
-    private void doReset() {
-        synchronized (mCurrentStatus) {
-            if (mExoPlayer != null) {
-                mCurrentStatus.playerState = PlayerState.IDLE;
-                mExoPlayer.stop();
-                mExoPlayer.seekTo(0);
-            } else {
-                mCurrentStatus.playerState = PlayerState.END;
-                Logger.logW(TAG, "Could not reset ExoPlayer in state "
-                        + mCurrentStatus.playerState.name()
-                        + ": ExoPlayer object was null. This could be due to failure to track state changes properly.");
-            }
-        }
+    @Override
+    protected void doStop() {
+        mCurrentStatus.playerState = PlayerState.STOPPED;
+        mCurrentStatus.startAllowedInPlaybackCompleted = false;
+        mExoPlayer.stop();
+        postVideoStopped();
     }
 
-    private void doRelease() {
-        synchronized (mCurrentStatus) {
+    @Override
+    protected void doReset() {
+        if (mExoPlayer != null) {
+            mCurrentStatus.playerState = PlayerState.IDLE;
+            mCurrentStatus.startAllowedInPlaybackCompleted = false;
+            // TODO ExoPlayer does not have reset() method. Is this correct replacement?
+            mExoPlayer.stop();
+            mExoPlayer.seekTo(0);
+        } else {
             mCurrentStatus.playerState = PlayerState.END;
-            if (mExoPlayer != null) {
-                mExoPlayer.release();
-                mExoPlayer = null;
-            } else {
-                Logger.logW(TAG, "Could not release ExoPlayer in state "
-                        + mCurrentStatus.playerState.name()
-                        + ": ExoPlayer object was null. This could be due to failure to track state changes properly.");
-            }
-
-            if (mMediaSource != null) {
-                mMediaSource.releaseSource();
-                mMediaSource = null;
-            }
-
-            if (mMainHandler != null) {
-                mMainHandler.removeCallbacks(mPositionUpdater);
-                mMainHandler.removeCallbacks(mBufferUpdater);
-                mMainHandler = null;
-            }
+            Logger.logW(TAG, "Could not reset ExoPlayer in state "
+                    + mCurrentStatus.playerState.name()
+                    + ": ExoPlayer object was null. This could be due to failure to track state changes properly.");
         }
+    }
+
+    @Override
+    protected void doRelease() {
+        postVideoReleased();
+
+        mCurrentStatus.playerState = PlayerState.END;
+        if (mExoPlayer != null) {
+            mExoPlayer.release();
+            mExoPlayer = null;
+        } else {
+            // This could be due to failure to track state changes properly.
+            Logger.logW(TAG, "Could not release ExoPlayer in state " + mCurrentStatus.playerState.name() + ": ExoPlayer object was null. ");
+        }
+
+        mMediaSource = null;
+
+        mMainHandler.removeCallbacks(mPositionUpdater);
+        mMainHandler.removeCallbacksAndMessages(mPositionUpdaterToken);
+        mMainHandler.removeCallbacks(mBufferUpdater);
+
     }
 
     /**
@@ -674,9 +699,6 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             long toPosition;
 
             synchronized (mCurrentStatus) {
-                if (mMainHandler == null) {
-                    return;
-                }
                 fromPosition = mCurrentStatus.position;
                 toPosition = getCurrentPosition();
 
@@ -690,12 +712,13 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             }
 
             if (toPosition != -1 && toPosition != fromPosition) {
-                mUpdateListener.onVideoPositionChanged(null, toPosition);
+                postVideoPositionChanged(toPosition);
             }
 
             // Repost the position update task.
+            // TODO: No need to do this while paused
             synchronized (mCurrentStatus) {
-                if (mMainHandler != null) {
+                if (mExoPlayer != null) {
                     mMainHandler.postDelayed(mPositionUpdater, mPositionUpdateTimeoutMs);
                 }
             }
@@ -713,7 +736,7 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             int toPercent;
 
             synchronized (mCurrentStatus) {
-                if (mMainHandler == null || mExoPlayer == null) {
+                if (mExoPlayer == null) {
                     return;
                 }
                 fromPercent = mCurrentStatus.bufferingPercentage;
@@ -728,11 +751,11 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
 
             if (toPercent != 0 && toPercent != fromPercent) {
                 Logger.logD(TAG, "Video buffer changed: " + fromPercent + " -> " + toPercent);
-                mUpdateListener.onVideoBufferingUpdate(null, fromPercent, toPercent);
+                postVideoBufferingUpdate(fromPercent, toPercent);
             }
 
             synchronized (mCurrentStatus) {
-                if (mMainHandler != null) {
+                if (mExoPlayer != null) {
                     mMainHandler.postDelayed(mBufferUpdater, 200);
                 }
             }
@@ -745,15 +768,15 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
             case ExoPlayer.STATE_ENDED: return "Ended";
             case ExoPlayer.STATE_IDLE: return "Idle";
             case ExoPlayer.STATE_READY: return "Ready";
-            default: return "Unknown(" + state + ")";
+            default: return "Unknown(" + Integer.toString(state) + ")";
         }
     }
 
-    // From ExoPlayer.EventListener:
-    // Called when the value returned from either ExoPlayer.getPlayWhenReady() or ExoPlayer.getPlaybackState() changes.
+    // From Player.Listener:
+    // Called when the value returned from getPlaybackState() changes.
     @Override
-    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        Logger.logD(TAG, "onPlayerStateChanged(): state = " + getExoPlayerStateString(playbackState) + ", playWhenReady = " + playWhenReady);
+    public void onPlaybackStateChanged(@Player.State int playbackState) {
+        Logger.logV(TAG, "onPlayerStateChanged(): state = " + getExoPlayerStateString(playbackState));
 
         switch (playbackState) {
             case ExoPlayer.STATE_BUFFERING:
@@ -761,48 +784,40 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 synchronized (mCurrentStatus) {
                     mCurrentStatus.buffering = true;
                 }
-                mUpdateListener.onVideoBufferingStart(null);
-                if (mMainHandler != null) {
-                    mMainHandler.postDelayed(mBufferUpdater, 500);
-                }
+                mMainHandler.postDelayed(mBufferUpdater, 500);
+                postVideoBufferingStart();
                 break;
             case ExoPlayer.STATE_ENDED:
                 // The player has finished playing the media.
                 synchronized (mCurrentStatus) {
                     mCurrentStatus.playerState = PlayerState.PLAYBACK_COMPLETED;
-                    if (!mCurrentStatus.looping) {
-                        // The player was not set to loop upon completion -> seek is needed to resume playback
-                        mCurrentStatus.completionSeekRequired = true;
-                        mCurrentStatus.completionSeekDone = false;
-                    }
+                    mCurrentStatus.startAllowedInPlaybackCompleted = false;
                 }
-                mUpdateListener.onVideoCompleted(null);
+                postVideoCompleted();
                 postUpdateState();
                 break;
             case ExoPlayer.STATE_IDLE:
                 // The player is neither prepared or being prepared.
                 break;
-            case ExoPlayer.STATE_READY:
+            case ExoPlayer.STATE_READY: {
                 // The player is prepared and able to immediately play from the current position.
+                // Don't keep the synchronization locks when calling callbacks
                 synchronized (mCurrentStatus) {
                     if (mCurrentStatus.preparing) {
                         mCurrentStatus.preparing = false;
                         mCurrentStatus.playerState = PlayerState.PREPARED;
                         long durationMs = mExoPlayer.getDuration();
-                        if (durationMs != C.TIME_UNSET) {
-                            mUpdateListener.onVideoDurationUpdate(null, durationMs);
-                        } else {
-                            mUpdateListener.onVideoDurationUpdate(null, -1);
+                        if (durationMs == C.TIME_UNSET) {
+                            durationMs = -1;
                         }
-                        mUpdateListener.onVideoPrepared(null);
+                        postVideoDurationUpdate(durationMs);
+                        postVideoPrepared();
                         postUpdateState();
                     }
                     if (mCurrentStatus.buffering) {
                         mCurrentStatus.buffering = false;
-                        mUpdateListener.onVideoBufferingEnd(null);
-                        if (mMainHandler != null) {
-                            mMainHandler.removeCallbacks(mBufferUpdater);
-                        }
+                        mMainHandler.removeCallbacks(mBufferUpdater);
+                        postVideoBufferingEnd();
                     }
                     if (mCurrentStatus.seekActive) {
                         // Mark the seek position in the target status back to -1,
@@ -814,60 +829,131 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                         }
                         // Mark the current seek as having finished.
                         mCurrentStatus.seekActive = false;
-                        mCurrentStatus.completionSeekDone = true;
                         mCurrentStatus.seekPosition = -1;
-                        mUpdateListener.onVideoSeekCompleted(null, mExoPlayer.getCurrentPosition());
+                        // Allow proceeding from the PLAYBACK_COMPLETED state
+                        mCurrentStatus.startAllowedInPlaybackCompleted = true;
+                        postVideoSeekCompleted(mExoPlayer.getCurrentPosition());
                         postUpdateState();
                     }
                 }
                 break;
+            }
             default:
                 Logger.logE(TAG, "Unhandled ExoPlayer state change:" + playbackState);
                 break;
         }
     }
 
-    // From ExoPlayer.EventListener:
+    @Override
+    public void onPlayWhenReadyChanged(boolean playWhenReady, @Player.PlayWhenReadyChangeReason int reason) {
+        Logger.logV(TAG, "onPlayWhenReadyChanged(): playWhenReady = " + playWhenReady + ", reason = " + reason);
+    }
+
+    // From Player.Listener:
     // Called when the timeline and/or manifest has been refreshed.
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
-        Logger.logD(TAG, "onTimelineChanged()");
+    public void onTimelineChanged(Timeline timeline, @Player.TimelineChangeReason int reason) {
+        Logger.logV(TAG, "onTimelineChanged()");
     }
 
-    // From ExoPlayer.EventListener:
+    // From Player.Listener:
     // Called when the available or selected tracks change.
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        Logger.logD(TAG, "onTracksChanged()");
+    public void onTracksChanged(Tracks tracks) {
+        Logger.logV(TAG, "onTracksChanged()");
+
+        // All available tracks in stream.
+//		for (int i = 0; i < trackGroups.length; i++) {
+//            TrackGroup trackGroup = trackGroups.get(i);
+//            if (trackGroup == null) {
+//				continue;
+//			}
+//            Logger.logD(TAG, "TrackGroup " + i + ": " + trackGroup);
+//            for (int j = 0; j < trackGroup.length; j++) {
+//                Format format = trackGroup.getFormat(j);
+//                Logger.logD(TAG, "  Format " + j + ": " + format);
+//            }
+//        }
+
+        ImmutableList<Tracks.Group> groups = tracks.getGroups();
+        for (int m = 0; m < groups.size(); ++m) {
+            Tracks.Group group = groups.get(m);
+            for (int n = 0; n < group.length; ++n) {
+                if (group.isTrackSelected(n) == false) {
+                    continue;
+                }
+                Format format = group.getTrackFormat(n);
+                Logger.logD(TAG, "Track group = " + m + ", track = " + n + ", format = " + format);
+                // TODO: How to access the ExoTrackSelection interface? It would have the getSelectionReason etc
+            }
+        }
+
+        // Tracks that can be played on this device / selected for playback.
+//        for (int i = 0; i < trackSelections.length; i++) {
+//            TrackSelection trackSelection = trackSelections.get(i);
+//            Logger.logD(TAG, "TrackSelection " + i + ": " + trackSelection);
+//            if (trackSelection == null) continue;
+//            for (int j = 0; j < trackSelection.length(); j++) {
+//                Logger.logD(TAG, "  Format " + j + ": " + trackSelection.getFormat(j));
+//            }
+//            Format selectedFormat = trackSelection.getSelectedFormat();
+//            int selectionReason = trackSelection.getSelectionReason();
+//            String reason;
+//            switch (selectionReason) {
+//                case 0:
+//                    reason = "UNKNOWN";
+//                    break;
+//                case 1:
+//                    reason = "INITIAL";
+//                    break;
+//                case 2:
+//                    reason = "MANUAL";
+//                    break;
+//                case 3:
+//                    reason = "ADAPTIVE";
+//                    break;
+//                default:
+//                    reason = "CUSTOM"; // 10000 and above
+//                    break;
+//            }
+//            Logger.logD(TAG, "  Selected format "  + selectedFormat + " for reason " + reason);
+//        }
+
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = mTrackSelector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo != null) {
+            if (mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO) == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                Logger.logW(TAG, "Unsupported video track!");
+            }
+            if (mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO) == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                Logger.logW(TAG, "Unsupported audio track!");
+            }
+        }
     }
 
-    // From ExoPlayer.EventListener:
+//	@Override
+//	public void onTrackSelectionParametersChanged(TrackSelectionParameters trackSelectionParameters) {
+//	}
+
+    // From Player.Listener:
     // Called when the player starts or stops loading the source.
     @Override
-    public void onLoadingChanged(boolean isLoading) {
-        Logger.logD(TAG, "onLoadingChanged(): " + isLoading);
+    public void onIsLoadingChanged(boolean isLoading) {
+        Logger.logV(TAG, "onLoadingChanged(): " + isLoading);
     }
 
-    // From ExoPlayer.EventListener:
-    // Called when a position discontinuity occurs without a change to the timeline.
-    @Override
-    public void onPositionDiscontinuity() {
-        Logger.logD(TAG, "onPositionDiscontinuity()");
-    }
-
-    // From ExoPlayer.EventListener:
+    // From Player.Listener:
     // Called when the current playback parameters change.
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        Logger.logD(TAG, "onPlaybackParametersChanged()");
+        Logger.logV(TAG, "onPlaybackParametersChanged()");
     }
 
-    // From ExoPlayer.EventListener:
+    // From Player.Listener:
     @Override
-    public void onPlayerError(ExoPlaybackException e) {
+    public void onPlayerError(PlaybackException e) {
         Logger.logE(TAG, "onPlayerError(): " + e.toString(), e.getCause());
 
-        // NOTE: ExoPlayer can actually be used even after getting this call.
+        // FIXME: ExoPlayer can actually be used even after getting this call.
         // Internally the player is in ExoPlayer.STATE_IDLE immediately after this method is called
         // Also, the player must be released with ExoPlayer.release() afterwards.
 
@@ -877,113 +963,120 @@ public class ExoPlayerWrapper extends VideoPlayerWrapper implements
                 mTargetStatus.playerState = PlayerState.END;
             }
         }
-        // This API does not work for ExoPlayer errors. We have an Exception, not error codes...
-        mUpdateListener.onVideoError(null, 0, 0);
+        postException(e);
+        // FIXME this API does not work for ExoPlayer errors. We have an Exception, not error codes!
+        postVideoError(0, 0);
         postUpdateState();
     }
 
-    private final VideoRendererEventListener mVideoRendererEventListener = new VideoRendererEventListener() {
+    // From Player.Listener:
+    // Called when a position discontinuity occurs without a change to the timeline.
+    @Override
+    public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, int reason) {
+        Logger.logV(TAG, "onPositionDiscontinuity()");
+    }
+
+    private AnalyticsListener mAnalyticsListener = new AnalyticsListener() {
+
         @Override
-        public void onVideoEnabled(DecoderCounters decoderCounters) {
-//			Logger.logD(TAG, "ExoPlayer onVideoEnabled()");
+        public void onVideoEnabled(EventTime eventTime, DecoderCounters decoderCounters) {
+            Logger.logV(TAG, "AnalyticsListener.onVideoEnabled()");
         }
 
         @Override
-        public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-            Logger.logD(TAG, "ExoPlayer onVideoDecoderInitialized(): name = " + decoderName + ", init timestamp = " + initializedTimestampMs + " ms, duration = " + initializationDurationMs + " ms");
+        public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
+            Logger.logV(TAG, "AnalyticsListener.onVideoDisabled()");
         }
 
         @Override
-        public void onVideoInputFormatChanged(Format format) {
-            Logger.logD(TAG, "ExoPlayer onVideoInputFormatChanged()");
+        public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+            Logger.logV(TAG, "AnalyticsListener.onVideoDecoderInitialized(): name = " + decoderName + ", init timestamp = " + initializedTimestampMs + " ms, duration = " + initializationDurationMs + " ms");
         }
 
         @Override
-        public void onDroppedFrames(int count, long elapsedMs) {
-            Logger.logW(TAG, "ExoPlayer onDroppedFrames(): count = " + count + ", elapsedMs = " + elapsedMs);
+        public void onVideoInputFormatChanged(EventTime eventTime, Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+            Logger.logI(TAG, "AnalyticsListener.onVideoInputFormatChanged(): format = " + format);
         }
 
         @Override
-        public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-            Logger.logI(TAG, "ExoPlayer onVideoSizeChanged(): size = " +
-                    width + " x " + height + ", unapplied rotation = " + unappliedRotationDegrees + ", pixelWidthHeightRatio= " + pixelWidthHeightRatio);
-
-            mUpdateListener.onVideoSizeChanged(null, width, height);
+        public void onDroppedVideoFrames(EventTime eventTime, int count, long elapsedMs) {
+            Logger.logW(TAG, "AnalyticsListener.onDroppedFrames(): count = " + count + ", elapsedMs = " + elapsedMs);
         }
 
         @Override
-        public void onRenderedFirstFrame(Surface surface) {
-            Logger.logD(TAG, "ExoPlayer onRenderedFirstFrame()");
-            mUpdateListener.onVideoRenderingStart(null);
+        public void onVideoSizeChanged(EventTime eventTime, VideoSize videoSize) {
+            Logger.logI(TAG, "AnalyticsListener.onVideoSizeChanged(): size = " +
+                    + videoSize.width + " x " + videoSize.height + ", unapplied rotation = " + videoSize.unappliedRotationDegrees + ", pixelWidthHeightRatio= " + videoSize.pixelWidthHeightRatio);
+
+            // TODO: We are not using unappliedRotationDegrees or pixelWidthHeightRatio. Is the former ever other than 0 or latter other than 1.0?
+            postVideoSizeChanged(videoSize.width, videoSize.height);
         }
 
         @Override
-        public void onVideoDisabled(DecoderCounters decoderCounters) {
-//			Logger.logD(TAG, "ExoPlayer onVideoDisabled()");
-        }
-    };
-
-    private final AudioRendererEventListener mAudioRendererEventListener = new AudioRendererEventListener() {
-        @Override
-        public void onAudioEnabled(DecoderCounters decoderCounters) {
-//			Logger.logD(TAG, "ExoPlayer onAudioEnabled()");
+        public void onRenderedFirstFrame(EventTime eventTime, Object output, long renderTimeMs) {
+            Logger.logV(TAG, "AnalyticsListener.onRenderedFirstFrame()");
+            postVideoRenderingStarted();
         }
 
         @Override
-        public void onAudioSessionId(int audioSessionId) {
+        public void onAudioEnabled(EventTime eventTime, DecoderCounters decoderCounters) {
+            Logger.logV(TAG, "AnalyticsListener.onAudioEnabled()");
+        }
+
+        @Override
+        public void onAudioDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
+            Logger.logV(TAG, "AnalyticsListener.onAudioDisabled()");
+        }
+
+        @Override
+        public void onAudioSessionIdChanged(EventTime eventTime, int audioSessionId) {
             mAudioSessionID = audioSessionId;
         }
 
         @Override
-        public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-            Logger.logD(TAG, "ExoPlayer onAudioDecoderInitialized(): name = " + decoderName + ", init timestamp = " + initializedTimestampMs + " ms, duration = " + initializationDurationMs + " ms");
+        public void onAudioDecoderInitialized(EventTime eventTime, String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+            Logger.logV(TAG, "AnalyticsListener.onAudioDecoderInitialized(): name = " + decoderName + ", init timestamp = " + initializedTimestampMs + " ms, duration = " + initializationDurationMs + " ms");
         }
 
         @Override
-        public void onAudioInputFormatChanged(Format format) {
-            Logger.logD(TAG, "ExoPlayer onAudioInputFormatChanged()");
+        public void onAudioInputFormatChanged(EventTime eventTime, Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+            Logger.logI(TAG, "AnalyticsListener.onAudioInputFormatChanged(): format = " + format);
         }
 
         @Override
-        public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
-            Logger.logW(TAG, "ExoPlayer onDroppedFrames(): bufferSize = " + bufferSize + ", bufferSizeMs = " + bufferSizeMs + ", elapsedSinceLastFeedMs = " + elapsedSinceLastFeedMs);
-        }
-
-        @Override
-        public void onAudioDisabled(DecoderCounters decoderCounters) {
-//			Logger.logD(TAG, "ExoPlayer onAudioDisabled()");
+        public void onAudioUnderrun(EventTime eventTime, int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+            Logger.logW(TAG, "AnalyticsListener.onAudioUnderrun(): bufferSize = " + bufferSize + ", bufferSizeMs = " + bufferSizeMs + ", elapsedSinceLastFeedMs = " + elapsedSinceLastFeedMs);
         }
     };
 
-    private final AdaptiveMediaSourceEventListener mAdaptiveMediaSourceEventListener = new AdaptiveMediaSourceEventListener() {
+    private final MediaSourceEventListener mAdaptiveMediaSourceEventListener = new MediaSourceEventListener () {
         @Override
-        public void onLoadStarted(DataSpec dataSpec, int i, int i1, Format format, int i2, Object o, long l, long l1, long l2) {
-
+        public void onLoadStarted(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            Logger.logV(TAG, "MediaSourceEventListener.onLoadStarted()");
         }
 
         @Override
-        public void onLoadCompleted(DataSpec dataSpec, int i, int i1, Format format, int i2, Object o, long l, long l1, long l2, long l3, long l4) {
-
+        public void onLoadCompleted(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            Logger.logV(TAG, "MediaSourceEventListener.onLoadCompleted()");
         }
 
         @Override
-        public void onLoadCanceled(DataSpec dataSpec, int i, int i1, Format format, int i2, Object o, long l, long l1, long l2, long l3, long l4) {
-
+        public void onLoadCanceled(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            Logger.logV(TAG, "MediaSourceEventListener.onLoadCanceled()");
         }
 
         @Override
-        public void onLoadError(DataSpec dataSpec, int i, int i1, Format format, int i2, Object o, long l, long l1, long l2, long l3, long l4, IOException e, boolean b) {
-
+        public void onLoadError(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+            Logger.logE(TAG, "MediaSourceEventListener.onLoadError()");
         }
 
         @Override
-        public void onUpstreamDiscarded(int i, long l, long l1) {
-
+        public void onUpstreamDiscarded(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData) {
         }
 
         @Override
-        public void onDownstreamFormatChanged(int i, Format format, int i1, Object o, long l) {
-
+        public void onDownstreamFormatChanged(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData) {
+            Logger.logV(TAG, "MediaSourceEventListener.onDownstreamFormatChanged()");
         }
     };
 }

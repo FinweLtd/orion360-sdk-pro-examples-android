@@ -36,12 +36,13 @@ import android.widget.ToggleButton;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.item.sprite.OrionSprite;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -57,7 +58,10 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
  */
 public class SpriteLayout extends OrionActivity {
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our planar sprite will be added to. */
@@ -81,7 +85,7 @@ public class SpriteLayout extends OrionActivity {
     /** The camera which will project our 3D scene to a 2D (view) surface. */
     protected OrionCamera mCamera;
 
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -90,16 +94,17 @@ public class SpriteLayout extends OrionActivity {
 		setContentView(R.layout.activity_sprite);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Create a new sprite. This is a 2D plane in the 3D world for our planar image.
-        mSprite = new OrionSprite();
+        mSprite = new OrionSprite(mOrionContext);
 
         // Create a set of textures for our sprite (we will swap texture with a button press).
         String[] uris = getResources().getStringArray(R.array.sprite_layout_rects);
         mSpriteTextures = new OrionTexture[uris.length];
         for (int i = 0; i < uris.length; i++) {
-            mSpriteTextures[i] = OrionTexture.createTextureFromURI(this, uris[i]);
+            mSpriteTextures[i] = OrionTexture.createTextureFromURI(mOrionContext,
+                    this, uris[i]);
         }
 
         // Set sprite location in the 3D world. Here we place it slightly ahead in front direction.
@@ -118,28 +123,32 @@ public class SpriteLayout extends OrionActivity {
         mScene.bindSceneItem(mSprite);
 
         // Create a sprite for marking the center point of the screen.
-        mCenter = new OrionSprite();
+        mCenter = new OrionSprite(mOrionContext);
         mCenter.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.95f));
         mCenter.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
         mCenter.setScale(0.1f);
-        mCenter.bindTexture(OrionTexture.createTextureFromURI(this,
+        mCenter.bindTexture(OrionTexture.createTextureFromURI(mOrionContext, this,
                 getString(R.string.sprite_layout_reticle)));
         mScene.bindSceneItem(mCenter);
 
         // Create a sprite for marking the scaling bounds.
-        mBounds = new OrionSprite();
+        mBounds = new OrionSprite(mOrionContext);
         mBounds.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.95f));
         mBounds.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
         mBounds.setScale(0.2f);
-        mBounds.bindTexture(OrionTexture.createTextureFromURI(this,
+        mBounds.bindTexture(OrionTexture.createTextureFromURI(mOrionContext, this,
                 getString(R.string.sprite_layout_bounds)));
         mScene.bindSceneItem(mBounds);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -149,8 +158,8 @@ public class SpriteLayout extends OrionActivity {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 	}
 
     // Handle the buttons that control texture alignment rule:
@@ -209,12 +218,12 @@ public class SpriteLayout extends OrionActivity {
 
     // Handle the buttons that control texture scale mode:
 
-    public void onFitLongClicked(View button) {
-        mSprite.setScaleMode(OrionSprite.ScaleMode.FIT_LONG);
+    public void onFitOutsideClicked(View button) {
+        mSprite.setScaleMode(OrionSprite.ScaleMode.FIT_OUTSIDE);
     }
 
-    public void onFitShortClicked(View button) {
-        mSprite.setScaleMode(OrionSprite.ScaleMode.FIT_SHORT);
+    public void onFitInsideClicked(View button) {
+        mSprite.setScaleMode(OrionSprite.ScaleMode.FIT_INSIDE);
     }
 
     public void onFitWidthClicked(View button) {
@@ -232,7 +241,7 @@ public class SpriteLayout extends OrionActivity {
         if (button.isChecked()) {
             mSprite.setFlags(OrionSprite.FLAG_SPRITE_ENABLE_CROP);
         } else {
-            mSprite.resetFlags(OrionSprite.FLAG_SPRITE_ENABLE_CROP);
+            mSprite.clearFlags(OrionSprite.FLAG_SPRITE_ENABLE_CROP);
         }
     }
 }

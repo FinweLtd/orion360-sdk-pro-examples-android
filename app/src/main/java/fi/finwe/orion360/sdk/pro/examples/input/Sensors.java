@@ -36,16 +36,17 @@ import fi.finwe.math.Quatf;
 import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.controller.OrionSensorFusion;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
-import fi.finwe.orion360.sdk.pro.controller.SensorFusion;
 import fi.finwe.orion360.sdk.pro.controller.TouchPincher;
 import fi.finwe.orion360.sdk.pro.controller.TouchRotater;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 import fi.finwe.orion360.sdk.pro.widget.OrionWidget;
 import fi.finwe.util.ContextUtil;
@@ -68,12 +69,15 @@ import fi.finwe.util.ContextUtil;
  * <li>Auto Horizon Aligner (AHL) feature straightens the horizon</li>
  * </ul>
  */
-public class Sensors extends OrionActivity implements SensorFusion.Listener {
+public class Sensors extends OrionActivity implements OrionSensorFusion.Listener {
 
     /** Tag for logging. */
     public static final String TAG = Sensors.class.getSimpleName();
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
@@ -91,14 +95,14 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     /** The widget that will handle our touch gestures. */
     protected TouchControllerWidget mTouchController;
 
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         /*
          * 360/VR video applications automatically rotate the view based on device orientation.
@@ -115,7 +119,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          * or initialize the sensor fusion algorithm; this is automatically done when
          * OrionContext is first created.
          */
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         /*
          * Sensor fusion makes use of a sophisticated mathematical algorithm to combine the
@@ -166,10 +170,10 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         mOrionContext.getSensorFusion().setMagnetometerEnabled(false);
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -181,7 +185,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         /*
          * Binding the sensor fusion as a controller to the scene does not yet make the view
@@ -230,8 +234,12 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -241,8 +249,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 	}
 
     /**
@@ -311,12 +319,12 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
              */
 
             // Create drag-to-pan handler.
-            mTouchRotater = new TouchRotater();
+            mTouchRotater = new TouchRotater(mOrionContext);
             mTouchRotater.bindControllable(camera);
 
             // Create the rotation aligner, responsible for rotating the view so that the horizon
             // aligns with the user's real-life horizon when the user is not looking up or down.
-            mRotationAligner = new RotationAligner();
+            mRotationAligner = new RotationAligner(mOrionContext);
             mRotationAligner.setDeviceAlignZ(-ContextUtil.getDisplayRotationDegreesFromNatural(
                     mOrionContext.getActivity()));
             mRotationAligner.bindControllable(camera);
@@ -361,7 +369,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
             camera.setZoomMax(3.0f);
 
             // Create pinch-to-zoom/pinch-to-rotate handler.
-            mTouchPincher = new TouchPincher();
+            mTouchPincher = new TouchPincher(mOrionContext);
             mTouchPincher.setMinimumDistanceDp(mOrionContext.getActivity(), 20);
             mTouchPincher.bindControllable(camera, OrionCamera.VAR_FLOAT1_ZOOM);
         }
@@ -369,27 +377,26 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         @Override
         public void onBindWidget(OrionScene scene) {
             // When widget is bound to scene, bind the controllers to it to make them functional.
-            scene.bindController(mTouchPincher);
-            scene.bindController(mTouchRotater);
-            scene.bindController(mRotationAligner);
+            scene.bindRoutine(mTouchPincher);
+            scene.bindRoutine(mTouchRotater);
+            scene.bindRoutine(mRotationAligner);
         }
 
         @Override
         public void onReleaseWidget(OrionScene scene) {
             // When widget is released from scene, release the controllers as well.
-            scene.releaseController(mTouchPincher);
-            scene.releaseController(mTouchRotater);
-            scene.releaseController(mRotationAligner);
+            scene.releaseRoutine(mTouchPincher);
+            scene.releaseRoutine(mTouchRotater);
+            scene.releaseRoutine(mRotationAligner);
         }
     }
-
 
     @Override
     public void onResume() {
         super.onResume();
 
         // Start listening for sensor fusion events.
-        mOrionContext.getSensorFusion().registerOrientationChangeListener(this);
+        mOrionContext.getSensorFusion().bindOrientationListener(this);
 
     }
 
@@ -397,7 +404,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
     public void onPause() {
 
         // Stop listening for sensor fusion events.
-        mOrionContext.getSensorFusion().unregisterOrientationChangeListener(this);
+        mOrionContext.getSensorFusion().releaseOrientationListener(this);
 
         super.onPause();
     }
@@ -421,7 +428,7 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
          */
 
         // Rotate front vector to the direction where the user is currently looking at.
-        Vec3f lookAt = Vec3f.AXIS_FRONT.rotate(orientation);
+        Vec3f lookAt = Vec3f.FRONT.rotate(orientation);
 
         // Get the yaw offset with respective to the 360 image center.
         float lookAtYaw = lookAt.getYaw();
@@ -430,7 +437,8 @@ public class Sensors extends OrionActivity implements SensorFusion.Listener {
         float lookAtPitch = lookAt.getPitch();
 
         float toDegree = (float) (180.0f / Math.PI);
-        Log.d(TAG, "Looking at yaw=" + lookAtYaw * toDegree + " pitch=" + lookAtPitch * toDegree);
+        Log.d(TAG, "Looking at yaw=" + lookAtYaw * toDegree
+                + " pitch=" + lookAtPitch * toDegree);
 
     }
 

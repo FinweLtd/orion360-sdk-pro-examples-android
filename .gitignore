@@ -48,3 +48,5 @@ captures/
 # Thumb files
 .DS_Store
 .idea/modules.xml
+
+my_local.properties

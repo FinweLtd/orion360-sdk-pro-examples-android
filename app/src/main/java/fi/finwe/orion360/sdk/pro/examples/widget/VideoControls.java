@@ -31,7 +31,6 @@ package fi.finwe.orion360.sdk.pro.examples.widget;
 
 import android.app.Activity;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,7 +48,9 @@ import fi.finwe.math.Vec2f;
 import fi.finwe.orion360.sdk.pro.OrionActivity;
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
+import fi.finwe.orion360.sdk.pro.viewport.OrionViewport;
 import fi.finwe.orion360.sdk.pro.controllable.DisplayClickable;
 import fi.finwe.orion360.sdk.pro.controller.TouchDisplayClickListener;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
@@ -57,10 +58,9 @@ import fi.finwe.orion360.sdk.pro.examples.R;
 import fi.finwe.orion360.sdk.pro.examples.TouchControllerWidget;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
-import fi.finwe.orion360.sdk.pro.viewport.fx.BarrelDistortion;
 import fi.finwe.orion360.sdk.pro.widget.ControlPanel;
 
 
@@ -86,7 +86,10 @@ import fi.finwe.orion360.sdk.pro.widget.ControlPanel;
  */
 public class VideoControls extends OrionActivity implements OrionVideoTexture.Listener {
 
-    /** The Android view where our 3D scene will be rendered to. */
+    /** The Android view where our 3D scene (OrionView) will be added to. */
+    protected OrionViewContainer mViewContainer;
+
+    /** The Orion360 SDK view where our 3D scene will be rendered to. */
     protected OrionView mView;
 
     /** The 3D scene where our panorama sphere will be added to. */
@@ -169,7 +172,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         });
 
         // Listen for single, double and long clicks.
-        TouchDisplayClickListener listener = new TouchDisplayClickListener();
+        TouchDisplayClickListener listener = new TouchDisplayClickListener(mOrionContext);
         listener.bindClickable(null, new TouchDisplayClickListener.Listener() {
 
             @Override
@@ -221,7 +224,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         });
 
         // Bind click listener to the scene to make it functional.
-        mScene.bindController(listener);
+        mScene.bindRoutine(listener);
 	}
 
     /** Interface for listening component events. */
@@ -759,16 +762,16 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     protected void initOrion() {
 
         // Create a new scene. This represents a 3D world where various objects can be placed.
-        mScene = new OrionScene();
+        mScene = new OrionScene(mOrionContext);
 
         // Bind sensor fusion as a controller. This will make it available for scene objects.
-        mScene.bindController(mOrionContext.getSensorFusion());
+        mScene.bindRoutine(mOrionContext.getSensorFusion());
 
         // Create a new panorama. This is a 3D object that will represent a spherical video/image.
-        mPanorama = new OrionPanorama();
+        mPanorama = new OrionPanorama(mOrionContext);
 
         // Create a new video (or image) texture from a video (or image) source URI.
-        mPanoramaTexture = OrionTexture.createTextureFromURI(this,
+        mPanoramaTexture = OrionTexture.createTextureFromURI(mOrionContext, this,
                 MainMenu.TEST_VIDEO_URI_1280x640);
 
         // Bind the panorama texture to the panorama object. Here we assume full spherical
@@ -780,7 +783,7 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         mScene.bindSceneItem(mPanorama);
 
         // Create a new camera. This will become the end-user's eyes into the 3D world.
-        mCamera = new OrionCamera();
+        mCamera = new OrionCamera(mOrionContext);
 
         // Reset view to the 'front' direction (horizontal center of the panorama).
         mCamera.setDefaultRotationYaw(0);
@@ -794,8 +797,12 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
         // Bind the touch controller widget to the scene. This will make it functional in the scene.
         mScene.bindWidget(mTouchController);
 
-        // Find Orion360 view from the XML layout. This is an Android view where we render content.
-        mView = (OrionView)findViewById(R.id.orion_view);
+        // Find Orion360 view container from the XML layout. This is an Android view for content.
+        mViewContainer = (OrionViewContainer)findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container.
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
 
         // Bind the scene to the view. This is the 3D world that we will be rendering to this view.
         mView.bindDefaultScene(mScene);
@@ -805,8 +812,8 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
 
         // The view can be divided into one or more viewports. For example, in VR mode we have one
         // viewport per eye. Here we fill the complete view with one (landscape) viewport.
-        mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
     }
 
     /**
@@ -833,20 +840,12 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
                     OrionPanorama.TEXTURE_RECT_FULL, OrionPanorama.TEXTURE_RECT_FULL);
 
             // Set up two new viewports side by side (when looked from landscape orientation).
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_SPLIT_HORIZONTAL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Designate each viewport to render content for either left or right eye.
             mView.getViewports()[0].setVRMode(OrionViewport.VRMode.VR_LEFT);
             mView.getViewports()[1].setVRMode(OrionViewport.VRMode.VR_RIGHT);
-
-            // Compensate for VR frame lens distortion using barrel distortion FX.
-            BarrelDistortion barrelFx = new BarrelDistortion();
-            barrelFx.setDistortionFillScale(1.0f);
-            barrelFx.setDistortionCenterOffset(0, 0);
-            barrelFx.setDistortionCoeffs(new float[] { 1.0f, 0.39f, -0.35f, 0.19f} );
-            mView.getViewports()[0].bindFX(barrelFx);
-            mView.getViewports()[1].bindFX(barrelFx);
 
             // Re-configure camera for VR mode.
             mCamera.setVRCameraDistance(0.035f);
@@ -868,8 +867,8 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
             mPanorama.bindTextureFull(0, mPanoramaTexture);
 
             // Bind one new viewport to landscape orientation.
-            mView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
 
             // Re-configure camera.
             mCamera.setZoom(1.0f);
@@ -885,12 +884,8 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
      */
     public void showNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.VISIBLE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+        v.setSystemUiVisibility(uiOptions);
     }
 
     /**
@@ -898,25 +893,12 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
      */
     public void hideNavigationBar() {
         View v = getWindow().getDecorView();
-        if (Build.VERSION.SDK_INT < 19) {
-            v.setSystemUiVisibility(View.GONE);
-        } else {
-            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            v.setSystemUiVisibility(uiOptions);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        v.setSystemUiVisibility(uiOptions);
     }
 
     // From OrionVideoTexture.Listener:
-
-    @Override
-    public void onInvalidURI(OrionTexture orionTexture) {
-        Logger.logD(TAG, "onInvalidURI()");
-
-        // If the set video stream URI was invalid, we can't play it. Hide indicator.
-        mControlPanel.hideBufferingIndicator();
-
-    }
 
     @Override
     public void onException(OrionTexture orionTexture, Exception e) {
@@ -997,6 +979,11 @@ public class VideoControls extends OrionActivity implements OrionVideoTexture.Li
     @Override
     public void onVideoCompleted(OrionVideoTexture orionVideoTexture) {
         Logger.logD(TAG, "onVideoCompleted()");
+    }
+
+    @Override
+    public void onVideoPlayerDestroyed(OrionVideoTexture texture) {
+        Logger.logD(TAG, "onVideoPlayerDestroyed()");
     }
 
     @Override

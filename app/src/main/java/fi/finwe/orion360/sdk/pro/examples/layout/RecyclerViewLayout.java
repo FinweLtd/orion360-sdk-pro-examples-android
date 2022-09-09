@@ -47,20 +47,20 @@ import java.util.List;
 
 import fi.finwe.orion360.sdk.pro.OrionContext;
 import fi.finwe.orion360.sdk.pro.OrionScene;
-import fi.finwe.orion360.sdk.pro.OrionViewport;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
-import fi.finwe.orion360.sdk.pro.examples.appfw.CustomFragmentActivity;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseManager;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseSource;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseStatus;
 import fi.finwe.orion360.sdk.pro.licensing.LicenseVerifier;
-import fi.finwe.orion360.sdk.pro.source.AndroidMediaPlayerWrapper;
-import fi.finwe.orion360.sdk.pro.source.OrionTexture;
-import fi.finwe.orion360.sdk.pro.source.OrionVideoTexture;
-import fi.finwe.orion360.sdk.pro.source.VideoPlayerWrapper;
+import fi.finwe.orion360.sdk.pro.texture.AndroidMediaPlayerWrapper;
+import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
+import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.VideoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.view.OrionView;
 
 /**
@@ -103,7 +103,7 @@ import fi.finwe.orion360.sdk.pro.view.OrionView;
 public class RecyclerViewLayout extends Activity {
 
     /** Tag for logging. */
-    private static final String TAG = CustomFragmentActivity.class.getSimpleName();
+    private static final String TAG = RecyclerViewLayout.class.getSimpleName();
 
     /**
      * OrionContext used to be a static class, but starting from Orion360 3.1.x it must
@@ -231,16 +231,19 @@ public class RecyclerViewLayout extends Activity {
     class CustomViewHolder extends RecyclerView.ViewHolder {
 
         /** The thumbnail image view. */
-        ImageView mThumbnail;
+        final ImageView mThumbnail;
 
         /** The play button image view. */
-        ImageView mPlayButton;
+        final ImageView mPlayButton;
 
         /** The title text view. */
-        TextView mTitleText;
+        final TextView mTitleText;
 
-        /** The Android view where our 3D scene will be rendered to. */
-        OrionView mOrionView;
+        /** The Android view where our 3D scene (OrionView) will be added to. */
+        protected final OrionViewContainer mViewContainer;
+
+        /** The Orion360 SDK view where our 3D scene will be rendered to. */
+        protected OrionView mView;
 
         /** The 3D scene where our panorama sphere will be added to. */
         OrionScene mScene;
@@ -269,7 +272,7 @@ public class RecyclerViewLayout extends Activity {
             this.mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
             this.mPlayButton = (ImageView) view.findViewById(R.id.play_overlay);
             this.mTitleText = (TextView) view.findViewById(R.id.title);
-            this.mOrionView = (OrionView) view.findViewById(R.id.orion_view);
+            this.mViewContainer = (OrionViewContainer) view.findViewById(R.id.orion_view_container);
         }
 
         /**
@@ -283,17 +286,17 @@ public class RecyclerViewLayout extends Activity {
         public void play(String contentUri, final float volumeLevel) {
 
             // Create a new scene. This represents a 3D world where various objects can be placed.
-            mScene = new OrionScene();
+            mScene = new OrionScene(mOrionContext);
 
             // Bind sensor fusion as a controller. This will make it available for scene objects.
-            mScene.bindController(mOrionContext.getSensorFusion());
+            mScene.bindRoutine(mOrionContext.getSensorFusion());
 
             // Create a new panorama. This is a 3D object that will represent a spherical video.
-            mPanorama = new OrionPanorama();
+            mPanorama = new OrionPanorama(mOrionContext);
 
             // Create a new video (or image) texture from a video (or image) source URI.
             mVideoPlayer = new AndroidMediaPlayerWrapper(RecyclerViewLayout.this);
-            mPanoramaTexture = new OrionVideoTexture(mVideoPlayer, contentUri);
+            mPanoramaTexture = new OrionVideoTexture(mOrionContext, mVideoPlayer, contentUri);
 
             // Set volume level when content has been prepared.
             ((OrionVideoTexture) mPanoramaTexture).addTextureListener(
@@ -311,7 +314,7 @@ public class RecyclerViewLayout extends Activity {
             mScene.bindSceneItem(mPanorama);
 
             // Create a new camera. This will become the end-user's eyes into the 3D world.
-            mCamera = new OrionCamera();
+            mCamera = new OrionCamera(mOrionContext);
 
             // Reset view to the 'front' direction (horizontal center of the panorama).
             mCamera.setDefaultRotationYaw(0);
@@ -319,15 +322,19 @@ public class RecyclerViewLayout extends Activity {
             // Bind camera as a controllable to sensor fusion.
             mOrionContext.getSensorFusion().bindControllable(mCamera);
 
+            // Create a new OrionView and bind it into the container.
+            mView = new OrionView(mOrionContext);
+            mViewContainer.bindView(mView);
+
             // Bind the scene to the view. This is the 3D world that we will be rendering.
-            mOrionView.bindDefaultScene(mScene);
+            mView.bindDefaultScene(mScene);
 
             // Bind the camera to the view. We will look into the 3D world through this camera.
-            mOrionView.bindDefaultCamera(mCamera);
+            mView.bindDefaultCamera(mCamera);
 
             // The view can be divided into one or more viewports.
-            mOrionView.bindViewports(OrionViewport.VIEWPORT_CONFIG_FULL,
-                    OrionViewport.CoordinateType.FIXED_LANDSCAPE);
+            mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                    OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
         }
     }
 
