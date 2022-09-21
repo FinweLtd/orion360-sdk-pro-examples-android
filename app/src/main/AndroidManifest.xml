@@ -20,8 +20,17 @@
 
     <!-- For accessing device camera (camera example). -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <!-- For Android TV support -->
+    <uses-feature android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
@@ -290,6 +299,19 @@
             android:configChanges="orientation|screenSize"
             android:screenOrientation="fullSensor"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
+
+        <!-- Android TV example (special) -->
+        <activity
+            android:name=".tv.TVStreamPlayer"
+            android:configChanges="keyboard|keyboardHidden|navigation"
+            android:exported="true"
+            android:theme="@style/Theme.Leanback"
+            android:banner="@drawable/orion360_pro_320x180">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- For playing videos from an (optional) expansion package (.obb) -->
         <provider

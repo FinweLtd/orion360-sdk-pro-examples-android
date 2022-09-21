@@ -34,7 +34,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.multidex:multidex:2.0.1' // required by ExoPlayer and Google IMA extension
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation files('libs/google-play-zip-file_lib.jar')
@@ -67,6 +67,9 @@ dependencies {
 
     // ExoPlayer as an alternative video engine.
     api 'com.google.android.exoplayer:exoplayer:2.18.1'
+
+    // Android TV Leanback library.
+    implementation "androidx.leanback:leanback:1.0.0"
 
     //noinspection GradleDependency
     implementation 'com.google.android.exoplayer:extension-ima:2.18.1'

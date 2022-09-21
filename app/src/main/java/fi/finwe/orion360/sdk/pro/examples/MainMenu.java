@@ -85,6 +85,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import fi.finwe.log.Logger;
+import fi.finwe.orion360.sdk.pro.examples.tv.TVStreamPlayer;
 
 /**
  * Provides application's main menu: a list of selectable examples, each implemented as an activity.
@@ -190,7 +191,7 @@ public class MainMenu extends FragmentActivity {
 	public static final String TEST_IMAGE_FILE_HQ_TILE_BR = "Orion360_test_image_4096x2048_bottom_right.jpg";
 
 	/** Test image name for high quality mono living room image in app /assets. */
-	public static final String TEST_IMAGE_FILE_LIVINGROOM_HQ = "Orion360_livingroom_3840x1920.jpg";
+	public static final String TEST_IMAGE_FILE_LIVINGROOM_HQ = "Orion360_livingroom_4096x2048.jpg";
 
 	/** Test image name for medium quality stereo over-and-under living room image in app /assets. */
 	public static final String TEST_IMAGE_FILE_LIVINGROOM_OU_MQ = "Orion360_livingroom_ou_2048x2048.jpg";
@@ -371,6 +372,8 @@ public class MainMenu extends FragmentActivity {
 			for (ActivityInfo activityInfo : packageInfo.activities) {
 				if (activityInfo.name.equals(MainMenu.class.getName()))
 					continue; // Skip self.
+				else if (activityInfo.name.equals(TVStreamPlayer.class.getName()))
+					continue; // Skip TV activity on phone/tablet
 
 				ActivityData activityData = new ActivityData();
 				String [] nameParts = activityInfo.name.split("\\.");
