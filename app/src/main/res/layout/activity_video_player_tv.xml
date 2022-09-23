@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- This is the view where 360 video will show up. -->
+    <fi.finwe.orion360.sdk.pro.view.OrionViewContainer
+        android:id="@+id/orion_view_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- This is a buffering indicator view on top of the video. -->
+    <ProgressBar
+        android:id="@+id/buffering_indicator"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- This is a 'playback started' indicator image. -->
+    <ImageView
+        android:id="@+id/play_overlay"
+        android:layout_width="@dimen/player_controls_play_overlay_width"
+        android:layout_height="@dimen/player_controls_play_overlay_height"
+        android:layout_gravity="center"
+        android:contentDescription="@string/player_controls_play_overlay_desc"
+        android:src="@drawable/play_overlay"
+        android:visibility="gone" />
+
+    <!-- This is a 'playback paused' indicator image. -->
+    <ImageView
+        android:id="@+id/pause_overlay"
+        android:layout_width="@dimen/player_controls_pause_overlay_width"
+        android:layout_height="@dimen/player_controls_pause_overlay_height"
+        android:layout_gravity="center"
+        android:contentDescription="@string/player_controls_pause_overlay_desc"
+        android:src="@drawable/pause_overlay"
+        android:visibility="gone" />
+
+    <!-- This is a control panel. -->
+    <RelativeLayout
+        android:id="@+id/player_controls_panel"
+        android:layout_width="@dimen/player_controls_panel_width_tv"
+        android:layout_height="@dimen/player_controls_panel_height_tv"
+        android:background="@drawable/tv_control_panel_bg"
+        android:layout_gravity="bottom|center_horizontal"
+        android:orientation="horizontal"
+        android:layout_marginStart="@dimen/player_controls_panel_margin_tv"
+        android:layout_marginEnd="@dimen/player_controls_panel_margin_tv"
+        android:layout_marginBottom="@dimen/player_controls_panel_margin_tv"
+        android:paddingStart="@dimen/player_controls_panel_padding_start"
+        android:paddingEnd="@dimen/player_controls_panel_padding_end"
+        android:visibility="visible"
+        android:clickable="true"
+        android:focusable="true"> <!-- Prevent clicking anything under control panel -->
+
+        <ImageButton
+            android:id="@+id/player_controls_play_button"
+            android:layout_width="@dimen/player_controls_panel_button_width_big_tv"
+            android:layout_height="@dimen/player_controls_panel_button_height_big_tv"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+            android:background="@drawable/control_button_bg"
+            android:contentDescription="@string/player_controls_play_button_desc"
+            android:scaleType="fitCenter"
+            android:src="@drawable/play"
+            android:stateListAnimator="@animator/click_animator">
+            <requestFocus />
+        </ImageButton>
+
+        <ImageButton
+            android:id="@+id/player_controls_projection_button"
+            android:layout_width="@dimen/player_controls_panel_button_width_tv"
+            android:layout_height="@dimen/player_controls_panel_button_height_tv"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+            android:background="@drawable/control_button_bg"
+            android:contentDescription="@string/player_controls_projection_button_desc"
+            android:scaleType="fitCenter"
+            android:src="@drawable/rectilinear"
+            android:stateListAnimator="@animator/click_animator"/>
+
+        <ImageButton
+            android:id="@+id/player_controls_zoom_in_button"
+            android:layout_width="@dimen/player_controls_panel_button_width_tv"
+            android:layout_height="@dimen/player_controls_panel_button_height_tv"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+            android:background="@drawable/control_button_bg"
+            android:contentDescription="@string/player_controls_zoom_in_button_desc"
+            android:scaleType="fitCenter"
+            android:src="@drawable/zoom_in"
+            android:stateListAnimator="@animator/click_animator" />
+
+        <ImageButton
+            android:id="@+id/player_controls_zoom_out_button"
+            android:layout_width="@dimen/player_controls_panel_button_width_tv"
+            android:layout_height="@dimen/player_controls_panel_button_height_tv"
+            android:layout_toEndOf="@+id/player_controls_zoom_in_button"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+            android:background="@drawable/control_button_bg"
+            android:contentDescription="@string/player_controls_zoom_out_button_desc"
+            android:scaleType="fitCenter"
+            android:src="@drawable/zoom_out"
+            android:stateListAnimator="@animator/click_animator" />
+
+    </RelativeLayout>
+
+</FrameLayout>

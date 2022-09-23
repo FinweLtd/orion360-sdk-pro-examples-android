@@ -9,10 +9,17 @@
     <dimen name="player_title_panel_padding_start">0dp</dimen>
     <dimen name="player_title_panel_padding_end">0dp</dimen>
     <dimen name="player_controls_panel_height">40dp</dimen>
+    <dimen name="player_controls_panel_width_tv">500dp</dimen>
+    <dimen name="player_controls_panel_height_tv">100dp</dimen>
+    <dimen name="player_controls_panel_margin_tv">20dp</dimen>
     <dimen name="player_controls_panel_padding_start">10dp</dimen>
     <dimen name="player_controls_panel_padding_end">10dp</dimen>
     <dimen name="player_controls_panel_button_width">32dp</dimen>
     <dimen name="player_controls_panel_button_height">32dp</dimen>
+    <dimen name="player_controls_panel_button_width_big_tv">90dp</dimen>
+    <dimen name="player_controls_panel_button_height_big_tv">90dp</dimen>
+    <dimen name="player_controls_panel_button_width_tv">48dp</dimen>
+    <dimen name="player_controls_panel_button_height_tv">48dp</dimen>
     <dimen name="player_controls_panel_item_margin_start">6dp</dimen>
     <dimen name="player_controls_panel_item_margin_end">6dp</dimen>
     <dimen name="player_controls_seekbar_padding_top">8dp</dimen>

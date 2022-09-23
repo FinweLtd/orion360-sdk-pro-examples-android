@@ -7,9 +7,11 @@
     <color name="colorAccent">#FF4081</color>
 
     <!-- Color definitions by name -->
-    <color name="black_overlay">#66000000</color>
+    <color name="black_overlay">#44000000</color>
+    <color name="black_overlay_tv">#dd000000</color>
     <color name="pure_white">#FFFFFFFF</color>
     <color name="white_80pc_opacity">#CCFFFFFF</color>
+    <color name="blue">#00aaff</color>
 
     <!-- Video controls -->
     <color name="player_title_panel_background">@color/black_overlay</color>
@@ -22,5 +24,9 @@
     <color name="pure_black">#FF000000</color>
     <color name="pure_transparent">#00000000</color>
     <color name="light_gray">#FF999999</color>
+
+    <color name="normal">@color/light_gray</color>
+    <color name="focused">@color/pure_white</color>
+    <color name="selected">@color/blue</color>
 
 </resources>
