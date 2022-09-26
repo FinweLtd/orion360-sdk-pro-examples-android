@@ -33,15 +33,17 @@ import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import fi.finwe.log.Logger;
 import fi.finwe.math.Quatf;
-import fi.finwe.math.Vec3f;
 import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
@@ -65,8 +67,8 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * https://stackoverflow.com/questions/28298009/android-tv-not-starting-launch-leanback-activity
  * Since this activity is intended for TVs, it is hidden from phone/tablet examples list.
  *
- * The UI of the app should be designed differently for TVs. There are various AndroidX libraries
- * that provide suitable widgets, and also instructions for creating proper layouts & navigation:
+ * The UI of the app should be designed differently for TVs. There are various helpful AndroidX
+ * libraries as well as instructions for creating proper layouts & navigation:
  * https://developer.android.com/training/tv/start/libraries
  * https://developer.android.com/training/tv/start/layouts
  * https://developer.android.com/training/tv/start/navigation
@@ -83,8 +85,8 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * For proper 360° viewing user experience, users should be able to control panning, zooming and
  * perhaps also projection changes. For video content there should be play/pause, seek, etc. usual
  * video player controls. Obviously, one cannot assign a separate remote control key for each
- * feature, since the minimal key set is so limited. Some kind of a toolbar UI, where user can
- * change what feature to control, is needed. This activity contains one example design.
+ * feature, since the minimal key set is so limited. Some kind of a control panel, where users
+ * can change what feature to control, is needed. This activity contains simple example design.
  *
  * Since panning and zooming via key presses results to jerky movement, it is highly recommended
  * to use animation. More specifically, we recommend using animations that apply inertia - the
@@ -95,15 +97,15 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  *
  * Notice that we need to handle different kinds of key event sequences: single key presses,
  * multiple key presses in quick sequence (i.e. new event comes before previous animation ends),
- * as well as holding a key pressed (repeated events). This variety makes it tricky to create
+ * as well as holding a key pressed (repeated events). This variety makes it a bit tricky to create
  * smooth animations: it is very typical, that new key event will interrupt an ongoing animation
- * for example when panning a 360° view. User is not happy if we disregard new event, but on the
- * other hand, restarting the animation with new values produces jerky movement.
+ * for example when panning a 360° view. User is not happy if we completely disregard new event,
+ * but on the other hand, restarting the animation with new values may produce jerky movement.
  *
  * We need to acknowledge that this particular use case is not the usual "move this from here
  * to there smoothly" kind of animation, where existing animation frameworks are targeted.
- * This requires a more dynamic system, like controlling an object in a computer game. Hence, we
- * will use custom code solution and simple physics based animation with inertia and mass.
+ * To achieve best possible user experience, we need a more dynamic system, somewhat similar to
+ * controlling an object in a computer game.
  */
 @SuppressWarnings("unused")
 public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTexture.Listener {
@@ -111,14 +113,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Tag for logging. */
     public static final String TAG = TVStreamPlayer.class.getSimpleName();
 
-    /** The number of degrees in a half circle. */
-    private static final int HALF_CIRCLE = 180;
+    /** Rotation animation length, impulse from single key press (in ms). */
+    private static final int ROTATION_ANIMATION_LENGTH_IMPULSE_MS = 800;
 
-    /** The number of degrees in a whole circle. */
-    private static final int WHOLE_CIRCLE = 360;
-
-    /** Rotation animation length (in ms). */
-    private static final int ROTATION_ANIMATION_LENGTH_MS = 800;
+    /** Rotation animation length, continuous panning when key is held down (in ms). */
+    private static final int ROTATION_ANIMATION_LENGTH_INFINITE_MS = 7200;
 
     /** Zoom animation length (in ms). */
     private static final int ZOOM_ANIMATION_LENGTH_MS = 800;
@@ -139,9 +138,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     private ImageButton mPlayButton;
 
     /** Zoom in button. */
+    @SuppressWarnings("FieldCanBeLocal")
     private ImageButton mZoomInButton;
 
     /** Zoom out button. */
+    @SuppressWarnings("FieldCanBeLocal")
     private ImageButton mZoomOutButton;
 
     /** Projection button. */
@@ -150,29 +151,28 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Flag for indicating if video is currently being played. */
     private boolean mIsPlaying = false;
 
-    /** Flag for turning rotation animation on/off. */
-    private boolean mAnimateRotation = true;
+    /** Flag for turning rotation animation on/off. We recommend using animation. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private final boolean mAnimateRotation = true;
+
+    /** Flag for turning zoom animation on/off. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private final boolean mAnimateZoom = true;
 
     /** Yaw rotation value animator. */
     private ValueAnimator mRotationYawValueAnimator;
 
-    /** Target value for yaw rotation (in degrees). */
-    private float mRotationYawValueTargetDeg = 0.0f;
-
     /** Pitch rotation value animator. */
     private ValueAnimator mRotationPitchValueAnimator;
-
-    /** Target value for pitch rotation (in degrees). */
-    private float mRotationPitchValueTargetDeg = 0.0f;
-
-    /** Current zoom level. */
-    private float mZoomLevel = 0.0f;
 
     /** Zoom value animator. */
     private ValueAnimator mZoomValueAnimator;
 
-    /** Flag for turning zoom animation on/off. */
-    private boolean mAnimateZoom = true;
+    /** Last key event. */
+    private KeyEvent mLastKeyEventDown = null;
+
+    /** Current zoom level. */
+    private float mZoomLevel = 0.0f;
 
     /** Supported projection types. */
     private enum OutputProjection {
@@ -183,6 +183,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
     /** Currently selected output projection. */
     private OutputProjection mOutputProjection = OutputProjection.RECTILINEAR;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -202,15 +203,18 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         // Get control panel.
         mControlPanelView = findViewById(R.id.player_controls_panel);
 
-        // Play button.
+        // Play/pause button.
         mPlayButton = findViewById(R.id.player_controls_play_button);
         mPlayButton.setOnClickListener(view -> {
             Logger.logF();
 
-            if (mIsPlaying) {
-                getOrionTexture().pause();
-            } else {
-                getOrionTexture().play();
+            // Control video playback via OrionVideoTexture.
+            if (getOrionTexture() instanceof OrionVideoTexture) {
+                if (mIsPlaying) {
+                    getOrionTexture().pause();
+                } else {
+                    getOrionTexture().play();
+                }
             }
         });
 
@@ -256,21 +260,70 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         // Set content listener.
         setVideoContentListener(this);
 
-        // Re-configure camera.
+        // Re-configure 3D world camera.
         OrionCamera camera = getOrionCamera();
         camera.setProjectionPerspectiveDeg(OrionCamera.FovType.HORIZONTAL,
                 120.0f, 0.1f, 100.0f);
         camera.setZoomMax(7.0f);
     }
 
+    // ------------------------------------- Key handling ------------------------------------------
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Logger.logD(TAG, "onKeyDown(), keyCode=" + keyCode + " keyEvent=" + event);
+
+        // Handle TV's remote controller key presses (key down events).
+
+        // Here we handle only the case where an arrow key is held down to pan with constant speed.
+        // We also have to store the key event, so that when the key is lifted, we can check whether
+        // user short pressed or long pressed and act accordingly.
+        mLastKeyEventDown = event;
+
+        if (mControlPanelView.getVisibility() == View.GONE) {
+            if (event.getRepeatCount() == 1) {
+                // Long press detected, start constant speed pan animation.
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        rotatePitch(360, true, true);
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        rotatePitch(-360, true, true);
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        rotateYaw(360, true, true);
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        rotateYaw(-360, true, true);
+                        return true;
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Logger.logD(TAG, "onKeyDown(), keyCode=" + keyCode + " keyEvent=" + event);
+        Logger.logD(TAG, "onKeyUp(), keyCode=" + keyCode + " keyEvent=" + event);
+
+        // Handle TV's remote controller key presses (key up events).
+
+        // If long press occurred, stop pan animation when key is lifted.
+        if (null != mLastKeyEventDown && mLastKeyEventDown.getRepeatCount() > 0) {
+            if (null != mRotationYawValueAnimator) {
+                mRotationYawValueAnimator.cancel();
+                mRotationYawValueAnimator = null;
+            }
+            if (null != mRotationPitchValueAnimator) {
+                mRotationPitchValueAnimator.cancel();
+                mRotationPitchValueAnimator = null;
+            }
+        }
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_BUTTON_B:
             case KeyEvent.KEYCODE_BACK:
-                // Navigate back -> hide control panel or quit the app.
+                // Back -> hide control panel if visible, or quit the app.
                 if (mControlPanelView.getVisibility() == View.VISIBLE) {
                     mControlPanelView.setVisibility(View.GONE);
                 } else {
@@ -282,7 +335,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                // Selection -> show control panel if not visible.
+                // Selection -> show control panel if not visible, else select (default action).
                 if (mControlPanelView.getVisibility() == View.GONE) {
                     mControlPanelView.setVisibility(View.VISIBLE);
                     mPlayButton.requestFocus();
@@ -291,161 +344,169 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 return false;
             case KeyEvent.KEYCODE_DPAD_UP:
                 // Up -> pan up.
-                if (mControlPanelView.getVisibility() == View.GONE) {
-                    rotatePitch(15);
+                if (mControlPanelView.getVisibility() == View.GONE
+                        && mLastKeyEventDown.getRepeatCount() == 0) {
+                    rotatePitch(30, mAnimateRotation, false);
                     return true;
                 }
                 return false;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 // Down -> pan down.
-                if (mControlPanelView.getVisibility() == View.GONE) {
-                    rotatePitch(-15);
+                if (mControlPanelView.getVisibility() == View.GONE
+                        && mLastKeyEventDown.getRepeatCount() == 0) {
+                    rotatePitch(-30, mAnimateRotation, false);
                     return true;
                 }
                 return false;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 // Left -> pan left.
-                if (mControlPanelView.getVisibility() == View.GONE) {
-                    rotateYaw(45);
+                if (mControlPanelView.getVisibility() == View.GONE
+                        && mLastKeyEventDown.getRepeatCount() == 0) {
+                    rotateYaw(45, mAnimateRotation, false);
                     return true;
                 }
                 return false;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 // Right -> pan right.
-                if (mControlPanelView.getVisibility() == View.GONE) {
-                    rotateYaw(-45);
+                if (mControlPanelView.getVisibility() == View.GONE
+                        && mLastKeyEventDown.getRepeatCount() == 0) {
+                    rotateYaw(-45, mAnimateRotation, false);
                     return true;
                 }
                 return false;
             case KeyEvent.KEYCODE_HOME:
             case KeyEvent.KEYCODE_MOVE_HOME:
-                // Home -> reset view to default position.
-                // NOTE: capturing HOME key may not work, could navigate to Android TV home instead.
-                resetProjection();
-                return true;
+                // Home -> return to Android TV home (default action).
+                return false;
             default:
                 return super.onKeyUp(keyCode, event);
         }
     }
 
-    // ------------------------------------------ Zoom ---------------------------------------------
+    // ------------------------------------------ Pan ----------------------------------------------
 
     /**
      * Rotate camera yaw angle. Positive value towards right (clockwise), negative towards left.
      *
-     * @param degrees the amount of degrees to rotate.
+     * @param degrees the amount of degrees to rotate and direction of rotation.
+     * @param animate set to true to animate rotation.
+     * @param infinite set to true to keep rotating infinitely until cancelled.
      */
-    public void rotateYaw(float degrees) {
-        Logger.logF();
+    public void rotateYaw(float degrees, boolean animate, boolean infinite) {
+        Logger.logD(TAG, "rotateYaw(): " + degrees);
 
-        // Adjust rotation step by zoom level.
-        float rotationFactor = (float) (Math.pow(2.0f, mZoomLevel));
-        degrees /= Math.max(1.0f, rotationFactor);
+        // Take current zoom level into account and reduce rotation angle when zoomed in.
+        degrees = adjustRotationAngle(degrees, mZoomLevel);
+
+        // Cancel previous rotation animation, if any.
+        if (null != mRotationYawValueAnimator) {
+            mRotationYawValueAnimator.cancel();
+            mRotationYawValueAnimator = null;
+        }
 
         OrionCamera camera = getOrionCamera();
-
-        if (mAnimateRotation) {
-
-            if (null != mRotationYawValueAnimator) {
-                mRotationYawValueAnimator.cancel();
-                mRotationYawValueAnimator = null;
-            }
-
-            mRotationYawValueTargetDeg += degrees;
-
+        if (!animate) {
+            // Apply rotation step directly to the current camera offset without animation.
             Quatf currentRotation = camera.getRotationOffset();
-            Vec3f lookAt = Vec3f.FRONT.rotate(currentRotation);
-            float yawDeg = (float) Math.toDegrees(-lookAt.getYaw());
-            float pitchDeg = (float) Math.toDegrees(lookAt.getPitch());
-
-            float from = yawDeg;
-            float to = mRotationYawValueTargetDeg % 360.0f;
-            float min = Math.min(from, to);
-            if (Math.abs(to - from) > HALF_CIRCLE) {
-                if (min == from) from += WHOLE_CIRCLE;
-                else to += WHOLE_CIRCLE;
-            }
-            Logger.logD(TAG, "Rotation from=" + yawDeg + " to="
-                    + mRotationYawValueTargetDeg + " -> from=" + from + " to=" + to);
-
-            mRotationYawValueAnimator = ValueAnimator.ofFloat(from, to);
+            Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                    degrees, 0.0f, 0.0f);
+            camera.setRotationOffset(deltaRotation.multiply(currentRotation));
+        } else {
+            // Apply rotation step incrementally with animation.
+            mRotationYawValueAnimator = ValueAnimator.ofFloat(0, degrees);
+            AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
             mRotationYawValueAnimator.addUpdateListener(valueAnimator -> {
                 //Logger.logF(); // Prevent flooding the log.
-
-                float animatedValue = (float) valueAnimator.getAnimatedValue();
-                //Logger.logD(TAG, "Anim yaw value " + animatedValue);
-                Quatf newRotationOffset = Quatf.fromEulerRotationZXYDeg(
-                        animatedValue, pitchDeg, 0.0f);
-                camera.setRotationOffset(newRotationOffset);
-
+                float value = (float) valueAnimator.getAnimatedValue();
+                float delta = value - previousValue.get();
+                previousValue.set(value);
+                Quatf currentRotation = camera.getRotationOffset();
+                Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                        delta, 0.0f, 0.0f);
+                camera.setRotationOffset(deltaRotation.multiply(currentRotation));
             });
-            mRotationYawValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_MS);
+            if (infinite) {
+                mRotationYawValueAnimator.setInterpolator(new LinearInterpolator());
+                mRotationYawValueAnimator.setRepeatMode(ValueAnimator.RESTART);
+                mRotationYawValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+                mRotationYawValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+            } else {
+                mRotationYawValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+            }
             mRotationYawValueAnimator.start();
-
-        } else {
-            Quatf currentRotation = camera.getRotationOffset();
-            Quatf rotationDelta = Quatf.fromEulerRotationZXYDeg(degrees, 0.0f, 0.0f);
-            camera.setRotationOffset(currentRotation.multiply(rotationDelta));
         }
     }
 
     /**
      * Rotate camera pitch angle. Positive value upwards, negative downwards.
      *
-     * @param degrees the amount of degrees to rotate.
+     * @param degrees the amount of degrees to rotate and direction of rotation.
+     * @param animate set to true to animate rotation.
+     * @param infinite set to true to keep rotating infinitely until cancelled.
      */
-    public void rotatePitch(float degrees) {
+    public void rotatePitch(float degrees, boolean animate, boolean infinite) {
         Logger.logD(TAG, "rotatePitch(): " + degrees);
 
-        // Adjust rotation step by zoom level.
-        float rotationFactor = (float) (Math.pow(2.0f, mZoomLevel));
-        degrees /= Math.max(1.0f, rotationFactor);
+        // Take current zoom level into account and reduce rotation angle when zoomed in.
+        degrees = adjustRotationAngle(degrees, mZoomLevel);
+
+        // Cancel previous rotation animation, if any.
+        if (null != mRotationPitchValueAnimator) {
+            mRotationPitchValueAnimator.cancel();
+            mRotationPitchValueAnimator = null;
+        }
 
         OrionCamera camera = getOrionCamera();
-
-        if (mAnimateRotation) {
-
-            if (null != mRotationPitchValueAnimator) {
-                mRotationPitchValueAnimator.cancel();
-                mRotationPitchValueAnimator = null;
-            }
-
-            mRotationPitchValueTargetDeg += degrees;
-
+        if (!animate) {
+            // Apply rotation step directly to the current camera offset without animation.
             Quatf currentRotation = camera.getRotationOffset();
-            Vec3f lookAt = Vec3f.FRONT.rotate(currentRotation);
-            float yawDeg = (float) Math.toDegrees(-lookAt.getYaw());
-            float pitchDeg = (float) Math.toDegrees(lookAt.getPitch());
-
-            float from = pitchDeg;
-            float to = mRotationPitchValueTargetDeg % 360.0f;
-            float min = Math.min(from, to);
-            if (Math.abs(to - from) > HALF_CIRCLE) {
-                if (min == from) from += WHOLE_CIRCLE;
-                else to += WHOLE_CIRCLE;
-            }
-            Logger.logD(TAG, "Rotation from=" + pitchDeg + " to="
-                    + mRotationPitchValueTargetDeg + " -> from=" + from + " to=" + to);
-
-            mRotationPitchValueAnimator = ValueAnimator.ofFloat(from, to);
+            Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                    0.0f, degrees, 0.0f);
+            camera.setRotationOffset(currentRotation.multiply(deltaRotation));
+        } else {
+            // Apply rotation step incrementally with animation.
+            mRotationPitchValueAnimator = ValueAnimator.ofFloat(0, degrees);
+            AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
             mRotationPitchValueAnimator.addUpdateListener(valueAnimator -> {
                 //Logger.logF(); // Prevent flooding the log.
-
-                float animatedValue = (float) valueAnimator.getAnimatedValue();
-                //Logger.logD(TAG, "Anim pitch value " + animatedValue);
-                Quatf newRotationOffset = Quatf.fromEulerRotationZXYDeg(
-                        yawDeg, animatedValue, 0.0f);
-                camera.setRotationOffset(newRotationOffset);
-
+                float value = (float) valueAnimator.getAnimatedValue();
+                float delta = value - previousValue.get();
+                previousValue.set(value);
+                Quatf currentRotation = camera.getRotationOffset();
+                Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                        0.0f, delta, 0.0f);
+                camera.setRotationOffset(currentRotation.multiply(deltaRotation));
             });
-            mRotationPitchValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_MS);
+            if (infinite) {
+                mRotationPitchValueAnimator.setInterpolator(new LinearInterpolator());
+                mRotationPitchValueAnimator.setRepeatMode(ValueAnimator.RESTART);
+                mRotationPitchValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+                mRotationPitchValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+            } else {
+                mRotationPitchValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+            }
             mRotationPitchValueAnimator.start();
-
-        } else {
-            Quatf currentRotation = camera.getRotationOffset();
-            Quatf rotationDelta = Quatf.fromEulerRotationZXYDeg(0.0f, degrees, 0.0f);
-            camera.setRotationOffset(currentRotation.multiply(rotationDelta));
         }
+    }
+
+    /**
+     * Adjust rotation angle with current zoom level.
+     *
+     * @param originalAngle the angle to be adjusted.
+     * @param zoom the current zoom level.
+     * @return the adjusted angle (same or smaller than the original angle).
+     */
+    private float adjustRotationAngle(float originalAngle, float zoom) {
+        //Logger.logF(); // Prevent flooding the log.
+
+        // The amount of rotation should depend on the current zoom level (zoomed in -> turn less).
+        // Here we adjust rotation step by zoom level using equation 1/2^x, which gradually
+        // decreases rotation angle when zoom level increases, giving a fairly natural response.
+        float rotationFactor = (float) (Math.pow(2.0f, zoom));
+        float angle = originalAngle / Math.max(1.0f, rotationFactor);
+        Logger.logD(TAG, "Zoom level: " + mZoomLevel + ", adjusted rotation angle=" + angle);
+
+        return angle;
     }
 
     // ------------------------------------------ Zoom ---------------------------------------------
@@ -614,23 +675,18 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
         switch (mOutputProjection) {
             case RECTILINEAR:
-                mRotationYawValueTargetDeg = 0.0f;
-//                mRotationPitchValueTargetDeg = 0.0f;
                 getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, 0.0f, 0.0f));
                 setPredefinedZoomLevel(1);
                 setProjectionRectilinear();
                 break;
             case LITTLEPLANET:
-                mRotationYawValueTargetDeg = 0.0f;
-//                mRotationPitchValueTargetDeg = -90.0f;
                 getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, -90.0f, 0.0f));
                 setPredefinedZoomLevel(4);
                 setProjectionLittlePlanet();
                 break;
             case EQUIRECTANGULAR:
-                mRotationYawValueTargetDeg = 0.0f;
                 getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, 0.0f, 0.0f));
                 setPredefinedZoomLevel(1);
