@@ -31,8 +31,11 @@ package fi.finwe.orion360.sdk.pro.examples.tv;
 
 import android.animation.ValueAnimator;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -81,10 +84,11 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * - Select button
  * - Home button
  * - Back button
+ * Of course, nothing is stopping your from adding support for optional keys as shortcuts.
  *
  * For proper 360° viewing user experience, users should be able to control panning, zooming and
  * perhaps also projection changes. For video content there should be play/pause, seek, etc. usual
- * video player controls. Obviously, one cannot assign a separate remote control key for each
+ * video player controls. Obviously, one cannot just assign a separate remote control key for each
  * feature, since the minimal key set is so limited. Some kind of a control panel, where users
  * can change what feature to control, is needed. This activity contains simple example design.
  *
@@ -101,11 +105,6 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * smooth animations: it is very typical, that new key event will interrupt an ongoing animation
  * for example when panning a 360° view. User is not happy if we completely disregard new event,
  * but on the other hand, restarting the animation with new values may produce jerky movement.
- *
- * We need to acknowledge that this particular use case is not the usual "move this from here
- * to there smoothly" kind of animation, where existing animation frameworks are targeted.
- * To achieve best possible user experience, we need a more dynamic system, somewhat similar to
- * controlling an object in a computer game.
  */
 @SuppressWarnings("unused")
 public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTexture.Listener {
@@ -113,11 +112,14 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Tag for logging. */
     public static final String TAG = TVStreamPlayer.class.getSimpleName();
 
+    /** Automatically hide the control panel after this delay of inactivity. */
+    private static final int AUTO_HIDE_CONTROL_PANEL_DELAY_MS = 4000;
+
     /** Rotation animation length, impulse from single key press (in ms). */
     private static final int ROTATION_ANIMATION_LENGTH_IMPULSE_MS = 800;
 
     /** Rotation animation length, continuous panning when key is held down (in ms). */
-    private static final int ROTATION_ANIMATION_LENGTH_INFINITE_MS = 7200;
+    private static final int ROTATION_ANIMATION_LENGTH_INFINITE_MS = 72000;
 
     /** Zoom animation length (in ms). */
     private static final int ZOOM_ANIMATION_LENGTH_MS = 800;
@@ -127,6 +129,12 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
     /** Hysteresis for zoom (do not perform additional "zoom in" step if we are "almost there"). */
     private static final float ZOOM_HYSTERESIS = 0.05f;
+
+    /**
+     * The amount of time to step when user seeks backward/forward (in ms). Notice that this
+     * will be a very approximate value in practice, as media players seek to the nearest keyframe.
+     */
+    private static final int SEEK_STEP_MS = 5000;
 
     /** Buffering indicator, to be shown while buffering video from the network. */
     private ProgressBar mBufferingIndicator;
@@ -184,6 +192,15 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Currently selected output projection. */
     private OutputProjection mOutputProjection = OutputProjection.RECTILINEAR;
 
+    /** Animation for showing the control panel. */
+    private Animation mShowControlPanelAnimation;
+
+    /** Animation for hiding the control panel. */
+    private Animation mHideControlPanelAnimation;
+
+    /** Handler for automatically hiding the control panel after a delay. */
+    private final Handler mAutoHideControlPanelHandler = new Handler();
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -216,6 +233,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                     getOrionTexture().play();
                 }
             }
+            restartAutoHideDelay();
         });
 
         // Zoom in button.
@@ -224,6 +242,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             Logger.logF();
 
             zoomIn();
+            restartAutoHideDelay();
         });
 
         // Zoom out button.
@@ -232,6 +251,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             Logger.logF();
 
             zoomOut();
+            restartAutoHideDelay();
         });
 
         // Projection button.
@@ -240,6 +260,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             Logger.logF();
 
             toggleProjection();
+            restartAutoHideDelay();
         });
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
@@ -247,8 +268,8 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
         // Set a URI that points to an image or video stream URL.
         //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
-        //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
-        setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
+        setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        //setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
 
         // Notice that accessing video streams over a network connection requires INTERNET
         // permission to be specified in the manifest file.
@@ -265,6 +286,26 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         camera.setProjectionPerspectiveDeg(OrionCamera.FovType.HORIZONTAL,
                 120.0f, 0.1f, 100.0f);
         camera.setZoomMax(7.0f);
+
+        // Load animations.
+        mShowControlPanelAnimation = AnimationUtils.loadAnimation(this,
+                R.anim.slide_in_from_bottom);
+        mHideControlPanelAnimation = AnimationUtils.loadAnimation(this,
+                R.anim.slide_out_to_bottom);
+        mHideControlPanelAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mControlPanelView.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+
+        restartAutoHideDelay();
     }
 
     // ------------------------------------- Key handling ------------------------------------------
@@ -273,32 +314,140 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Logger.logD(TAG, "onKeyDown(), keyCode=" + keyCode + " keyEvent=" + event);
 
+        // If control panel is visible, any key press resets auto hide delay counting.
+        if (mControlPanelView.getVisibility() == View.VISIBLE) {
+            restartAutoHideDelay();
+        }
+
+        OrionTexture orionTexture = getOrionTexture();
+
         // Handle TV's remote controller key presses (key down events).
+
+        // Handle basic navigation keys.
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_HOME:
+            case KeyEvent.KEYCODE_MOVE_HOME:
+                // Home -> return to Android TV home (default action).
+                return false;
+            case KeyEvent.KEYCODE_BUTTON_B:
+            case KeyEvent.KEYCODE_BACK:
+                // Back -> hide control panel if visible, or quit the app.
+                if (mControlPanelView.getVisibility() == View.VISIBLE) {
+                    hideControlPanel();
+                } else {
+                    finish();
+                }
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_SELECT:
+            case KeyEvent.KEYCODE_BUTTON_A:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_NUMPAD_ENTER:
+                // Selection -> show control panel if not visible, else select (default action).
+                if (mControlPanelView.getVisibility() != View.VISIBLE) {
+                    showControlPanel();
+                    return true;
+                }
+                return false;
+        }
 
         // Here we handle only the case where an arrow key is held down to pan with constant speed.
         // We also have to store the key event, so that when the key is lifted, we can check whether
-        // user short pressed or long pressed and act accordingly.
+        // user short pressed or long pressed and act accordingly. That is handled in onKeyUp().
         mLastKeyEventDown = event;
-
-        if (mControlPanelView.getVisibility() == View.GONE) {
+        if (mControlPanelView.getVisibility() != View.VISIBLE) {
             if (event.getRepeatCount() == 1) {
                 // Long press detected, start constant speed pan animation.
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_UP:
-                        rotatePitch(360, true, true);
+                        rotatePitch(3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_DOWN:
-                        rotatePitch(-360, true, true);
+                        rotatePitch(-3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_LEFT:
-                        rotateYaw(360, true, true);
+                        rotateYaw(3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        rotateYaw(-360, true, true);
+                        rotateYaw(-3600, true, true);
                         return true;
                 }
             }
         }
+
+        // Optional extra keys that are found from many Android TV remote controllers:
+        switch (keyCode) {
+
+            // Allow zooming with PROGRAM UP/DOWN keys. Quick zooming by holding the key also works.
+            case KeyEvent.KEYCODE_CHANNEL_UP:
+                // Prog+ -> zoom in.
+                zoomIn();
+                return true;
+            case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                // Prog- -> zoom out.
+                zoomOut();
+                return true;
+
+            // Reset view with red key. Allow selecting projection with other color keys.
+            case KeyEvent.KEYCODE_PROG_RED:
+                // Red -> reset view to center and default zoom level.
+                if (event.getRepeatCount() == 0) {
+                    resetProjection();
+                }
+                return true;
+            case KeyEvent.KEYCODE_PROG_GREEN:
+                // Green -> Rectilinear.
+                if (event.getRepeatCount() == 0) {
+                    setOutputProjection(OutputProjection.RECTILINEAR);
+                }
+                return true;
+            case KeyEvent.KEYCODE_PROG_YELLOW:
+                // Yellow -> Little planet.
+                if (event.getRepeatCount() == 0) {
+                    setOutputProjection(OutputProjection.LITTLEPLANET);
+                }
+                return true;
+            case KeyEvent.KEYCODE_PROG_BLUE:
+                // Red -> Source.
+                if (event.getRepeatCount() == 0) {
+                    setOutputProjection(OutputProjection.EQUIRECTANGULAR);
+                }
+                return true;
+
+            // Control media with play/pause keys.
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                // Play -> play/pause playback.
+                if (getOrionTexture() instanceof OrionVideoTexture) {
+                    if (mIsPlaying) {
+                        getOrionTexture().pause();
+                    } else {
+                        getOrionTexture().play();
+                    }
+                    return true;
+                }
+
+            // Seek media with seek backward/forward keys.
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
+                // Rewind -> seek backward.
+                if (orionTexture instanceof OrionVideoTexture) {
+                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+                    long position = orionVideoTexture.getCurrentPosition();
+                    orionVideoTexture.seekTo(Math.max(0, (int)position - SEEK_STEP_MS));
+                    return true;
+                }
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                // Fast forward -> seek forward.
+                if (orionTexture instanceof OrionVideoTexture) {
+                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+                    long position = orionVideoTexture.getCurrentPosition();
+                    long duration = orionVideoTexture.getDuration();
+                    orionVideoTexture.seekTo(Math.min((int)duration, (int)position + SEEK_STEP_MS));
+                    return true;
+                }
+        }
+
         return super.onKeyDown(keyCode, event);
     }
 
@@ -321,30 +470,9 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         }
 
         switch (keyCode) {
-            case KeyEvent.KEYCODE_BUTTON_B:
-            case KeyEvent.KEYCODE_BACK:
-                // Back -> hide control panel if visible, or quit the app.
-                if (mControlPanelView.getVisibility() == View.VISIBLE) {
-                    mControlPanelView.setVisibility(View.GONE);
-                } else {
-                    finish();
-                }
-                return true;
-            case KeyEvent.KEYCODE_BUTTON_SELECT:
-            case KeyEvent.KEYCODE_BUTTON_A:
-            case KeyEvent.KEYCODE_ENTER:
-            case KeyEvent.KEYCODE_DPAD_CENTER:
-            case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                // Selection -> show control panel if not visible, else select (default action).
-                if (mControlPanelView.getVisibility() == View.GONE) {
-                    mControlPanelView.setVisibility(View.VISIBLE);
-                    mPlayButton.requestFocus();
-                    return true;
-                }
-                return false;
             case KeyEvent.KEYCODE_DPAD_UP:
                 // Up -> pan up.
-                if (mControlPanelView.getVisibility() == View.GONE
+                if (mControlPanelView.getVisibility() != View.VISIBLE
                         && mLastKeyEventDown.getRepeatCount() == 0) {
                     rotatePitch(30, mAnimateRotation, false);
                     return true;
@@ -352,7 +480,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 return false;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 // Down -> pan down.
-                if (mControlPanelView.getVisibility() == View.GONE
+                if (mControlPanelView.getVisibility() != View.VISIBLE
                         && mLastKeyEventDown.getRepeatCount() == 0) {
                     rotatePitch(-30, mAnimateRotation, false);
                     return true;
@@ -360,7 +488,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 return false;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 // Left -> pan left.
-                if (mControlPanelView.getVisibility() == View.GONE
+                if (mControlPanelView.getVisibility() != View.VISIBLE
                         && mLastKeyEventDown.getRepeatCount() == 0) {
                     rotateYaw(45, mAnimateRotation, false);
                     return true;
@@ -368,20 +496,68 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 return false;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 // Right -> pan right.
-                if (mControlPanelView.getVisibility() == View.GONE
+                if (mControlPanelView.getVisibility() != View.VISIBLE
                         && mLastKeyEventDown.getRepeatCount() == 0) {
                     rotateYaw(-45, mAnimateRotation, false);
                     return true;
                 }
                 return false;
-            case KeyEvent.KEYCODE_HOME:
-            case KeyEvent.KEYCODE_MOVE_HOME:
-                // Home -> return to Android TV home (default action).
-                return false;
             default:
                 return super.onKeyUp(keyCode, event);
         }
     }
+
+    /**
+     * Show control panel by sliding and fading in.
+     */
+    public void showControlPanel() {
+        Logger.logF();
+
+        mShowControlPanelAnimation.cancel();
+        mControlPanelView.bringToFront();
+        mControlPanelView.setVisibility(View.VISIBLE);
+        mControlPanelView.startAnimation(mShowControlPanelAnimation);
+        mPlayButton.requestFocus();
+
+        restartAutoHideDelay();
+    }
+
+    /**
+     * Hide control panel by sliding and fading out.
+     */
+    public void hideControlPanel() {
+        Logger.logF();
+
+        mAutoHideControlPanelHandler.removeCallbacks(mAutoHideRunnable);
+
+        if (null != mShowControlPanelAnimation) {
+            mShowControlPanelAnimation.cancel();
+        }
+
+        if (null != mControlPanelView) {
+            mControlPanelView.bringToFront();
+            mControlPanelView.setVisibility(View.VISIBLE);
+            mControlPanelView.startAnimation(mHideControlPanelAnimation);
+        }
+    }
+
+    /**
+     * Restart auto hide delay for the control panel.
+     */
+    private void restartAutoHideDelay() {
+        Logger.logF();
+
+        mAutoHideControlPanelHandler.removeCallbacks(mAutoHideRunnable);
+        mAutoHideControlPanelHandler.postDelayed(mAutoHideRunnable,
+                AUTO_HIDE_CONTROL_PANEL_DELAY_MS);
+    }
+
+    /** Hide control panel after a delay of inactivity. */
+    private final Runnable mAutoHideRunnable = () -> {
+        Logger.logF();
+
+        hideControlPanel();
+    };
 
     // ------------------------------------------ Pan ----------------------------------------------
 
@@ -666,12 +842,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             mRotationYawValueAnimator.cancel();
             mRotationYawValueAnimator = null;
         }
-/*
+
         if (null != mRotationPitchValueAnimator) {
             mRotationPitchValueAnimator.cancel();
             mRotationPitchValueAnimator = null;
         }
-*/
 
         switch (mOutputProjection) {
             case RECTILINEAR:
@@ -700,7 +875,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /**
      * Set rectilinear projection.
      */
-    public void setProjectionRectilinear() {
+    private void setProjectionRectilinear() {
         Logger.logF();
 
         getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
@@ -713,7 +888,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /**
      * Set little planet projection.
      */
-    public void setProjectionLittlePlanet() {
+    private void setProjectionLittlePlanet() {
         Logger.logF();
 
         getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
@@ -726,7 +901,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /**
      * Set source projection.
      */
-    public void setProjectionSource() {
+    private void setProjectionSource() {
         Logger.logF();
 
         getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);

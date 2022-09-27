@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <!-- This is the view where 360 video will show up. -->
     <fi.finwe.orion360.sdk.pro.view.OrionViewContainer
@@ -49,9 +50,10 @@
         android:orientation="horizontal"
         android:layout_marginStart="@dimen/player_controls_panel_margin_tv"
         android:layout_marginEnd="@dimen/player_controls_panel_margin_tv"
-        android:layout_marginBottom="@dimen/player_controls_panel_margin_tv"
         android:paddingStart="@dimen/player_controls_panel_padding_start"
         android:paddingEnd="@dimen/player_controls_panel_padding_end"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="visible"
         android:clickable="true"
         android:focusable="true"> <!-- Prevent clicking anything under control panel -->
