@@ -39,10 +39,14 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import fi.finwe.log.Logger;
@@ -107,7 +111,8 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * but on the other hand, restarting the animation with new values may produce jerky movement.
  */
 @SuppressWarnings("unused")
-public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTexture.Listener {
+public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTexture.Listener,
+        SeekBar.OnSeekBarChangeListener {
 
     /** Tag for logging. */
     public static final String TAG = TVStreamPlayer.class.getSimpleName();
@@ -142,6 +147,15 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Control panel view. */
     private View mControlPanelView;
 
+    /** Elapsed time text. */
+    private TextView mElapsedTime;
+
+    /** Seek bar. */
+    private SeekBar mSeekBar;
+
+    /** Duration time text. */
+    private TextView mDurationTime;
+
     /** Play button. */
     private ImageButton mPlayButton;
 
@@ -155,6 +169,12 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
     /** Projection button. */
     private ImageButton mProjectionButton;
+
+    /** Current video position. */
+    protected long mPositionMs = 0;
+
+    /** Current video duration. */
+    protected long mDurationMs = 0;
 
     /** Flag for indicating if video is currently being played. */
     private boolean mIsPlaying = false;
@@ -220,6 +240,19 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         // Get control panel.
         mControlPanelView = findViewById(R.id.player_controls_panel);
 
+        // Position (elapsed time) text.
+        mElapsedTime = findViewById(R.id.player_controls_position_text);
+        updatePositionLabel();
+
+        // Seek bar.
+        mSeekBar = findViewById(R.id.player_controls_seekbar);
+        mSeekBar.setOnSeekBarChangeListener(this);
+        updateSeekBar();
+
+        // Duration (total time) text.
+        mDurationTime = findViewById(R.id.player_controls_duration_text);
+        updateDurationLabel();
+
         // Play/pause button.
         mPlayButton = findViewById(R.id.player_controls_play_button);
         mPlayButton.setOnClickListener(view -> {
@@ -268,8 +301,8 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
         // Set a URI that points to an image or video stream URL.
         //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
-        setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
-        //setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
+        //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
+        setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
 
         // Notice that accessing video streams over a network connection requires INTERNET
         // permission to be specified in the manifest file.
@@ -290,8 +323,10 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         // Load animations.
         mShowControlPanelAnimation = AnimationUtils.loadAnimation(this,
                 R.anim.slide_in_from_bottom);
+        mShowControlPanelAnimation.setFillAfter(true);
         mHideControlPanelAnimation = AnimationUtils.loadAnimation(this,
                 R.anim.slide_out_to_bottom);
+        mHideControlPanelAnimation.setFillAfter(true);
         mHideControlPanelAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {}
@@ -507,8 +542,10 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         }
     }
 
+    // ------------------------------------- Control Panel -----------------------------------------
+
     /**
-     * Show control panel by sliding and fading in.
+     * Show control panel by sliding and fading it in.
      */
     public void showControlPanel() {
         Logger.logF();
@@ -523,7 +560,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     }
 
     /**
-     * Hide control panel by sliding and fading out.
+     * Hide control panel by sliding and fading it out.
      */
     public void hideControlPanel() {
         Logger.logF();
@@ -552,12 +589,88 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 AUTO_HIDE_CONTROL_PANEL_DELAY_MS);
     }
 
-    /** Hide control panel after a delay of inactivity. */
+    /**
+     * Hide control panel after a delay of inactivity.
+     */
     private final Runnable mAutoHideRunnable = () -> {
         Logger.logF();
 
         hideControlPanel();
     };
+
+    /**
+     * Update current video position to control panel label.
+     */
+    protected void updatePositionLabel() {
+        //Logger.logF(); // Prevent flooding the log.
+
+        if (mElapsedTime != null) {
+            mElapsedTime.setText(getTimeString(mPositionMs));
+        }
+    }
+
+    /**
+     * Update current video duration to control panel label.
+     */
+    protected void updateDurationLabel() {
+        Logger.logF();
+
+        if (mDurationTime != null) {
+            mDurationTime.setText(getTimeString(mDurationMs));
+        }
+    }
+
+    /**
+     * Update seekbar.
+     */
+    protected void updateSeekBar() {
+        //Logger.logF(); // Prevent flooding the log.
+
+        if (mSeekBar != null) {
+            mSeekBar.setMax((int)mDurationMs);
+            mSeekBar.setProgress((int)mPositionMs);
+        }
+    }
+
+    /**
+     * Format given time value into a time string.
+     *
+     * @param timeMs the time value to format.
+     * @return formatted string.
+     */
+    protected String getTimeString(long timeMs) {
+        Logger.logF();
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(timeMs);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeMs)
+                - TimeUnit.MINUTES.toSeconds(minutes);
+        return String.format(Locale.US, "%d:%02d", minutes,	seconds);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        Logger.logF();
+
+        // Nothing to do
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        Logger.logD(TAG, "onProgressChanged() progress=" + progress + " fromUser=" + fromUser);
+
+        if (fromUser) {
+            OrionTexture orionTexture = getOrionTexture();
+            if (orionTexture instanceof OrionVideoTexture) {
+                OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+                orionVideoTexture.seekTo(progress);
+            }
+        }
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        Logger.logF();
+    }
 
     // ------------------------------------------ Pan ----------------------------------------------
 
@@ -988,18 +1101,30 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
     @Override
     public void onVideoSeekStarted(OrionVideoTexture texture, long positionMs) {
+        mPositionMs = positionMs;
+        updatePositionLabel();
+        updateSeekBar();
     }
 
     @Override
     public void onVideoSeekCompleted(OrionVideoTexture texture, long positionMs) {
+        mPositionMs = positionMs;
+        updatePositionLabel();
+        updateSeekBar();
     }
 
     @Override
     public void onVideoPositionChanged(OrionVideoTexture texture, long positionMs) {
+        mPositionMs = positionMs;
+        updatePositionLabel();
+        updateSeekBar();
     }
 
     @Override
     public void onVideoDurationUpdate(OrionVideoTexture texture, long durationMs) {
+        mDurationMs = durationMs;
+        updateDurationLabel();
+        updateSeekBar();
     }
 
     @Override

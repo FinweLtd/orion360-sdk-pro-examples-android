@@ -32,7 +32,7 @@
         <entry key="app/src/main/res/layout/activity_recyclerview_row.xml" value="0.34834123222748814" />
         <entry key="app/src/main/res/layout/activity_sprite.xml" value="0.34872979214780603" />
         <entry key="app/src/main/res/layout/activity_video_player.xml" value="0.34872979214780603" />
-        <entry key="app/src/main/res/layout/activity_video_player_tv.xml" value="0.26463104325699743" />
+        <entry key="app/src/main/res/layout/activity_video_player_tv.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_video_player_with_console.xml" value="0.4015625" />
         <entry key="app/src/main/res/layout/activity_video_player_with_controls.xml" value="0.3394919168591224" />
         <entry key="app/src/main/res/layout/activity_viewpager.xml" value="0.4015625" />

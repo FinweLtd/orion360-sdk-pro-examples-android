@@ -41,13 +41,13 @@
         android:visibility="gone" />
 
     <!-- This is a control panel. -->
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/player_controls_panel"
         android:layout_width="@dimen/player_controls_panel_width_tv"
         android:layout_height="@dimen/player_controls_panel_height_tv"
         android:background="@drawable/tv_control_panel_bg"
         android:layout_gravity="bottom|center_horizontal"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginStart="@dimen/player_controls_panel_margin_tv"
         android:layout_marginEnd="@dimen/player_controls_panel_margin_tv"
         android:paddingStart="@dimen/player_controls_panel_padding_start"
@@ -58,63 +58,116 @@
         android:clickable="true"
         android:focusable="true"> <!-- Prevent clicking anything under control panel -->
 
-        <ImageButton
-            android:id="@+id/player_controls_play_button"
-            android:layout_width="@dimen/player_controls_panel_button_width_big_tv"
-            android:layout_height="@dimen/player_controls_panel_button_height_big_tv"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
-            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
-            android:background="@drawable/control_button_bg"
-            android:contentDescription="@string/player_controls_play_button_desc"
-            android:scaleType="fitCenter"
-            android:src="@drawable/play"
-            android:stateListAnimator="@animator/click_animator">
-            <requestFocus />
-        </ImageButton>
+        <LinearLayout
+            android:id="@+id/control_panel_top_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/player_controls_projection_button"
-            android:layout_width="@dimen/player_controls_panel_button_width_tv"
-            android:layout_height="@dimen/player_controls_panel_button_height_tv"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
-            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
-            android:background="@drawable/control_button_bg"
-            android:contentDescription="@string/player_controls_projection_button_desc"
-            android:scaleType="fitCenter"
-            android:src="@drawable/rectilinear"
-            android:stateListAnimator="@animator/click_animator"/>
+            <TextView
+                android:id="@+id/player_controls_position_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:layout_gravity="center"
+                android:text="@string/player_controls_player_position"
+                android:textColor="@color/player_controls_player_position_text"
+                android:visibility="visible" />
 
-        <ImageButton
-            android:id="@+id/player_controls_zoom_in_button"
-            android:layout_width="@dimen/player_controls_panel_button_width_tv"
-            android:layout_height="@dimen/player_controls_panel_button_height_tv"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
-            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
-            android:background="@drawable/control_button_bg"
-            android:contentDescription="@string/player_controls_zoom_in_button_desc"
-            android:scaleType="fitCenter"
-            android:src="@drawable/zoom_in"
-            android:stateListAnimator="@animator/click_animator" />
+            <SeekBar
+                android:id="@+id/player_controls_seekbar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:paddingTop="@dimen/player_controls_seekbar_padding_top"
+                android:paddingBottom="@dimen/player_controls_seekbar_padding_bottom"
+                android:paddingStart="@dimen/player_controls_seekbar_padding_start"
+                android:paddingEnd="@dimen/player_controls_seekbar_padding_end"
+                android:progressDrawable="@drawable/player_controls_seekbar"
+                android:thumb="@drawable/player_controls_seekbar_thumb" />
 
-        <ImageButton
-            android:id="@+id/player_controls_zoom_out_button"
-            android:layout_width="@dimen/player_controls_panel_button_width_tv"
-            android:layout_height="@dimen/player_controls_panel_button_height_tv"
-            android:layout_toEndOf="@+id/player_controls_zoom_in_button"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
-            android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
-            android:background="@drawable/control_button_bg"
-            android:contentDescription="@string/player_controls_zoom_out_button_desc"
-            android:scaleType="fitCenter"
-            android:src="@drawable/zoom_out"
-            android:stateListAnimator="@animator/click_animator" />
+            <TextView
+                android:id="@+id/player_controls_duration_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:layout_gravity="center"
+                android:text="@string/player_controls_duration"
+                android:textColor="@color/player_controls_duration_text"
+                android:visibility="visible" />
 
-    </RelativeLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/control_panel_bottom_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/player_controls_play_button"
+                android:layout_width="@dimen/player_controls_panel_button_width_big_tv"
+                android:layout_height="@dimen/player_controls_panel_button_height_big_tv"
+                android:layout_centerInParent="true"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:background="@drawable/control_button_bg"
+                android:contentDescription="@string/player_controls_play_button_desc"
+                android:scaleType="fitCenter"
+                android:src="@drawable/play"
+                android:stateListAnimator="@animator/click_animator">
+                <requestFocus />
+            </ImageButton>
+
+            <ImageButton
+                android:id="@+id/player_controls_projection_button"
+                android:layout_width="@dimen/player_controls_panel_button_width_tv"
+                android:layout_height="@dimen/player_controls_panel_button_height_tv"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:background="@drawable/control_button_bg"
+                android:contentDescription="@string/player_controls_projection_button_desc"
+                android:scaleType="fitCenter"
+                android:src="@drawable/rectilinear"
+                android:stateListAnimator="@animator/click_animator"/>
+
+            <ImageButton
+                android:id="@+id/player_controls_zoom_in_button"
+                android:layout_width="@dimen/player_controls_panel_button_width_tv"
+                android:layout_height="@dimen/player_controls_panel_button_height_tv"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:background="@drawable/control_button_bg"
+                android:contentDescription="@string/player_controls_zoom_in_button_desc"
+                android:scaleType="fitCenter"
+                android:src="@drawable/zoom_in"
+                android:stateListAnimator="@animator/click_animator" />
+
+            <ImageButton
+                android:id="@+id/player_controls_zoom_out_button"
+                android:layout_width="@dimen/player_controls_panel_button_width_tv"
+                android:layout_height="@dimen/player_controls_panel_button_height_tv"
+                android:layout_toEndOf="@+id/player_controls_zoom_in_button"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/player_controls_panel_item_margin_start"
+                android:layout_marginEnd="@dimen/player_controls_panel_item_margin_end"
+                android:background="@drawable/control_button_bg"
+                android:contentDescription="@string/player_controls_zoom_out_button_desc"
+                android:scaleType="fitCenter"
+                android:src="@drawable/zoom_out"
+                android:stateListAnimator="@animator/click_animator" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
 </FrameLayout>
