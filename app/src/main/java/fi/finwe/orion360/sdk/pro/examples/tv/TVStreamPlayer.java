@@ -51,14 +51,26 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import fi.finwe.log.Logger;
 import fi.finwe.math.Quatf;
-import fi.finwe.orion360.sdk.pro.SimpleOrionActivity;
+import fi.finwe.orion360.sdk.pro.OrionActivity;
+import fi.finwe.orion360.sdk.pro.OrionScene;
+import fi.finwe.orion360.sdk.pro.controller.RotationAligner;
 import fi.finwe.orion360.sdk.pro.examples.MainMenu;
 import fi.finwe.orion360.sdk.pro.examples.R;
+import fi.finwe.orion360.sdk.pro.examples.engine.ExoPlayerWrapper;
 import fi.finwe.orion360.sdk.pro.item.OrionCamera;
 import fi.finwe.orion360.sdk.pro.item.OrionPanorama;
 import fi.finwe.orion360.sdk.pro.item.OrionSceneItem;
 import fi.finwe.orion360.sdk.pro.texture.OrionTexture;
 import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
+import fi.finwe.orion360.sdk.pro.texture.VideoPlayerWrapper;
+import fi.finwe.orion360.sdk.pro.variable.BasicFunction;
+import fi.finwe.orion360.sdk.pro.variable.Float1ToQuatfRotationInterpolationFunction;
+import fi.finwe.orion360.sdk.pro.variable.TimedFloatVariable;
+import fi.finwe.orion360.sdk.pro.variable.TimedVariable;
+import fi.finwe.orion360.sdk.pro.view.OrionView;
+import fi.finwe.orion360.sdk.pro.view.OrionViewContainer;
+import fi.finwe.orion360.sdk.pro.viewport.OrionDisplayViewport;
+import fi.finwe.util.ContextUtil;
 
 /**
  * An example of an Orion360 video player for playing a video stream on Android TV devices.
@@ -88,13 +100,13 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * - Select button
  * - Home button
  * - Back button
- * Of course, nothing is stopping your from adding support for optional keys as shortcuts.
+ * Of course, nothing is stopping you from adding support for optional keys as shortcuts.
  *
  * For proper 360° viewing user experience, users should be able to control panning, zooming and
  * perhaps also projection changes. For video content there should be play/pause, seek, etc. usual
  * video player controls. Obviously, one cannot just assign a separate remote control key for each
  * feature, since the minimal key set is so limited. Some kind of a control panel, where users
- * can change what feature to control, is needed. This activity contains simple example design.
+ * can change what feature to control, is needed. This activity contains a simple example design.
  *
  * Since panning and zooming via key presses results to jerky movement, it is highly recommended
  * to use animation. More specifically, we recommend using animations that apply inertia - the
@@ -109,9 +121,11 @@ import fi.finwe.orion360.sdk.pro.texture.OrionVideoTexture;
  * smooth animations: it is very typical, that new key event will interrupt an ongoing animation
  * for example when panning a 360° view. User is not happy if we completely disregard new event,
  * but on the other hand, restarting the animation with new values may produce jerky movement.
+ * Here we offer impulse like rotations from single key presses and constant speed rotation as
+ * long as key is held pressed.
  */
 @SuppressWarnings("unused")
-public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTexture.Listener,
+public class TVStreamPlayer extends OrionActivity implements OrionVideoTexture.Listener,
         SeekBar.OnSeekBarChangeListener {
 
     /** Tag for logging. */
@@ -126,17 +140,20 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Rotation animation length, continuous panning when key is held down (in ms). */
     private static final int ROTATION_ANIMATION_LENGTH_INFINITE_MS = 72000;
 
+    /** Rotation animation speed, continuous panning when key is held down. */
+    private static final float ROTATION_ANIMATION_SPEED_INFINITE = 0.7f;
+
     /** Zoom animation length (in ms). */
     private static final int ZOOM_ANIMATION_LENGTH_MS = 800;
 
     /** The number of zoom levels (steps). */
-    private static final int ZOOM_LEVEL_COUNT = 10;
+    private static final int ZOOM_LEVEL_COUNT = 5;
 
     /** Hysteresis for zoom (do not perform additional "zoom in" step if we are "almost there"). */
     private static final float ZOOM_HYSTERESIS = 0.05f;
 
     /**
-     * The amount of time to step when user seeks backward/forward (in ms). Notice that this
+     * The amount of time to seek when user seeks backward/forward (in ms). Notice that this
      * will be a very approximate value in practice, as media players seek to the nearest keyframe.
      */
     private static final int SEEK_STEP_MS = 5000;
@@ -183,15 +200,27 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean mAnimateRotation = true;
 
+    /**
+     * Flag for indicating that we want to animate panning using Orion's animation framework
+     * (rendering thread). If false, Android ValueAnimator will be used instead (UI thread).
+     */
+    private final boolean mAnimatePanWithOrion = false;
+
     /** Flag for turning zoom animation on/off. */
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean mAnimateZoom = true;
 
     /** Yaw rotation value animator. */
-    private ValueAnimator mRotationYawValueAnimator;
+    private ValueAnimator mYawRotationValueAnimator;
 
     /** Pitch rotation value animator. */
-    private ValueAnimator mRotationPitchValueAnimator;
+    private ValueAnimator mPitchRotationValueAnimator;
+
+    /** Yaw/pitch rotation Orion animator. */
+    private TimedFloatVariable mYawPitchRotationOrionAnimator;
+
+    /** Yaw/pitch rotation function. */
+    private Float1ToQuatfRotationInterpolationFunction mYawPitchRotationInterpolationFunction;
 
     /** Zoom value animator. */
     private ValueAnimator mZoomValueAnimator;
@@ -221,6 +250,34 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     /** Handler for automatically hiding the control panel after a delay. */
     private final Handler mAutoHideControlPanelHandler = new Handler();
 
+    /** Android View component that is used to hold a OrionView. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private OrionViewContainer mViewContainer;
+
+    /** Orion360 view where the content will be rendered. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private OrionView mView;
+
+    /** Orion360 scene. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private OrionScene mScene;
+
+    /** Orion360 panorama represent a single (spherical) panorama content. */
+    private OrionPanorama mPanorama;
+
+    /** Orion360 texture encapsulates the content that will be wrapped to panorama surface. */
+    private OrionTexture mPanoramaTexture;
+
+    /** The video player. */
+    protected VideoPlayerWrapper mVideoPlayer;
+
+    /** Orion360 camera for viewing content that is drawn into a 3D world. */
+    private OrionCamera mCamera;
+
+    /** Rotation aligner, for automatically re-orienting upside down view. */
+    @SuppressWarnings("FieldCanBeLocal")
+    private RotationAligner mRotationAligner;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -233,6 +290,39 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
         // Set layout.
         setContentView(R.layout.activity_video_player_tv);
+
+        // Create a new Orion360 scene.
+        mScene = new OrionScene(mOrionContext);
+
+        // Create a new Orion360 panorama.
+        mPanorama = new OrionPanorama(mOrionContext);
+
+        // Bind the panorama to our scene.
+        mScene.bindSceneItem(mPanorama);
+
+        // Create a new camera, common to all viewports bound to this view.
+        mCamera = new OrionCamera(mOrionContext);
+
+        // Set initial viewing direction.
+        mCamera.setDefaultRotationYaw(0.0f);
+        mCamera.setProjectionPerspectiveDeg(OrionCamera.FovType.HORIZONTAL,
+                120.0f, 0.1f, 100.0f);
+        mCamera.setZoomMax(7.0f);
+
+        // Sensor fusion not needed with AndroidTV app.
+        mOrionContext.getSensorFusion().setEnabled(false);
+
+        // Apply rotation aligner (but not when Orion animations are used as they would conflict).
+        if (mAnimatePanWithOrion) {
+            Logger.logD(TAG, "RotationAligner not compatible with Orion camera animation");
+        } else {
+            mRotationAligner = new RotationAligner(mOrionContext);
+            int rotDegFromNatural = ContextUtil.getDisplayRotationDegreesFromNatural(
+                    mOrionContext.getActivity());
+            mRotationAligner.setDeviceAlignZ(-rotDegFromNatural);
+            mRotationAligner.bindControllable(mCamera);
+            mScene.bindRoutine(mRotationAligner);
+        }
 
         // Get buffering indicator.
         mBufferingIndicator = findViewById(R.id.buffering_indicator);
@@ -259,11 +349,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             Logger.logF();
 
             // Control video playback via OrionVideoTexture.
-            if (getOrionTexture() instanceof OrionVideoTexture) {
+            if (mPanoramaTexture instanceof OrionVideoTexture) {
                 if (mIsPlaying) {
-                    getOrionTexture().pause();
+                    mPanoramaTexture.pause();
                 } else {
-                    getOrionTexture().play();
+                    mPanoramaTexture.play();
                 }
             }
             restartAutoHideDelay();
@@ -297,12 +387,39 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         });
 
         // Set Orion360 view (defined in the layout) that will be used for rendering 360 content.
-        setOrionView(R.id.orion_view_container);
+        mViewContainer = (OrionViewContainer) findViewById(R.id.orion_view_container);
+
+        // Create a new OrionView and bind it into the container
+        mView = new OrionView(mOrionContext);
+        mViewContainer.bindView(mView);
+
+        // Bind camera to this view.
+        mView.bindDefaultCamera(mCamera);
+
+        // Bind scene to this view.
+        mView.bindDefaultScene(mScene);
+
+        // Bind viewports to this view.
+        mView.bindViewports(OrionDisplayViewport.VIEWPORT_CONFIG_FULL,
+                OrionDisplayViewport.CoordinateType.FIXED_LANDSCAPE);
+
+        // Create video player (ExoPlayer).
+        mVideoPlayer = new ExoPlayerWrapper(this);
 
         // Set a URI that points to an image or video stream URL.
-        //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ);
-        //setContentUri(MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
-        setContentUri(MainMenu.TEST_VIDEO_URI_HLS);
+        mPanoramaTexture = new OrionVideoTexture(mOrionContext, mVideoPlayer,
+                //MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_IMAGE_FILE_LIVINGROOM_HQ
+                //MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ
+                MainMenu.TEST_VIDEO_URI_HLS
+        );
+
+        // Bind the complete texture to the complete panorama sphere.
+        mPanorama.bindTextureFull(0, mPanoramaTexture);
+
+        // In case of video texture, start listening for video player events.
+        if (mPanoramaTexture instanceof OrionVideoTexture) {
+            ((OrionVideoTexture) mPanoramaTexture).addTextureListener(this);
+        }
 
         // Notice that accessing video streams over a network connection requires INTERNET
         // permission to be specified in the manifest file.
@@ -311,16 +428,19 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         // W/MediaPlayer: Couldn't open []: java.io.FileNotFoundException: No content provider: []
         // Here Android MediaPlayer is using an exception for control flow; you can disregard it.
 
-        // Set content listener.
-        setVideoContentListener(this);
+        // Prepare Orion animations.
+        if (mAnimatePanWithOrion) {
+            // Create a timed variable for yaw/pitch animation with values in range [0-1].
+            mYawPitchRotationOrionAnimator = new TimedFloatVariable(mOrionContext);
 
-        // Re-configure 3D world camera.
-        OrionCamera camera = getOrionCamera();
-        camera.setProjectionPerspectiveDeg(OrionCamera.FovType.HORIZONTAL,
-                120.0f, 0.1f, 100.0f);
-        camera.setZoomMax(7.0f);
+            // Create a function that will convert timed variable to quaternion rotation.
+            mYawPitchRotationInterpolationFunction =
+                    new Float1ToQuatfRotationInterpolationFunction(mOrionContext);
+            mYawPitchRotationInterpolationFunction.bindInputVariable(
+                    mYawPitchRotationOrionAnimator);
+        }
 
-        // Load animations.
+        // Load layout animations.
         mShowControlPanelAnimation = AnimationUtils.loadAnimation(this,
                 R.anim.slide_in_from_bottom);
         mShowControlPanelAnimation.setFillAfter(true);
@@ -353,8 +473,6 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         if (mControlPanelView.getVisibility() == View.VISIBLE) {
             restartAutoHideDelay();
         }
-
-        OrionTexture orionTexture = getOrionTexture();
 
         // Handle TV's remote controller key presses (key down events).
 
@@ -395,16 +513,16 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 // Long press detected, start constant speed pan animation.
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_UP:
-                        rotatePitch(3600, true, true);
+                        rotatePitch(mAnimatePanWithOrion ? 90 : 3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_DOWN:
-                        rotatePitch(-3600, true, true);
+                        rotatePitch(mAnimatePanWithOrion ? -90 : -3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_LEFT:
-                        rotateYaw(3600, true, true);
+                        rotateYaw(mAnimatePanWithOrion ? 90 : 3600, true, true);
                         return true;
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        rotateYaw(-3600, true, true);
+                        rotateYaw(mAnimatePanWithOrion ? -90 : -3600, true, true);
                         return true;
                 }
             }
@@ -415,11 +533,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
             // Allow zooming with PROGRAM UP/DOWN keys. Quick zooming by holding the key also works.
             case KeyEvent.KEYCODE_CHANNEL_UP:
-                // Prog+ -> zoom in.
+                // Program+ -> zoom in.
                 zoomIn();
                 return true;
             case KeyEvent.KEYCODE_CHANNEL_DOWN:
-                // Prog- -> zoom out.
+                // Program- -> zoom out.
                 zoomOut();
                 return true;
 
@@ -454,11 +572,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
             case KeyEvent.KEYCODE_MEDIA_PAUSE:
                 // Play -> play/pause playback.
-                if (getOrionTexture() instanceof OrionVideoTexture) {
+                if (mPanoramaTexture instanceof OrionVideoTexture) {
                     if (mIsPlaying) {
-                        getOrionTexture().pause();
+                        mPanoramaTexture.pause();
                     } else {
-                        getOrionTexture().play();
+                        mPanoramaTexture.play();
                     }
                     return true;
                 }
@@ -466,16 +584,16 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             // Seek media with seek backward/forward keys.
             case KeyEvent.KEYCODE_MEDIA_REWIND:
                 // Rewind -> seek backward.
-                if (orionTexture instanceof OrionVideoTexture) {
-                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+                if (mPanoramaTexture instanceof OrionVideoTexture) {
+                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) mPanoramaTexture;
                     long position = orionVideoTexture.getCurrentPosition();
                     orionVideoTexture.seekTo(Math.max(0, (int)position - SEEK_STEP_MS));
                     return true;
                 }
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
                 // Fast forward -> seek forward.
-                if (orionTexture instanceof OrionVideoTexture) {
-                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+                if (mPanoramaTexture instanceof OrionVideoTexture) {
+                    OrionVideoTexture orionVideoTexture = (OrionVideoTexture) mPanoramaTexture;
                     long position = orionVideoTexture.getCurrentPosition();
                     long duration = orionVideoTexture.getDuration();
                     orionVideoTexture.seekTo(Math.min((int)duration, (int)position + SEEK_STEP_MS));
@@ -494,16 +612,20 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
         // If long press occurred, stop pan animation when key is lifted.
         if (null != mLastKeyEventDown && mLastKeyEventDown.getRepeatCount() > 0) {
-            if (null != mRotationYawValueAnimator) {
-                mRotationYawValueAnimator.cancel();
-                mRotationYawValueAnimator = null;
+            if (null != mYawRotationValueAnimator) {
+                mYawRotationValueAnimator.cancel();
+                mYawRotationValueAnimator = null;
             }
-            if (null != mRotationPitchValueAnimator) {
-                mRotationPitchValueAnimator.cancel();
-                mRotationPitchValueAnimator = null;
+            if (null != mPitchRotationValueAnimator) {
+                mPitchRotationValueAnimator.cancel();
+                mPitchRotationValueAnimator = null;
+            }
+            if (null != mYawPitchRotationOrionAnimator) {
+                mYawPitchRotationOrionAnimator.setEnabled(false);
             }
         }
 
+        // If single press occurred, perform impulse style pan.
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
                 // Up -> pan up.
@@ -639,7 +761,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
      * @return formatted string.
      */
     protected String getTimeString(long timeMs) {
-        Logger.logF();
+        //Logger.logF(); // Prevent flooding the log.
 
         long minutes = TimeUnit.MILLISECONDS.toMinutes(timeMs);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(timeMs)
@@ -656,12 +778,11 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        Logger.logD(TAG, "onProgressChanged() progress=" + progress + " fromUser=" + fromUser);
+        //Logger.logD(TAG, "onProgressChanged() progress=" + progress + " fromUser=" + fromUser);
 
         if (fromUser) {
-            OrionTexture orionTexture = getOrionTexture();
-            if (orionTexture instanceof OrionVideoTexture) {
-                OrionVideoTexture orionVideoTexture = (OrionVideoTexture) orionTexture;
+            if (mPanoramaTexture instanceof OrionVideoTexture) {
+                OrionVideoTexture orionVideoTexture = (OrionVideoTexture) mPanoramaTexture;
                 orionVideoTexture.seekTo(progress);
             }
         }
@@ -688,41 +809,76 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         degrees = adjustRotationAngle(degrees, mZoomLevel);
 
         // Cancel previous rotation animation, if any.
-        if (null != mRotationYawValueAnimator) {
-            mRotationYawValueAnimator.cancel();
-            mRotationYawValueAnimator = null;
+        if (null != mYawRotationValueAnimator) {
+            mYawRotationValueAnimator.cancel();
+            mYawRotationValueAnimator = null;
         }
 
-        OrionCamera camera = getOrionCamera();
         if (!animate) {
             // Apply rotation step directly to the current camera offset without animation.
-            Quatf currentRotation = camera.getRotationOffset();
+            Quatf currentRotation = mCamera.getRotationOffset();
             Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
                     degrees, 0.0f, 0.0f);
-            camera.setRotationOffset(deltaRotation.multiply(currentRotation));
+            mCamera.setRotationOffset(deltaRotation.multiply(currentRotation));
         } else {
             // Apply rotation step incrementally with animation.
-            mRotationYawValueAnimator = ValueAnimator.ofFloat(0, degrees);
-            AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
-            mRotationYawValueAnimator.addUpdateListener(valueAnimator -> {
-                //Logger.logF(); // Prevent flooding the log.
-                float value = (float) valueAnimator.getAnimatedValue();
-                float delta = value - previousValue.get();
-                previousValue.set(value);
-                Quatf currentRotation = camera.getRotationOffset();
-                Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
-                        delta, 0.0f, 0.0f);
-                camera.setRotationOffset(deltaRotation.multiply(currentRotation));
-            });
-            if (infinite) {
-                mRotationYawValueAnimator.setInterpolator(new LinearInterpolator());
-                mRotationYawValueAnimator.setRepeatMode(ValueAnimator.RESTART);
-                mRotationYawValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
-                mRotationYawValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+            if (mAnimatePanWithOrion) {
+                AtomicReference<Quatf> current = new AtomicReference<>(mCamera.getRotationOffset());
+                Quatf delta = Quatf.fromEulerRotationZXYDeg(degrees, 0.0f, 0.0f);
+                AtomicReference<Quatf> target = new AtomicReference<>(
+                        delta.multiply(current.get()));
+                mYawPitchRotationInterpolationFunction.setRotationLimits(
+                        current.get(), target.get());
+                if (infinite) {
+                    mYawPitchRotationInterpolationFunction.setFunction(BasicFunction.LINEAR);
+                    mYawPitchRotationOrionAnimator.setSpeedPerSec(
+                            ROTATION_ANIMATION_SPEED_INFINITE);
+                    mYawPitchRotationOrionAnimator.setWrappingMode(
+                            TimedVariable.WrappingMode.CLAMP);
+                    mYawPitchRotationOrionAnimator.setListener((phase, wrappedPhase) -> {
+                        // Reached set turn segment, prepare and start next turn segment.
+                        current.set(mCamera.getRotationOffset());
+                        target.set(delta.multiply(current.get()));
+                        mYawPitchRotationInterpolationFunction.setRotationLimits(
+                                current.get(), target.get());
+                        mYawPitchRotationOrionAnimator.setInputValue(0);
+                        mYawPitchRotationOrionAnimator.animateToInputValue(1.0f);
+                    });
+                } else {
+                    mYawPitchRotationInterpolationFunction.setFunction(BasicFunction.HERMITE);
+                    mYawPitchRotationOrionAnimator.setDurationMs(
+                            ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                    mYawPitchRotationOrionAnimator.setWrappingMode(
+                            TimedVariable.WrappingMode.CLAMP);
+                    mYawPitchRotationOrionAnimator.setListener(null);
+                }
+                mCamera.bindVariable(OrionSceneItem.VAR_QUATF_ROTATION_OFFSET,
+                        mYawPitchRotationInterpolationFunction);
+                mYawPitchRotationOrionAnimator.setInputValue(0);
+                mYawPitchRotationOrionAnimator.animateToInputValue(1.0f);
+                mYawPitchRotationOrionAnimator.setEnabled(true);
             } else {
-                mRotationYawValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                mYawRotationValueAnimator = ValueAnimator.ofFloat(0, degrees);
+                AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
+                mYawRotationValueAnimator.addUpdateListener(valueAnimator -> {
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    float delta = value - previousValue.get();
+                    previousValue.set(value);
+                    Quatf currentRotation = mCamera.getRotationOffset();
+                    Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                            delta, 0.0f, 0.0f);
+                    mCamera.setRotationOffset(deltaRotation.multiply(currentRotation));
+                });
+                if (infinite) {
+                    mYawRotationValueAnimator.setInterpolator(new LinearInterpolator());
+                    mYawRotationValueAnimator.setRepeatMode(ValueAnimator.RESTART);
+                    mYawRotationValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+                    mYawRotationValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+                } else {
+                    mYawRotationValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                }
+                mYawRotationValueAnimator.start();
             }
-            mRotationYawValueAnimator.start();
         }
     }
 
@@ -740,41 +896,76 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
         degrees = adjustRotationAngle(degrees, mZoomLevel);
 
         // Cancel previous rotation animation, if any.
-        if (null != mRotationPitchValueAnimator) {
-            mRotationPitchValueAnimator.cancel();
-            mRotationPitchValueAnimator = null;
+        if (null != mPitchRotationValueAnimator) {
+            mPitchRotationValueAnimator.cancel();
+            mPitchRotationValueAnimator = null;
         }
 
-        OrionCamera camera = getOrionCamera();
         if (!animate) {
             // Apply rotation step directly to the current camera offset without animation.
-            Quatf currentRotation = camera.getRotationOffset();
+            Quatf currentRotation = mCamera.getRotationOffset();
             Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
                     0.0f, degrees, 0.0f);
-            camera.setRotationOffset(currentRotation.multiply(deltaRotation));
+            mCamera.setRotationOffset(currentRotation.multiply(deltaRotation));
         } else {
             // Apply rotation step incrementally with animation.
-            mRotationPitchValueAnimator = ValueAnimator.ofFloat(0, degrees);
-            AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
-            mRotationPitchValueAnimator.addUpdateListener(valueAnimator -> {
-                //Logger.logF(); // Prevent flooding the log.
-                float value = (float) valueAnimator.getAnimatedValue();
-                float delta = value - previousValue.get();
-                previousValue.set(value);
-                Quatf currentRotation = camera.getRotationOffset();
-                Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
-                        0.0f, delta, 0.0f);
-                camera.setRotationOffset(currentRotation.multiply(deltaRotation));
-            });
-            if (infinite) {
-                mRotationPitchValueAnimator.setInterpolator(new LinearInterpolator());
-                mRotationPitchValueAnimator.setRepeatMode(ValueAnimator.RESTART);
-                mRotationPitchValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
-                mRotationPitchValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+            if (mAnimatePanWithOrion) {
+                AtomicReference<Quatf> current = new AtomicReference<>(mCamera.getRotationOffset());
+                Quatf delta = Quatf.fromEulerRotationZXYDeg(0.0f, degrees, 0.0f);
+                AtomicReference<Quatf> target = new AtomicReference<>(
+                        current.get().multiply(delta));
+                mYawPitchRotationInterpolationFunction.setRotationLimits(
+                        current.get(), target.get());
+                if (infinite) {
+                    mYawPitchRotationInterpolationFunction.setFunction(BasicFunction.LINEAR);
+                    mYawPitchRotationOrionAnimator.setSpeedPerSec(
+                            ROTATION_ANIMATION_SPEED_INFINITE);
+                    mYawPitchRotationOrionAnimator.setWrappingMode(
+                            TimedVariable.WrappingMode.CLAMP);
+                    mYawPitchRotationOrionAnimator.setListener((phase, wrappedPhase) -> {
+                        // Reached set turn segment, prepare and start next turn segment.
+                        current.set(mCamera.getRotationOffset());
+                        target.set(current.get().multiply(delta));
+                        mYawPitchRotationInterpolationFunction.setRotationLimits(
+                                current.get(), target.get());
+                        mYawPitchRotationOrionAnimator.setInputValue(0);
+                        mYawPitchRotationOrionAnimator.animateToInputValue(1.0f);
+                    });
+                } else {
+                    mYawPitchRotationInterpolationFunction.setFunction(BasicFunction.HERMITE);
+                    mYawPitchRotationOrionAnimator.setDurationMs(
+                            ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                    mYawPitchRotationOrionAnimator.setWrappingMode(
+                            TimedVariable.WrappingMode.CLAMP);
+                    mYawPitchRotationOrionAnimator.setListener(null);
+                }
+                mCamera.bindVariable(OrionSceneItem.VAR_QUATF_ROTATION_OFFSET,
+                        mYawPitchRotationInterpolationFunction);
+                mYawPitchRotationOrionAnimator.setInputValue(0);
+                mYawPitchRotationOrionAnimator.animateToInputValue(1.0f);
+                mYawPitchRotationOrionAnimator.setEnabled(true);
             } else {
-                mRotationPitchValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                mPitchRotationValueAnimator = ValueAnimator.ofFloat(0, degrees);
+                AtomicReference<Float> previousValue = new AtomicReference<>(0.0f);
+                mPitchRotationValueAnimator.addUpdateListener(valueAnimator -> {
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    float delta = value - previousValue.get();
+                    previousValue.set(value);
+                    Quatf currentRotation = mCamera.getRotationOffset();
+                    Quatf deltaRotation = Quatf.fromEulerRotationZXYDeg(
+                            0.0f, delta, 0.0f);
+                    mCamera.setRotationOffset(currentRotation.multiply(deltaRotation));
+                });
+                if (infinite) {
+                    mPitchRotationValueAnimator.setInterpolator(new LinearInterpolator());
+                    mPitchRotationValueAnimator.setRepeatMode(ValueAnimator.RESTART);
+                    mPitchRotationValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+                    mPitchRotationValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_INFINITE_MS);
+                } else {
+                    mPitchRotationValueAnimator.setDuration(ROTATION_ANIMATION_LENGTH_IMPULSE_MS);
+                }
+                mPitchRotationValueAnimator.start();
             }
-            mRotationPitchValueAnimator.start();
         }
     }
 
@@ -801,29 +992,27 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     // ------------------------------------------ Zoom ---------------------------------------------
 
     /**
-     * Set zoom level in range [0-10].
+     * Set zoom level in range [0-n].
      *
      * @param zoomLevel the new zoom level.
      */
     public void setPredefinedZoomLevel(int zoomLevel) {
         Logger.logF();
 
-        OrionCamera camera = getOrionCamera();
-
-        float maxValue = (float) (Math.log(camera.getZoomMax()) / Math.log(2));
+        float maxValue = (float) (Math.log(mCamera.getZoomMax()) / Math.log(2));
         float stepSize = maxValue / ZOOM_LEVEL_COUNT;
         float newValue = stepSize * zoomLevel;
         float orionValue = (float) (Math.pow(2.0f, newValue));
 
         if (orionValue < 1.0f) {
             doZoom(0.0f, maxValue, 1.0f);
-        } else if (orionValue <= camera.getZoomMax()) {
+        } else if (orionValue <= mCamera.getZoomMax()) {
             doZoom(newValue, maxValue, orionValue);
-        } else if ((camera.getZoom() + ZOOM_HYSTERESIS) < camera.getZoomMax()) {
-            doZoom(newValue, maxValue, camera.getZoomMax());
+        } else if ((mCamera.getZoom() + ZOOM_HYSTERESIS) < mCamera.getZoomMax()) {
+            doZoom(newValue, maxValue, mCamera.getZoomMax());
         } else {
             Logger.logD(TAG, "Zoom level=" + mZoomLevel + " Orion value="
-                    + camera.getZoomMax());
+                    + mCamera.getZoomMax());
         }
     }
 
@@ -833,20 +1022,18 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     public void zoomIn() {
         Logger.logF();
 
-        OrionCamera camera = getOrionCamera();
-
-        float maxValue = (float) (Math.log(camera.getZoomMax()) / Math.log(2));
+        float maxValue = (float) (Math.log(mCamera.getZoomMax()) / Math.log(2));
         float stepSize = maxValue / ZOOM_LEVEL_COUNT;
         float newValue = mZoomLevel + stepSize;
         float orionValue = (float) (Math.pow(2.0f, newValue));
 
-        if (orionValue <= camera.getZoomMax()) {
+        if (orionValue <= mCamera.getZoomMax()) {
             doZoom(newValue, maxValue, orionValue);
-        } else if ((camera.getZoom() + ZOOM_HYSTERESIS) < camera.getZoomMax()) {
-            doZoom(newValue, maxValue, camera.getZoomMax());
+        } else if ((mCamera.getZoom() + ZOOM_HYSTERESIS) < mCamera.getZoomMax()) {
+            doZoom(newValue, maxValue, mCamera.getZoomMax());
         } else {
             Logger.logD(TAG, "Zoom level=" + mZoomLevel + " Orion value="
-                    + camera.getZoomMax());
+                    + mCamera.getZoomMax());
         }
     }
 
@@ -856,9 +1043,7 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     public void zoomOut() {
         Logger.logF();
 
-        OrionCamera camera = getOrionCamera();
-
-        float maxValue = (float) (Math.log(camera.getZoomMax()) / Math.log(2));
+        float maxValue = (float) (Math.log(mCamera.getZoomMax()) / Math.log(2));
         float stepSize = maxValue / ZOOM_LEVEL_COUNT;
         float newValue = mZoomLevel - stepSize;
         float orionValue = (float) (Math.pow(2.0f, newValue));
@@ -884,7 +1069,6 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
                 + " percentage=" + zoomLevel / zoomLevelMax
                 + " Orion value=" + zoomOrionValue);
 
-        OrionCamera camera = getOrionCamera();
         if (mAnimateZoom) {
             if (null != mZoomValueAnimator) {
                 mZoomValueAnimator.cancel();
@@ -894,14 +1078,14 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
             mZoomValueAnimator.addUpdateListener(valueAnimator -> {
                 float animatedValue = (float) valueAnimator.getAnimatedValue();
                 float orionValue = (float) (Math.pow(2.0f, animatedValue));
-                camera.setZoom(orionValue);
+                mCamera.setZoom(orionValue);
                 mZoomLevel = zoomLevel;
             });
             mZoomValueAnimator.setDuration(ZOOM_ANIMATION_LENGTH_MS);
             mZoomValueAnimator.start();
         } else {
             mZoomLevel = zoomLevel;
-            camera.setZoom(zoomOrionValue);
+            mCamera.setZoom(zoomOrionValue);
         }
     }
 
@@ -951,33 +1135,33 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     private void resetProjection() {
         Logger.logF();
 
-        if (null != mRotationYawValueAnimator) {
-            mRotationYawValueAnimator.cancel();
-            mRotationYawValueAnimator = null;
+        if (null != mYawRotationValueAnimator) {
+            mYawRotationValueAnimator.cancel();
+            mYawRotationValueAnimator = null;
         }
 
-        if (null != mRotationPitchValueAnimator) {
-            mRotationPitchValueAnimator.cancel();
-            mRotationPitchValueAnimator = null;
+        if (null != mPitchRotationValueAnimator) {
+            mPitchRotationValueAnimator.cancel();
+            mPitchRotationValueAnimator = null;
         }
 
         switch (mOutputProjection) {
             case RECTILINEAR:
-                getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
+                mCamera.setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, 0.0f, 0.0f));
-                setPredefinedZoomLevel(1);
+                setPredefinedZoomLevel(0);
                 setProjectionRectilinear();
                 break;
             case LITTLEPLANET:
-                getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
+                mCamera.setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, -90.0f, 0.0f));
-                setPredefinedZoomLevel(4);
+                setPredefinedZoomLevel(1);
                 setProjectionLittlePlanet();
                 break;
             case EQUIRECTANGULAR:
-                getOrionCamera().setRotationOffset(Quatf.fromEulerRotationZXYDeg(
+                mCamera.setRotationOffset(Quatf.fromEulerRotationZXYDeg(
                         0.0f, 0.0f, 0.0f));
-                setPredefinedZoomLevel(1);
+                setPredefinedZoomLevel(0);
                 setProjectionSource();
                 break;
             default:
@@ -991,9 +1175,9 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     private void setProjectionRectilinear() {
         Logger.logF();
 
-        getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
-        getOrionPanorama().setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
-        getOrionCamera().setProjectionMode(OrionCamera.ProjectionMode.RECTILINEAR);
+        mPanorama.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
+        mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
+        mCamera.setProjectionMode(OrionCamera.ProjectionMode.RECTILINEAR);
         mProjectionButton.setImageDrawable(AppCompatResources.getDrawable(
                 this, R.drawable.rectilinear));
     }
@@ -1004,9 +1188,9 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     private void setProjectionLittlePlanet() {
         Logger.logF();
 
-        getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
-        getOrionPanorama().setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
-        getOrionCamera().setProjectionMode(OrionCamera.ProjectionMode.LITTLEPLANET);
+        mPanorama.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
+        mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
+        mCamera.setProjectionMode(OrionCamera.ProjectionMode.LITTLEPLANET);
         mProjectionButton.setImageDrawable(AppCompatResources.getDrawable(
                 this, R.drawable.littleplanet));
     }
@@ -1017,9 +1201,9 @@ public class TVStreamPlayer extends SimpleOrionActivity implements OrionVideoTex
     private void setProjectionSource() {
         Logger.logF();
 
-        getOrionPanorama().setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
-        getOrionPanorama().setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
-        getOrionCamera().setProjectionMode(OrionCamera.ProjectionMode.RECTILINEAR);
+        mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
+        mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+        mCamera.setProjectionMode(OrionCamera.ProjectionMode.RECTILINEAR);
         mProjectionButton.setImageDrawable(AppCompatResources.getDrawable(
                 this, R.drawable.source));
     }

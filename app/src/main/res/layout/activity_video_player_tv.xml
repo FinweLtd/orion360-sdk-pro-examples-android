@@ -20,26 +20,6 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- This is a 'playback started' indicator image. -->
-    <ImageView
-        android:id="@+id/play_overlay"
-        android:layout_width="@dimen/player_controls_play_overlay_width"
-        android:layout_height="@dimen/player_controls_play_overlay_height"
-        android:layout_gravity="center"
-        android:contentDescription="@string/player_controls_play_overlay_desc"
-        android:src="@drawable/play_overlay"
-        android:visibility="gone" />
-
-    <!-- This is a 'playback paused' indicator image. -->
-    <ImageView
-        android:id="@+id/pause_overlay"
-        android:layout_width="@dimen/player_controls_pause_overlay_width"
-        android:layout_height="@dimen/player_controls_pause_overlay_height"
-        android:layout_gravity="center"
-        android:contentDescription="@string/player_controls_pause_overlay_desc"
-        android:src="@drawable/pause_overlay"
-        android:visibility="gone" />
-
     <!-- This is a control panel. -->
     <LinearLayout
         android:id="@+id/player_controls_panel"
