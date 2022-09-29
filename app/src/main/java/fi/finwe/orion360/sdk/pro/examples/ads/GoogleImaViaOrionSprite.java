@@ -209,10 +209,10 @@ public class GoogleImaViaOrionSprite extends OrionActivity implements AdEvent.Ad
         mSprite = new OrionSprite(mOrionContext);
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
+        mSprite.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
-        mSprite.setScale(0.42f);
+        mSprite.setScale(0.424f);
 
         // Bind the video texture to the sprite object. Here we use the same texture
         // where both ad and media content will be decoded to from ExoPlayer.

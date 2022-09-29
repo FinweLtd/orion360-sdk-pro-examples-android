@@ -140,6 +140,7 @@ Table of Contents
 13. [Streaming](#streaming)
      1. [Buffering Indicator](#buffering-indicator)
      2. [Player State](#player-state)
+     3. [Secured Streaming]#secured-streaming
 14. [Sprite](#sprite)
      1. [Image Sprite](#image-sprite)
      2. [Video Sprite](#video-sprite)
@@ -154,7 +155,14 @@ Table of Contents
      1. [Cross-fade](#cross-fade)
 18. [Gallery](#gallery)
      1. [Thumbnail Pager](#thumbnail-pager)
-
+19. [Ads](#ads)
+    1. [Google IMA: Stand-alone Player](#standalone-player)
+    2. [Google IMA: Two Isolated Players](#isolated-players)
+    3. [Google IMA: Shared Player, Separate Views](#shared-player)
+    4. [Google IMA: Ads Via Orion Player](#orion-player)
+    5. [Google IMA: Ads Via Orion Sprite](#orion-sprite)
+20. [TV](#android-tv)
+    1. [TV Stream Player](#tv-player)
 
 Prerequisites
 -------------
@@ -885,6 +893,16 @@ Try modifying the example and make different tests to learn what kind of callbac
 * Test without a network connection (disable Wifi and Cellular)
 * Test pausing, playing, seeking, etc.
 
+### Secured Streaming
+
+![alt tag](https://cloud.githubusercontent.com/assets/12032146/20640465/3601e564-b3e7-11e6-961e-9d2e065856c1.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/streaming/SecuredStreaming.java)
+
+An example of secured streaming from AWS S3/CloudFront via protected headers.
+
+This example shows how you can protect your content that is not bundled with the app but streamed from the cloud. See separate document [SECURE STREAMING](SECURE_STREAMING.md) for detailed discussion.
+
 Sprite
 ======
 
@@ -1053,3 +1071,72 @@ Cons:
 - Scalability: not really suitable for multi-level (hierarchical) navigation 
 - Efficiency: Slow to navigate; practical for only a small amount of content (1-10 items)
 - Usability: Only one item is in view at a time; difficult to get an overview of available content
+
+
+Ads
+===
+
+This category contains examples that demonstrate how ads can be injected using Google IMA SDK. See document [SERVING_ADS](SERVING_ADS.md) for detailed discussion.
+
+### Standalone Player
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193064650-f3db856b-14c1-4b22-be9b-72ed01ca6f0d.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/ads/GoogleImaStandalonePlayer.java)
+
+This example mostly follows Google IMA's official example. It shows how easily you can use ExoPlayer's StyledPlayerView in a layout and integrate ads to your app by using ImaAdsLoader component and a few small extra steps when configuring an ExoPlayer instance.
+
+> Note: This example does not use Orion360 at all, and therefore renders 360° content flat. The purpose of this example is to show the minimal setup required for Google IMA.
+
+### Isolated Players
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193064866-a51e025e-6a40-4488-bc18-2243b31fdaa7.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/ads/GoogleImaTwoIsolatedPlayers.java)
+
+This example shows the most simplistic way of combining Google IMA ad playback with Orion360 based media content playback: the ad player is completely separate and simply drawn on top of Orion360's video player. An event listener is used for toggling player visibilities and play/pause states.
+
+> This approach works fairly well with pre-roll ads, but is not a good choice for mid-roll and post-roll ads if you want to let Google IMA decide when to play an ad: you have to manually maintain two separate players in sync. In addition, this approach may result into buffering the media content twice because of the two players, unless you use a dummy video URL/file for the ad player.
+
+### Shared Player
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193064866-a51e025e-6a40-4488-bc18-2243b31fdaa7.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/ads/GoogleImaSharedPlayerSeparateViews.java)
+
+This example shows a more capable integration, where a single ExoPlayer instance plays both ads and media content. The output (decoded video frames) are passed either to ExoPlayer's StyledPlayerView (ads) or Orion360 (media content). An event listener is used for swapping the target surface.
+
+### Orion Player
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193064783-c9dbb810-6aeb-4941-83e0-9dad756760c4.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/ads/GoogleImaViaOrion.java)
+
+This example uses Orion360 and its ExoPlayer for both ad and media content playback, and renders both within Orion360's own view. To be specific: Orion360 plays flat 2D 16:9 aspect ratio ads as well as wide-angle 360° media content. It could play 360° ads, too, if such ads existed. An event listener is used for swapping active projection.
+
+> This approach requires using a special layout instead of the usual OrionViewContainer, since Google IMA uses callback to retrieve a handle to a view hierarchy where it can add views that are related to ads. The example contains such layout, which app developers are free to customize.
+
+### Orion Sprite
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193064725-38b23b79-25b3-492f-9c36-b16da12b5760.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/ads/GoogleImaViaOrionSprite.java)
+
+This example uses Orion360 and its ExoPlayer for both ad and media content playback, and renders both within Orion360's own view. However, instead of switching projection for the ad, the example uses a separate sprite object as an ad surface, positioned inside the 3D world. It also uses another 360 panorama, where an image is loaded, as a background when the ad sprite is visible.
+
+> This approach could be used for example if user is viewing content in VR mode when an ad must be played. Notice that there are great possibilities in combining 360° background image and one or more video sprite panels, where the ads will be shown. You could also utilize animations for smooth switching between ads and video content. There is one drawback, though: Google IMA adds its own UI layer on top of Orion360's view, which is not aware of the 3D world. This layer also captures touch input during the time that an ad is being played.
+
+TV
+==
+
+This category contains examples that demonstrate how Orion360 can be used in smart Android TVs.
+
+### TV Player
+
+![alt tag](https://user-images.githubusercontent.com/12032146/193068622-e4c7cdf2-0195-4c49-b487-dab0d74c56d7.png)
+
+[View code](app/src/main/java/fi/finwe/orion360/sdk/pro/examples/tv/TVStreamPlayer.java)
+
+This example is a complete TV Player app that streams content from the network. There's a control panel and support for Android TV remote controller. Panning, zooming and projection changes are included, with smooth animations.
+
+> This example is not listed in phones and tablets. Run the app in Android TV to view it. Read source code comments for more information.

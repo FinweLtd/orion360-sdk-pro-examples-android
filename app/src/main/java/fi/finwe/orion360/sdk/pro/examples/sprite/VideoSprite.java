@@ -128,10 +128,10 @@ public class VideoSprite extends OrionActivity {
             MainMenu.TEST_VIDEO_URI_HLS);
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
+        mSprite.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
-        mSprite.setScale(0.42f);
+        mSprite.setScale(0.424f);
 
         // Bind the sprite texture to the sprite object. Here we assume planar rectilinear source.
         mSprite.bindTexture(mSpriteTexture);

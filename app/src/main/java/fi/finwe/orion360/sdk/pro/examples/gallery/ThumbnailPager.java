@@ -359,10 +359,10 @@ public class ThumbnailPager extends OrionActivity {
         mGalleryThumbnail = new OrionSprite(mOrionContext);
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mGalleryThumbnail.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
+        mGalleryThumbnail.setWorldTranslation(new Vec3f(0.0f, 0.0f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
-        mGalleryThumbnail.setScale(0.42f);
+        mGalleryThumbnail.setScale(0.425f);
 
         // Create a new video (or image) texture from a video (or image) source URI.
         List<Gallery.GalleryItem> items = mGallery.getItems();
@@ -378,7 +378,7 @@ public class ThumbnailPager extends OrionActivity {
 
         // Create gallery 'play' button and bind it to the scene.
         mPlayButton = new SelectablePointerIcon(mOrionContext);
-        mPlayButton.setWorldTransformFromPolarZXYDeg(0.0f, 15.0f, 0.0f, 0.7f);
+        mPlayButton.setWorldTransformFromPolarZXYDeg(0.0f, 0.0f, 0.0f, 0.7f);
         mPlayButton.setScale(0.2f, 0.3f);
         mPlayButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
                 mOrionContext, this, getString(R.string.asset_icon_play)));
@@ -428,7 +428,7 @@ public class ThumbnailPager extends OrionActivity {
 
         // Create gallery 'next' button and bind it to the scene.
         mNextButton = new SelectablePointerIcon(mOrionContext);
-        mNextButton.setWorldTransformFromPolarZXYDeg(-32.0f, 13.0f, 0.0f, 0.7f);
+        mNextButton.setWorldTransformFromPolarZXYDeg(-26.0f, 0.0f, 0.0f, 0.7f);
         mNextButton.setScale(0.05f, 1.5f * 0.05f);
         mNextButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
                 mOrionContext, this, getString(R.string.asset_icon_arrow_right)));
@@ -486,7 +486,7 @@ public class ThumbnailPager extends OrionActivity {
         // Create gallery 'previous' button and bind it to the scene.
         mPreviousButton = new SelectablePointerIcon(mOrionContext);
         mPreviousButton.setWorldTransformFromPolarZXYDeg(
-                29.0f, 13.0f, 0.0f, 0.7f);
+                26.0f, 0.0f, 0.0f, 0.7f);
         mPreviousButton.setScale(0.05f, 1.5f * 0.05f);
         mPreviousButton.getIcon().bindTexture(OrionTexture.createTextureFromURI(
                 mOrionContext, this, getString(R.string.asset_icon_arrow_left)));

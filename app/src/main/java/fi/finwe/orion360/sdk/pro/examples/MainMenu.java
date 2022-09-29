@@ -374,6 +374,9 @@ public class MainMenu extends FragmentActivity {
 					continue; // Skip self.
 				else if (activityInfo.name.equals(TVStreamPlayer.class.getName()))
 					continue; // Skip TV activity on phone/tablet
+				else if (activityInfo.name.equals(
+						"com.google.android.gms.common.api.GoogleApiActivity"))
+					continue; // Skip GMS activity
 
 				ActivityData activityData = new ActivityData();
 				String [] nameParts = activityInfo.name.split("\\.");

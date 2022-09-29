@@ -140,10 +140,10 @@ public class OrionFigure extends OrionActivity {
                 MainMenu.PRIVATE_ASSET_FILES_PATH + MainMenu.TEST_VIDEO_FILE_MQ);
 
         // Set sprite location in the 3D world. Here we place the video on the white screen.
-        mSprite.setWorldTranslation(new Vec3f(0.03f, 0.19f, -0.77f));
+        mSprite.setWorldTranslation(new Vec3f(0.0f, 0.f, -0.77f));
 
         // Set sprite size in the 3D world. Here we make it fit on the white screen.
-        mSprite.setScale(0.42f);
+        mSprite.setScale(0.424f);
 
         // Bind the sprite texture to the sprite object. Here we assume planar rectilinear source.
         mSprite.bindTexture(mSpriteTexture);
@@ -160,10 +160,10 @@ public class OrionFigure extends OrionActivity {
 
         // Set the location where the Orion360 figure polygon will be rendered to in the 3D world.
         // Here we put it balancing on top of the footstool to give some tension to the scene.
-        mPolygon.setWorldTranslation(new Vec3f(-0.25f, -0.4f, -0.6f));
+        mPolygon.setWorldTranslation(new Vec3f(-0.25f, -0.4f, -0.35f));
 
         // Set the size of the polygon as a scale factor relative to its size in the .obj model. */
-        mPolygon.setScale(0.1f);
+        mPolygon.setScale(0.07f);
 
         // Bind the polygon to the scene. This will make it part of our 3D world.
         mScene.bindSceneItem(mPolygon);
