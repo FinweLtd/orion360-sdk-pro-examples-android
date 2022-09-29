@@ -10,7 +10,7 @@ This repository contains a set of examples for creating a 360 photo/video player
 > 
 > After a long period of development and testing in various internal and customer projects, Orion360 Pro 4.0 for Android has been released. Please read [migration guide](MIGRATION.md) for instruction on updating your existing project from v3.x to v4.x. There are breaking changes.
 >
-> New examples: Read about [serving ads with Google IMA](SERVING_ADS.md) and [playing secured streams from AWS](SECURE_STREAMING.md).
+> New examples: Read about [serving ads with Google IMA](SERVING_ADS.md) and [playing secured streams from AWS](SECURE_STREAMING.md). See how how Orion360 plays 360 video on Android TVs!
 >
 > Also notice that ExoPlayer is now external to Orion360. You can more easily change to new ExoPlayer versions as they published (modify ExoPlayerWrapper if necessary). It is also now possible to get direct access to ExoPlayer instance, for example to listen for various events that the player produces.
 
@@ -140,7 +140,7 @@ Table of Contents
 13. [Streaming](#streaming)
      1. [Buffering Indicator](#buffering-indicator)
      2. [Player State](#player-state)
-     3. [Secured Streaming]#secured-streaming
+     3. [Secured Streaming](#secured-streaming)
 14. [Sprite](#sprite)
      1. [Image Sprite](#image-sprite)
      2. [Video Sprite](#video-sprite)
