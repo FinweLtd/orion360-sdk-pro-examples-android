@@ -29,7 +29,9 @@
 
 package fi.finwe.orion360.sdk.pro.examples.ads;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 
 import com.google.ads.interactivemedia.v3.api.AdEvent;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -292,6 +294,7 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
         if (null != mExoPlayer && mExoPlayer.isPlayingAd() && null != mPanorama) {
             mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
             mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+            handleOrientation();
         }
     }
 
@@ -336,6 +339,7 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
                 if (null != mPanorama) {
                     mPanorama.setPanoramaType(OrionPanorama.PanoramaType.PANEL_SOURCE);
                     mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.CAMERA_DISABLED);
+                    handleOrientation();
                 }
                 break;
             case CONTENT_RESUME_REQUESTED:
@@ -343,8 +347,29 @@ public class GoogleImaViaOrion extends OrionActivity implements AdEvent.AdEventL
                 if (null != mPanorama) {
                     mPanorama.setPanoramaType(OrionPanorama.PanoramaType.SPHERE);
                     mPanorama.setRenderingMode(OrionSceneItem.RenderingMode.PERSPECTIVE);
+                    mPanorama.setScale(1.0f);
                 }
                 break;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        handleOrientation();
+    }
+
+    private void handleOrientation() {
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+            mPanorama.setScale(Math.min(width, height) / (float) Math.max(width, height));
+        } else {
+            mPanorama.setScale(1.0f);
         }
     }
 }

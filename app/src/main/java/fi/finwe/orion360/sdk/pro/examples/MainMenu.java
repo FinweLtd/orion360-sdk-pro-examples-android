@@ -115,7 +115,8 @@ public class MainMenu extends FragmentActivity {
 
 	/** Test video URI for adaptive HLS video stream that can be found from the network. */
 	public static final String TEST_VIDEO_URI_HLS =
-			"https://player.vimeo.com/external/186333842.m3u8?s=93e42bd5d8ccff2817bb1e8fff7985d3abd83df1";
+			//"https://player.vimeo.com/external/816495334.m3u8?s=c4010cbc5d206c2c312fdaef5cf20f9ac9a91083";
+			"https://player.vimeo.com/external/256634837.m3u8?s=d77bbca100f73ee72db0c823f60c21cf45ff8fab";
 
 	/** Test video URI for medium quality cropped video that can be found from the network. */
 	public static final String TEST_VIDEO_URI_1920x720 =
